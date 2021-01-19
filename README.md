@@ -21,7 +21,8 @@ that can be controlled from a Nextion display.
 This has the advantage that we would avoid installing all the necessary dependencies
 on our system.
 
-	docker 
+	docker build -t local/arduino-cli:latest docker/
+	docker run -t -i local/arduino-cli:latest arduino-cli version
 
 ## Windows
 Download the latest binaries from [software page](https://www.arduino.cc/en/software).
