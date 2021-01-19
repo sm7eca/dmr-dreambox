@@ -23,3 +23,4 @@ Download the latest binaries from [software page](https://www.arduino.cc/en/soft
 
 * [Missing dependencies in Arch Linux](https://bugs.archlinux.org/task/60378)
 * [Building inside a docker container](https://hub.docker.com/r/arduino/arduino-cli)
+* [Arduino CLI - getting started](https://arduino.github.io/arduino-cli/latest/getting-started/)
