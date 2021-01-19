@@ -1,4 +1,11 @@
 
+# Introduction
+
+This project is intended to provide an Arduino based controller for a DMR board
+that can be controlled from a Nextion display.
+
+![DMR Dreambox](doc/img/IMG_20210119_232006.jpg)
+
 # Installation
 
 ## Linux - Arch Linux
