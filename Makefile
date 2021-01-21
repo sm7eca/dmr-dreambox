@@ -3,22 +3,19 @@ all: binary
 
 SOURCEDIR = sketch_dreambox
 SOURCES = $(wildcard ${SOURCEDIR}/*.ino)
-ARDUINO_BOARD_FQDN = "arduino:samd:mkr1000"
-ARDUINO_BOARD_CORE = "arduino:samd"
+ARDUINO_BOARD_FQDN = "esp32:esp32:esp32"
 ARDUINO_PROGRAMMER_PORT = /dev/ttyACM0
 ARDUINO_CLI_DOCKER_TAG = local/arduino-cli:latest
 BUILD_DIR = build
 
-.PHONY := board-core
-board-core:
-	arduino-cli core install ${ARDUINO_BOARD_CORE}
 
-binary: docker board-core ${BUILD_DIR}/${SOURCEDIR}.elf
+binary: boards libs ${BUILD_DIR}/${SOURCEDIR}.bin
 	
 
-${BUILD_DIR}/%.elf: Makefile ${SOURCES}
-	test -d ${BUILD_DIR} || mkdir -p ${BUILD_DIR}
-	arduino-cli compile --output-dir ${BUILD_DIR} --fqbn ${ARDUINO_BOARD_FQDN} ${SOURCEDIR}/
+${BUILD_DIR}/%.bin: Makefile ${SOURCES}
+	@echo "==> Compiling binary for ${ARDUINO_BOARD_FQDN}"
+	@test -d ${BUILD_DIR} || mkdir -p ${BUILD_DIR}
+	@arduino-cli compile --config-file arduino-cli.yaml --output-dir ${BUILD_DIR} --fqbn ${ARDUINO_BOARD_FQDN} ${SOURCEDIR}/
 
 upload: binary
 	@echo "ready to upload file to board: ${ARDUINO_BOARD_FQDN}"
@@ -30,6 +27,36 @@ docker: .built-docker
 	docker build -t ${ARDUINO_CLI_DOCKER_TAG} docker/
 	@touch $@
 
+.PHONY=clean
 clean:
 	rm -rf build
 	rm -f .built*
+
+
+libs: .built-libs
+
+.built-libs: requirements.libraries.txt
+	@echo "==> Installing libraries ***"
+	arduino-cli lib update-index
+	@if [ -e $< ]; \
+	then while read -r i ; do echo ; \
+	  echo "---> Installing " '"'$$i'"' ; \
+	  arduino-cli lib install "$$i" ; \
+	  touch $@; \
+	done < $< ; \
+	else echo "---> MISSING boards.arduino.txt file"; \
+	fi
+
+boards: .built-boards
+
+.built-boards: requirements.boards.txt
+	@echo "==> Installing board support ***"
+	arduino-cli core update-index
+	@if [ -e $< ]; \
+	then while read -r i ; do echo ; \
+	  echo "---> Installing " '"'$$i'"' ; \
+	  arduino-cli core install "$$i" ; \
+	  touch $@ ; \
+	done < $< ; \
+	else echo "---> MISSING requirements.boards.txt file"; \
+	fi
