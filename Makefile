@@ -40,6 +40,9 @@ clean:
 clean-all: clean
 	rm -rf Arduino/
 
+update:
+	arduino-cli update --config-file arduino-cli.yaml
+
 
 libs: .built-libs
 
