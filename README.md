@@ -35,3 +35,4 @@ Download the latest binaries from [software page](https://www.arduino.cc/en/soft
 * [Install ESP libraries](https://github.com/espressif/arduino-esp32#installation-instructions)
 * [ESP libraries](https://github.com/espressif/arduino-esp32/tree/master/libraries)
 * [Github - simple Makefile](https://github.com/digiampietro/arduino-makefile/blob/master/blink-arduino/Makefile)
+* [Nextion Editor - display layout tool](https://nextion.tech/nextion-editor/) 
