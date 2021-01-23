@@ -3,7 +3,7 @@ all: binary
 
 SOURCEDIR = sketch_dreambox
 SOURCES = $(wildcard ${SOURCEDIR}/*.ino)
-ARDUINO_BOARD_FQDN = "esp32:esp32:esp32"
+ARDUINO_BOARD_FQDN = "esp32:esp32:esp32-DevKitLipo"
 ARDUINO_PROGRAMMER_PORT = /dev/ttyACM0
 ARDUINO_CLI_DOCKER_TAG = local/arduino-cli:latest
 BUILD_DIR = build
