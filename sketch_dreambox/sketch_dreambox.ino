@@ -1,6 +1,7 @@
 
-char SoftwareVersion[21] = "SM7ECA-20201227-2J";
-// cloned from github.com -- now on Github. name of project changed to sketch_dreambox
+char SoftwareVersion[21] = "SM7ECA-210123-2J";
+// obsolete inttypes.h removed
+// cloned from github.com -- now on Github. name of project changed to sketch_dreambox.
 // ver J dec 27
 // fault finding memory leak. Deleted const variable prefix in json functions. Testing if OK after update.
 // added getLocalTime from Internet
@@ -49,12 +50,11 @@ char SoftwareVersion[21] = "SM7ECA-20201227-2J";
 // Tentative solution receive
 // Basic UI with volume control + rudimentary menu system
 
-#include <inttypes.h>
 #include <Arduino.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
-//#include <preferences.h>
+
 //----------------------------------------- DMR MODULE COMMANDS
 //
 #define SET_DIGITAL_CHANNEL            0x22
