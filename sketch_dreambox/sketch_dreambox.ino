@@ -1,5 +1,6 @@
 
 char SoftwareVersion[21] = "SM7ECA-20201227-2J";
+// cloned from github.com -- now on Github. name of project changed to sketch_dreambox
 // ver J dec 27
 // fault finding memory leak. Deleted const variable prefix in json functions. Testing if OK after update.
 // added getLocalTime from Internet
