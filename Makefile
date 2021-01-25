@@ -14,6 +14,7 @@ RELEASE_DIR = ${BUILD_DIR}/${RELEASE_NAME}
 GIT_COMMIT_HASH = $(shell git rev-parse HEAD)
 TIMESTAMP = $(shell date +"%Y%m%d_%H%M%S")
 
+CHANGES := $(shell git diff-index --name-only HEAD -- | wc -l)
 
 # ${BUILD_DIR}/${SOURCEDIR}.bin
 
@@ -47,8 +48,15 @@ ${RELEASE_DIR}/manifest.txt: Makefile ${RELEASE_DIR}
 	@echo "version: ${RELEASE_VERSION_STRING}" >> $@
 	@echo "created: ${TIMESTAMP}" >> $@
 
+check-changes:
+	if [ ${CHANGES} != 0 ]; then \
+	   $(error "local changes, please cleanup")
+	else \
+	   echo "==> no local changes"; \
+	fi
 
-${BUILD_DIR}/%.zip: binary manifest ${RELEASE_DIR}
+
+${BUILD_DIR}/%.zip: check-changes binary manifest ${RELEASE_DIR}
 	@echo "==> Creating a release $@"
 	@cp ${BUILD_DIR}/*.{bin,elf} ${RELEASE_DIR}/.
 	@( \
