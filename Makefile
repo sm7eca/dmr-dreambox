@@ -32,10 +32,11 @@ upload: binary
 	@echo "ready to upload file to board: ${ARDUINO_BOARD_FQDN}"
 	arduino-cli upload --input-dir ${BUILD_DIR} -p ${ARDUINO_PROGRAMMER_PORT} --fqbn ${ARDUINO_BOARD_FQDN}
 
-release: ${BUILD_DIR}/${RELEASE_NAME}.zip
+release: ${BUILD_DIR}/${RELEASE_NAME}.zip release-tag
+	@echo "==> Release DONE, push tags and upload binaries to Github https://github.com/sm7eca/dmr-dreambox/releases"
 
 ${RELEASE_DIR}:
-	test -d $@ || mkdir -p $@
+	@test -d $@ || mkdir -p $@
 
 manifest: ${RELEASE_DIR}/manifest.txt
 
@@ -49,12 +50,9 @@ ${RELEASE_DIR}/manifest.txt: Makefile ${RELEASE_DIR}
 	@echo "created: ${TIMESTAMP}" >> $@
 
 check-changes:
-	if [ ${CHANGES} != 0 ]; then \
-	   $(error "local changes, please cleanup")
-	else \
-	   echo "==> no local changes"; \
+	@if [ ${CHANGES} != 0 ]; then \
+	  echo "local changes, please cleanup"; exit 1 ; \
 	fi
-
 
 ${BUILD_DIR}/%.zip: check-changes binary manifest ${RELEASE_DIR}
 	@echo "==> Creating a release $@"
@@ -137,3 +135,14 @@ ${SOURCEDIR}/.tags: .ctags-files
 
 .built-ctags: ${SOURCEDIR}/.tags
 	@touch $@
+
+
+release-tag:
+	$(call git-create-tag,${RELEASE_VERSION_STRING})
+
+#
+# functions
+#
+define git-create-tag
+   @git tag -a -m "this_is_a_tag" $(1) HEAD
+endef
