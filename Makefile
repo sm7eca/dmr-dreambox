@@ -44,6 +44,8 @@ clean:
 	rm -f .built*
 	rm -rf .venv
 	rm -rf Arduino/user
+	rm -f .ctags-*
+	rm -f ${SOURCEDIR}/.tags*
 
 clean-all: clean
 	rm -rf Arduino/
@@ -90,3 +92,14 @@ boards: .built-boards
 	done < $< ; \
 	else echo "---> MISSING requirements.boards.txt file"; \
 	fi
+
+ctags: .built-ctags
+
+.ctags-files: ${SOURCES}
+	ls -1 ${SOURCEDIR}/*.ino > $@
+
+${SOURCEDIR}/.tags: .ctags-files
+	arduino-ctags -R -L $< --langmap=C:.ino -f $@
+
+.built-ctags: ${SOURCEDIR}/.tags
+	@touch $@
