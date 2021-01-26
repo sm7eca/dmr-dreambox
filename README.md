@@ -25,7 +25,12 @@ on our system.
 	docker run -t -i local/arduino-cli:latest arduino-cli version
 
 ## Windows
+
 Download the latest binaries from [software page](https://www.arduino.cc/en/software).
+
+# Development
+
+For more information about how we develop code, please refer to documentation of the [development process](doc/development.md).
 
 # References
 
@@ -36,4 +41,4 @@ Download the latest binaries from [software page](https://www.arduino.cc/en/soft
 * [ESP libraries](https://github.com/espressif/arduino-esp32/tree/master/libraries)
 * [Arduino json library](https://arduinojson.org/)
 * [Github - simple Makefile](https://github.com/digiampietro/arduino-makefile/blob/master/blink-arduino/Makefile)
-* [Nextion Editor - display layout tool](https://nextion.tech/nextion-editor/) 
+* [Nextion Editor - display layout tool](https://nextion.tech/nextion-editor/)
