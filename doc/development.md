@@ -26,7 +26,9 @@
 - Ensure that you do not have any local code changes
 - Run the following Makefile target
 
-     make release
+```Shell
+make release
+```
 
 - Go to [DMR Dreambox - Release Page](https://github.com/sm7eca/dmr-dreambox/releases)
 - Press on "Draft a new release"
