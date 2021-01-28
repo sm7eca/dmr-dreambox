@@ -5,7 +5,7 @@ PROJECT_NAME = dmr_dreambox
 SOURCEDIR = sketch_dreambox
 SOURCES = $(wildcard ${SOURCEDIR}/*.ino)
 ARDUINO_BOARD_FQDN = "esp32:esp32:esp32-DevKitLipo"
-ARDUINO_PROGRAMMER_PORT = /dev/ttyACM0
+ARDUINO_PROGRAMMER_PORT = /dev/ttyUSB0
 ARDUINO_CLI_DOCKER_TAG = local/arduino-cli:latest
 BUILD_DIR = build
 RELEASE_VERSION_STRING=$(shell sed -n 's/^.*SoftwareVersion.* *= *//p' sketch_dreambox/sketch_dreambox.ino | sed 's/[;"]*//g')
