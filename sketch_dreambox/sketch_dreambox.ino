@@ -1,5 +1,5 @@
 
-char SoftwareVersion[21] = "SM7ECA-210123-2J";
+char SoftwareVersion[21] = "SM7ECA-210207-2K";
 // obsolete inttypes.h removed
 // cloned from github.com -- now on Github. name of project changed to sketch_dreambox.
 // ver J dec 27
@@ -382,6 +382,7 @@ void setup() {
     //  ; // wait for serial port to connect. Needed for native USB port only
   }
   Serial.println("Startar");
+  NXinitDisplay();                                         // Show the Nextion main page (0)
   wifiConnect();                                //Connect to WiFi
   WiFisetTime();
   DMRDebug = false;                            //tracing on Serial monitor
@@ -395,6 +396,7 @@ void setup() {
   NX_P9_set_callsign_id();
   curChanItem.chnr = mySettings.chnr;
   curChanItem.TG = mySettings.TG;
+
   while (not DMRTransmit(FUNC_ENABLE, QUERY_INIT_FINISHED)) // Check - DMR Module running?
   {
     delay(1000);
@@ -402,7 +404,7 @@ void setup() {
   //NXdisplayVersion();
   DMRinitChannel(curChanItem.chnr, curChanItem.TG);        // Setup initial DMR digital channel
   DMRTransmit(FUNC_ENABLE, GET_DIGITAL_CHANNEL);           // Verify digital channel set
-  NXinitDisplay();                                         // Show the Nextion main page (0)
+  NX_P0_DisplayMainPage();
   NX_P0_updateRSSI(0);                                     // reset S meter on page 0
   NX_P0_showVol();                                         // update the volume display from actual DMR value
   // long int rx, tx;
