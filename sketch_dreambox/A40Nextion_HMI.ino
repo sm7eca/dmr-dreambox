@@ -5,17 +5,8 @@ void NXinitDisplay()
 //----------------------------------------------------- NXinitDisplay
 //    start Nextion Screen
 {
-  //  Serial1.print("page start");      //page 2
-  //  NXend(1);
-  // // delay(2000);
     Serial1.print("page DMRlogga");   //page 3
     NXend(2);
-   delay(3000);
-  //  Serial1.print("page myCall");     //page 1
-  //  NXend(3);
-  //  delay(2000);
-  Serial1.print("page main");       //page 0
-  NXend(4);
 }
 //========================================================================== page 0
 void NX_P0_DisplayMainPage()
@@ -71,16 +62,13 @@ void NX_P0_DisplayCurrent()
   Serial1.println(fR.substring(7, 9));
   Serial1.print("\"");
   NXend(12);
-  NX_P0_updateLine49();
+  NX_P0_updateTXinfo();
 }
-void NX_P0_updateLine49()
-//----------------------------------------------------------- updateLine49
+void NX_P0_updateTXinfo()
+//----------------------------------------------------------- updateTXinfo
 //
 //these lines are for "tx_group TSlot ColorCode"));
 {
-  //   DisplayCurrent();
-  //    Serial1.setCursor(0,49);
-  //    Serial1.print("TxTG ");
   switch (digData.ContactType)
   {
     case 0:
@@ -97,14 +85,18 @@ void NX_P0_updateLine49()
   Serial1.print("main.n5.val=");
   Serial1.print(digData.tx_contact);
   NXend(14);
-  // String ts = String();
-  Serial1.print("main.n2.val=");
-  Serial1.print(digData.InboundSlot + 1);
-  NXend(15);
-  //  String cc = String(digData.cc);
+  NX_P0_DisplayCurrentTS();
   Serial1.print("main.n3.val=");
   Serial1.print(digData.cc);
   NXend(16);
+}
+void  NX_P0_DisplayCurrentTS()
+//----------------------------------------------------------- DisplayCurrentTS
+//
+{
+  Serial1.print("main.n2.val=");
+  Serial1.print(digData.InboundSlot + 1);
+  NXend(15); 
 }
 void  NX_P0_DisplayTransmit(boolean on)
 //----------------------------------------------------------- DisplayTransmit
@@ -259,8 +251,8 @@ void  NX_P0_showState()
   {
     Serial1.print("main.n0.val="); // Changing the value of box n0
     Serial1.print(UnitState);
-    lastUnitState = UnitState;
     NXend(6);
+    lastUnitState = UnitState;
   }
   //  looptime = millis()-loopstartNext;
   //  loopstartNext = millis();
@@ -515,25 +507,25 @@ void NX_P9_set_channelinfo()
 void NX_P9_displayVersion()
 //----------------------------------------------------------- displayVersion
 //
+// Display software version from current code module
 // Query DMR module version and display on oled, last line (unused for now)
-
-{
-  if (DMRgetVersion())
-  {
+{  
     Serial1.print("t6.txt=\"");
     Serial1.print(SoftwareVersion);
     Serial1.print("\"");
-    NXend(50);
-    char ModuleVersion[21];
+    NXend(94);
+  if (DMRgetVersion())
+  {
+    char ModuleVersion[19]="                  ";
     for (int x = 8; x < 26; x++)
     {
       ModuleVersion[x - 8] = char(buff[x]);
     }
-    ModuleVersion[18] = 0x0;
+//    ModuleVersion[18] = 0x0;
     Serial1.print("t7.txt=\"");
     Serial1.print(ModuleVersion);
     Serial1.print("\"");
-    NXend(51);
+    NXend(95);
   }
 }
 void NX_P9_showVol()
@@ -543,7 +535,7 @@ void NX_P9_showVol()
   Serial1.print("setup.j0.val="); // Changing the value of progress bar
   int volproc = (100 * (mySettings.audioLevel-1)) / (maxAudioVolume-1);
   Serial1.print(volproc); // show set volume level
-  NXend(90);
+  NXend(96);
 }
 void NX_P9_showMicVol()
 //----------------------------------------------------- NXshowVol
@@ -552,7 +544,7 @@ void NX_P9_showMicVol()
   Serial1.print("setup.j1.val="); // Changing the value of progress bar
   int volproc = (100 * mySettings.micLevel) / maxMicVolume;
   Serial1.print(volproc); // show set volume level
-  NXend(91);
+  NXend(97);
 }
 
 //========================================================================== page 10
