@@ -1,5 +1,8 @@
 
+<<<<<<< HEAD
 char SoftwareVersion[21] = "SM7ECA-210123-2J";
+=======
+char SoftwareVersion[21] = "SM7ECA-210207-2K";
 // obsolete inttypes.h removed
 // cloned from github.com -- now on Github. name of project changed to sketch_dreambox.
 // ver J dec 27
@@ -49,6 +52,7 @@ char SoftwareVersion[21] = "SM7ECA-210123-2J";
 // ver 2 sept 2020 Arne Nilsson sm7eca@ssa.se
 // Tentative solution receive
 // Basic UI with volume control + rudimentary menu system
+>>>>>>> 8fd934272f6fde67da86c6139d0df3422f72c487
 
 #include <Arduino.h>
 #include <WiFiMulti.h>
@@ -392,6 +396,7 @@ void setup() {
   //NXdisplayVersion();
   DMRinitChannel(curChanItem.chnr, curChanItem.TG);        // Setup initial DMR digital channel
   DMRTransmit(FUNC_ENABLE, GET_DIGITAL_CHANNEL);           // Verify digital channel set
+  NX_P0_DisplayMainPage();
   NX_P0_updateRSSI(0);                                     // reset S meter on page 0
   NX_P0_showVol();                                         // update the volume display from actual DMR value
   // long int rx, tx;
