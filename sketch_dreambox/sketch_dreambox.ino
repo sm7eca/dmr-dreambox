@@ -81,18 +81,6 @@ char SoftwareVersion[21] = "SM7ECA-210123-2J";
 #define FUNC_DISABLE                   0x02
 
 // ---------------------------------------------------- Pin definitions
-//#define  modePin    6   //input, switching between modes
-//#define  pinA       2   //input, digital pin 3, (pinB,pinA)
-//clockwise turning as increase. swap them if you prefer counter clockwise
-//#define  pinB       3   //input, digital pin 2, (pinB,pinA)
-//both pins are pulled up, no need for resistors
-//#define  scanPin    4   //input, center button of rotary sensor,
-//pulled up HIGH to switch to/from scan mode, active LOW
-//#define  PTTPin     5   //input, used to switch TX/RX, connect to RF module PTT pin & PTT button,
-//active LOW
-//#define  modePin    6   //input, switching between modes
-//#define  backPin    7   //input, pin to go back from menu & jump back to normal receiving mode
-
 #define  beepPin    14  //beepPin; OUTPUT, this is is actually A0 but we are to use it 
 //for the beeper as pin 13 was used by SPI in this case
 
@@ -382,6 +370,7 @@ void setup() {
     //  ; // wait for serial port to connect. Needed for native USB port only
   }
   Serial.println("Startar");
+  NXinitDisplay();                                         // Show the Nextion main page (0)
   wifiConnect();                                //Connect to WiFi
   WiFisetTime();
   DMRDebug = false;                            //tracing on Serial monitor
@@ -395,6 +384,7 @@ void setup() {
   NX_P9_set_callsign_id();
   curChanItem.chnr = mySettings.chnr;
   curChanItem.TG = mySettings.TG;
+
   while (not DMRTransmit(FUNC_ENABLE, QUERY_INIT_FINISHED)) // Check - DMR Module running?
   {
     delay(1000);
@@ -402,7 +392,6 @@ void setup() {
   //NXdisplayVersion();
   DMRinitChannel(curChanItem.chnr, curChanItem.TG);        // Setup initial DMR digital channel
   DMRTransmit(FUNC_ENABLE, GET_DIGITAL_CHANNEL);           // Verify digital channel set
-  NXinitDisplay();                                         // Show the Nextion main page (0)
   NX_P0_updateRSSI(0);                                     // reset S meter on page 0
   NX_P0_showVol();                                         // update the volume display from actual DMR value
   // long int rx, tx;
@@ -422,7 +411,6 @@ void setup() {
 //******************************************************************************************
 void loop()
 {
-
   //  Main loop and State machine
   //---------------------------------development aid - show current state on p0
   NX_P0_showState();
