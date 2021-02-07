@@ -1,7 +1,10 @@
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 char SoftwareVersion[21] = "SM7ECA-210123-2J";
 =======
+=======
+>>>>>>> 8fd934272f6fde67da86c6139d0df3422f72c487
 char SoftwareVersion[21] = "SM7ECA-210207-2K";
 // obsolete inttypes.h removed
 // cloned from github.com -- now on Github. name of project changed to sketch_dreambox.
