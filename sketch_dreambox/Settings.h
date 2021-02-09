@@ -1,4 +1,7 @@
 
+#ifndef SETTINGS_H
+#define SETTINGS_H
+
 typedef struct _WifiSettingS {
   char ssid[33];
   char passwd[17];
@@ -59,3 +62,5 @@ void settingsWrite(DmrSettingsS* dmrSettings);
 
 // read settings from EEPROM into dmrSettings
 void settingsRead(DmrSettingsS* dmrSettings);
+
+#endif /* SETTINGS_H */
