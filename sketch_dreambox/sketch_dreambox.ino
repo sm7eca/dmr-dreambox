@@ -4,6 +4,7 @@ char SoftwareVersion[21] = "SM7ECA-210207-2K";
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include "Settings.h"
 
 //----------------------------------------- DMR MODULE COMMANDS
 //
@@ -307,6 +308,8 @@ boolean calculateFreq(long int chan)
 }
 //************************************************************************* start setup
 //*************************************************************************************
+
+DmrSettingsS dmrSettings;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(serial_speed);                   //Serial monitor
@@ -321,6 +324,13 @@ void setup() {
   }
   Serial.println("Startar");
   NXinitDisplay();                                         // Show the Nextion main page (0)
+  settingsInit();
+  bool initiated = settingsInitiated();
+  if (initiated) {
+    settingsRead(&dmrSettings);
+    Serial.println(dmrSettings.audioLevel);
+  }
+
   wifiConnect();                                //Connect to WiFi
   WiFisetTime();
   DMRDebug = false;                            //tracing on Serial monitor
