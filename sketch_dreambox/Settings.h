@@ -1,8 +1,13 @@
-#ifndef __SETTINGS_H_
-#define __SETTINGS_H_
+
+#ifndef SETTINGS_H
+#define SETTINGS_H
+
+#define SETTINGS_WIFI_SSID_LEN 32
+#define SETTINGS_WIFI_PASSWD_LEN 16
+
 typedef struct _WifiSettingS {
-  char ssid[33];
-  char passwd[17];
+  char ssid[SETTINGS_WIFI_SSID_LEN + 1];
+  char passwd[SETTINGS_WIFI_PASSWD_LEN + 1];
 } WifiSettingS;
 
 typedef struct _TalkGroupS {
@@ -21,6 +26,8 @@ typedef struct _RepeaterS {
   TalkGroupS  groups[10];
 } RepeaterS;
 
+#define SETTINGS_MAX_WIFI_AP 4
+
 
 typedef struct _RepeaterConfigS {
   RepeaterS   repeater[50];
@@ -29,7 +36,7 @@ typedef struct _RepeaterConfigS {
 
 typedef struct _DmrSettingsS {
   int           version;
-  WifiSettingS  wifisettings[4];
+  WifiSettingS  wifisettings[SETTINGS_MAX_WIFI_AP];
   uint8_t       audioLevel;       //  1-9; default = 8
   uint8_t       micLevel;         //  0-15, mic gain setting
   char          callSign[12];     // callsign, max 12 chars
@@ -60,4 +67,8 @@ void settingsWrite(DmrSettingsS* dmrSettings);
 
 // read settings from EEPROM into dmrSettings
 void settingsRead(DmrSettingsS* dmrSettings);
-#endif
+
+// write wifi settings into to a distinct slot
+void settingsAddWifiAp(DmrSettingsS* dmrSettings, WifiSettingS* wifiAp, int slot);
+
+#endif /* SETTINGS_H */

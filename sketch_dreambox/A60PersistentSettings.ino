@@ -74,3 +74,24 @@ void settingsWrite(DmrSettingsS *dmrSettings)
 
   settingsPrintMsg("settingsWrite, finished");
 }
+
+void settingsAddWifiAp(DmrSettingsS* dmrSettings, WifiSettingS* wifiAp, int slot)
+{
+  // write AP settings into a distinct slot
+  settingsPrintMsg("settingsWriteWifi, start");
+
+  if (slot >= SETTINGS_MAX_WIFI_AP) {
+    settingsPrintMsg("settingsWriteWifi, failed => invalid slot");
+    return;
+  }
+
+  // erase that wifi slot
+  memset(dmrSettings->wifisettings[slot].ssid, 0, SETTINGS_WIFI_SSID_LEN);
+  memset(dmrSettings->wifisettings[slot].passwd, 0, SETTINGS_WIFI_PASSWD_LEN);
+
+  // copy new items
+  memcpy(dmrSettings->wifisettings[slot].ssid, wifiAp->ssid, SETTINGS_WIFI_SSID_LEN);
+  memcpy(dmrSettings->wifisettings[slot].passwd, wifiAp->passwd, SETTINGS_WIFI_PASSWD_LEN);
+
+  settingsPrintMsg("settingsWriteWifi, finished");
+}
