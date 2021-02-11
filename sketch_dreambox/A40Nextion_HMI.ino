@@ -1,4 +1,3 @@
-
 //========================================================================== startup
 
 void NXinitDisplay()
@@ -26,7 +25,6 @@ void NX_P0_DisplayCurrent()
   String fR = tempS.substring(0, 3) + "." + tempS.substring(3, 8);
   tempS = String(digData.tx_freq);
   String fT = tempS.substring(0, 3) + "." + tempS.substring(3, 8);
-  //these lines are for "CH:39          KM6WZM"
   String fullName = String(curdigCh.Name) + " " + String(curdigCh.Location);
   fullName.trim();
   String firstBlock = " RU" + String(curdigCh.IARUchannel);
@@ -38,7 +36,11 @@ void NX_P0_DisplayCurrent()
   Serial1.print(fullName);
   Serial1.print("\"");
   NXend(9);
-  //these lines are for "TX:444.88250  PO:High"
+  Serial1.print("main.t3.txt=\"");
+  Serial1.print(dmrSettings.callSign);
+  Serial1.print("\"");
+  NXend(4);
+  //these lines are for "TX:444.88250"
   Serial1.print("main.t5.txt=\"");
   Serial1.print(fT);
   Serial1.print("\"");
@@ -86,6 +88,8 @@ void NX_P0_updateTXinfo()
   Serial1.print(digData.tx_contact);
   NXend(14);
   NX_P0_DisplayCurrentTS();
+  Serial.print(" cc: ");
+  Serial.println(digData.cc);
   Serial1.print("main.n3.val=");
   Serial1.print(digData.cc);
   NXend(16);
@@ -219,8 +223,8 @@ void NX_P0_DisplayReceive(boolean rec_on, byte calltype, uint32_t TGId)
     //    NXend(30);
     Serial1.print("main.t7.txt=\"     \"");
     NXend(31);
-    Serial1.print("main.t8.txt=\"     \"");
-    NXend(31);
+ //   Serial1.print("main.t8.txt=\"     \"");
+ //   NXend(31);
   }
 }
 void NX_P0_updateRSSI(uint8_t rssi)
@@ -413,8 +417,9 @@ void NX_P5_buttonHandler()
     }
     else
     {
-      mySettings.chnr = NXp4Ch[p4_selectedRow].chnr;
-      mySettings.TG = NXp5repTG[NXbuff[2]].TG;
+      dmrSettings.chnr = NXp4Ch[p4_selectedRow].chnr;
+      dmrSettings.TG = NXp5repTG[NXbuff[2]].TG;
+      settingsWrite(&dmrSettings);     
       Serial1.print("page 9");
     }
     NXend(55);
@@ -485,22 +490,22 @@ void NX_P8_viewSMS(String rxContactChar, String SMStext)
 void NX_P9_set_callsign_id()
 {
   Serial1.print("setup.t1.txt=\"");
-  Serial1.print(mySettings.callSign);
+  Serial1.print(dmrSettings.callSign);
   Serial1.print("\"");
   NXend(90);
   Serial1.print("setup.n1.val=");
-  Serial1.print(mySettings.localID);
+  Serial1.print(dmrSettings.localID);
   NXend(91);
 }
 void NX_P9_set_channelinfo()
-//---------------------------------------------------------- get channelinfo from mySettings
+//---------------------------------------------------------- get channelinfo from dmrSettings
 {
   Serial1.print("setup.t2.txt=\"");
-  Serial1.print(digChlist[mySettings.chnr].Name);
+  Serial1.print(digChlist[dmrSettings.chnr].Name);
   Serial1.print("\"");
   NXend(92);
   Serial1.print("setup.n2.val=");
-  Serial1.print(mySettings.TG);
+  Serial1.print(dmrSettings.TG);
   NXend(93);
 
 }
@@ -533,7 +538,7 @@ void NX_P9_showVol()
 
 {
   Serial1.print("setup.j0.val="); // Changing the value of progress bar
-  int volproc = (100 * (mySettings.audioLevel-1)) / (maxAudioVolume-1);
+  int volproc = (100 * (dmrSettings.audioLevel-1)) / (maxAudioVolume-1);
   Serial1.print(volproc); // show set volume level
   NXend(96);
 }
@@ -542,11 +547,36 @@ void NX_P9_showMicVol()
 
 {
   Serial1.print("setup.j1.val="); // Changing the value of progress bar
-  int volproc = (100 * mySettings.micLevel) / maxMicVolume;
+  int volproc = (100 * dmrSettings.micLevel) / maxMicVolume;
   Serial1.print(volproc); // show set volume level
   NXend(97);
 }
-
+void NX_P9_getCallsign()
+//------------------------------------------------------NX_P9_getCallsign
+{
+  char tmp[10];
+  for (int x=0;x<10;x++)
+  {
+    if (NXbuff[x+1]==0xFF)
+    {
+      tmp[x]=0x00;
+      break;
+    }
+    tmp[x]=NXbuff[x+1];
+  }
+  strcpy(dmrSettings.callSign,tmp);
+  settingsWrite(&dmrSettings);
+}
+void NX_P9_getDMRid()
+//------------------------------------------------------NX_P9_getDMRid
+{
+//    dmrSettings.localID =  (uint32_t)buff[4] << 24 | (uint32_t)buff[3] << 16 |
+//                           (uint32_t)buff[2] << 8 | (uint32_t)buff[1];
+    dmrSettings.localID =  (uint32_t)NXbuff[3] << 16 | (uint32_t)NXbuff[2] << 8 | (uint32_t)NXbuff[1];
+    Serial.print("localID update: ");
+    Serial.println(dmrSettings.localID);
+    settingsWrite(&dmrSettings); 
+}
 //========================================================================== page 10
 void NX_P10_rxLastHeard()
 {
@@ -740,50 +770,55 @@ void NX_button_pressed()
       switch (NXbuff[2])
       {
         case 0x01:                   //lower audio b1
-          if (mySettings.audioLevel <= 1)
+          if (dmrSettings.audioLevel <= 1)
           {
-            mySettings.audioLevel = 2;
+            dmrSettings.audioLevel = 2;
           }
-          mySettings.audioLevel--;
+          dmrSettings.audioLevel--;
           NX_P9_showVol();
-          audioVolume = mySettings.audioLevel;
+          audioVolume = dmrSettings.audioLevel;
+          settingsWrite(&dmrSettings);
           break;
 
         case 0x02:                   //higher audio b2
-          if (mySettings.audioLevel >= maxAudioVolume)
+          if (dmrSettings.audioLevel >= maxAudioVolume)
           {
-            mySettings.audioLevel = maxAudioVolume - 1;
+            dmrSettings.audioLevel = maxAudioVolume - 1;
           }
-          mySettings.audioLevel++;
+          dmrSettings.audioLevel++;
           NX_P9_showVol();
-          audioVolume = mySettings.audioLevel;
+          audioVolume = dmrSettings.audioLevel;
+          settingsWrite(&dmrSettings);
           break;
         case 0x04:
-          if (mySettings.micLevel >= maxMicVolume)
+          if (dmrSettings.micLevel >= maxMicVolume)
           {
-            mySettings.micLevel = maxMicVolume;
+            dmrSettings.micLevel = maxMicVolume;
           }
-          mySettings.micLevel++;
+          dmrSettings.micLevel++;
           NX_P9_showMicVol();
-          micVolume = mySettings.micLevel;
+          micVolume = dmrSettings.micLevel;
           setMicVolume(micVolume);
+          settingsWrite(&dmrSettings);
           break;
         case 0x03:
-          if (mySettings.micLevel <= 0)
+          if (dmrSettings.micLevel <= 0)
           {
-            mySettings.micLevel = 1;
+            dmrSettings.micLevel = 1;
           }
-          mySettings.micLevel--;
+          dmrSettings.micLevel--;
           NX_P9_showMicVol();
-          micVolume = mySettings.micLevel;
+          micVolume = dmrSettings.micLevel;
           setMicVolume(micVolume);
+          settingsWrite(&dmrSettings);
           break;
       }
       break;
     case  0x11:               //---------------------rxGroup update
       if (NXbuff[2] < 32)
       {
-        rxTGStatus[NXbuff[2]] = NXbuff[3];
+        dmrSettings.rxTGStatus[NXbuff[2]] = NXbuff[3];
+        settingsWrite(&dmrSettings);
       }
       break;
     case  0x12:
@@ -828,24 +863,24 @@ void NX_button_pressed()
 void  NX_page_init()
 //----------------------------------------------------- Events based on PP
 {
-  Serial.print("Page_init ");
-  Serial.print(NXbuff[1],HEX);
-  Serial.print(" ");
-  Serial.print(ESP.getFreeHeap());
-  Serial.print(" min heap ");
-  Serial.println(ESP.getMinFreeHeap());
+//  Serial.print("Page_init ");
+//  Serial.print(NXbuff[1],HEX);
+//  Serial.print(" ");
+//  Serial.print(ESP.getFreeHeap());
+//  Serial.print(" min heap ");
+//  Serial.println(ESP.getMinFreeHeap());
 
   switch (NXbuff[1])
   {
     case 0x00:                                      //main page
-      //      DMRinitChannel(curChanItem.chnr,curChanItem.TG);
+//      DMRinitChannel(curChanItem.chnr,curChanItem.TG);
       DMRupdateDigChannel();
       NX_P0_DisplayCurrent();
       break;
     case 0x01:                                      //start page
-      Serial1.print("t0.txt=\"SM7ECA\"");
-      //        Serial.print(String(mySettings.callSign));
-      //        Serial.print("\"");
+      Serial1.print("t0.txt=\"");
+      Serial1.print(String(dmrSettings.callSign));
+      Serial1.print("\"");
       NXend(4);
 
     case 0x04:                                      //select repeater
@@ -884,15 +919,15 @@ void  NX_page_init()
     case 0x11:                                      //select rx Talk Groups
       for (int i = 0; i < NXmaxrxTalkgroups; i++)
       {
-        if (rxTalkGroup[i] > 0)
+        if (dmrSettings.rxTalkGroup[i] > 0)
         {
           Serial1.print("bt");
           Serial1.print(i);
           Serial1.print(".txt=\"");
-          Serial1.print(String(rxTalkGroup[i]));
+          Serial1.print(String(dmrSettings.rxTalkGroup[i]));
           Serial1.print("\"");
           NXend(50);
-          if (rxTGStatus[i] == 1)
+          if (dmrSettings.rxTGStatus[i] == 1)
           {
             Serial1.print("bt");
             Serial1.print(i);
@@ -955,7 +990,8 @@ void NXhandler()
         //         in the users HMI design.
         //         PP is page number, CC is component ID,
         //         AA is activity (0x01 Press and 0x00 Release)
-
+        //----- 70 <text>
+        //----- 71 <num.value>
         //----- 1A Error message from Nextion
         //----- 00 Error message from Nextion
       {
@@ -969,6 +1005,12 @@ void NXhandler()
           NX_page_init();
           break;
         case 0x65:                  // Nextion standard message
+          break;
+        case 0x70:
+          NX_P9_getCallsign();
+          break;
+        case 0x71:
+          NX_P9_getDMRid();
           break;
 
         case 0x1A:                                  // Returned when invalid Variable name

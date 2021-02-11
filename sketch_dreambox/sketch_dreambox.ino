@@ -1,5 +1,5 @@
-
-char SoftwareVersion[21] = "SM7ECA-210207-2K";
+//  --
+char SoftwareVersion[21] = "SM7ECA-210210-2L";
 #include <Arduino.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
@@ -147,16 +147,16 @@ byte  audioVolume = 4;
 byte  micVolume = 15;
 
 //----------------------------------------------------------- Saved settings
-struct allSettings { //all our settings in EEPROM
-  byte audioLevel; //1-9; default = 8
-  byte micLevel; //0-15, mic gain setting
-  char callSign[12]; //callsign, max 12 chars
-  uint32_t localID;  // DMRID
-  uint8_t chnr;
-  uint32_t TG;
-  bool ts_scan;   //
-};
-struct allSettings mySettings;
+//struct allSettings { //all our settings in EEPROM
+//  byte audioLevel; //1-9; default = 8
+//  byte micLevel; //0-15, mic gain setting
+//  char callSign[12]; //callsign, max 12 chars
+//  uint32_t localID;  // DMRID
+//  uint8_t chnr;
+//  uint32_t TG;
+//  bool ts_scan;   //
+//};
+//struct allSettings mySettings;
 //   uint32_t mySetting_localID;  // DMRID
 uint8_t   rxTGStatus[33] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                             1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -306,6 +306,7 @@ boolean calculateFreq(long int chan)
   }
   return false;
 }
+  void   NXinitDisplay();
 //************************************************************************* start setup
 //*************************************************************************************
 
@@ -328,22 +329,43 @@ void setup() {
   bool initiated = settingsInitiated();
   if (initiated) {
     settingsRead(&dmrSettings);
-    Serial.println(dmrSettings.audioLevel);
+    Serial.println(dmrSettings.localID);
   }
-
+  else
+  {
+    dmrSettings.version = 0x1;
+ //   dmrSettings.wifisettings[][2]= {{"jullen11", "19nittionio"},
+ //                                   {"malmoe99", "Nitton99"},
+ //                                   {"Arnes iPhone", "9x8z0utpnp5md"},
+ //                                   {"",""}};
+    dmrSettings.audioLevel =8;          //  1-9; default = 8
+    dmrSettings.micLevel=7;             //  0-15, mic gain setting
+    strcpy (dmrSettings.callSign,"SM7ECA");     // callsign, max 12 chars
+    dmrSettings.localID=2400530;        //   DMRID
+    dmrSettings.chnr=2;                 // 
+    dmrSettings.TG=2406;                //  current talk group
+    dmrSettings.ts_scan=false;          //
+    for (int x=0;x<33;x++)
+    {
+      dmrSettings.rxTGStatus[x]=rxTGStatus[x] ;
+      dmrSettings.rxTalkGroup[x]=rxTalkGroup[x];
+    } 
+    settingsWrite(&dmrSettings);
+  }
   wifiConnect();                                //Connect to WiFi
   WiFisetTime();
   DMRDebug = false;                            //tracing on Serial monitor
   NXDebug = false;
   //--------------------------------------------initiation - will be maintained on NX setup page
-  strcpy(mySettings.callSign, "SM7ECA");
-  mySettings.localID = 2400530;
-  mySettings.chnr = 2;
-  mySettings.TG = 2406;
-  mySettings.ts_scan = false;
-  NX_P9_set_callsign_id();
-  curChanItem.chnr = mySettings.chnr;
-  curChanItem.TG = mySettings.TG;
+//  strcpy(mySettings.callSign, "SM7ECA");
+//  mySettings.localID = 2400530;
+//  mySettings.chnr = 2;
+//  mySettings.TG = 2406;
+//  mySettings.ts_scan = false;
+  audioVolume = dmrSettings.audioLevel;
+  micVolume = dmrSettings.micLevel;
+  curChanItem.chnr = dmrSettings.chnr;
+  curChanItem.TG = dmrSettings.TG;
 
   while (not DMRTransmit(FUNC_ENABLE, QUERY_INIT_FINISHED)) // Check - DMR Module running?
   {
@@ -352,6 +374,7 @@ void setup() {
   //NXdisplayVersion();
   DMRinitChannel(curChanItem.chnr, curChanItem.TG);        // Setup initial DMR digital channel
   DMRTransmit(FUNC_ENABLE, GET_DIGITAL_CHANNEL);           // Verify digital channel set
+  NX_P9_set_callsign_id();
   NX_P0_DisplayMainPage();
   NX_P0_updateRSSI(0);                                     // reset S meter on page 0
   NX_P0_showVol();                                         // update the volume display from actual DMR value
@@ -362,7 +385,7 @@ void setup() {
   //-------------------------------------------------------set start values of state machine and TS scan param
   UnitState = IDLE_STATE;
   loopstart = loopstartNext = millis();
-  ts_scan = true;
+  ts_scan = dmrSettings.ts_scan;
   tsSwitchLast = millis();
   Serial.print(" Setup free heap ");
   Serial.println(ESP.getFreeHeap());

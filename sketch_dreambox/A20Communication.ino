@@ -317,12 +317,12 @@ void DMRsetDigChannel(uint32_t rx_freq, uint32_t tx_freq, uint32_t tx_contact,
   //        Data length =
   digData.rx_freq = rx_freq;     //receive  frequency    Hotspot
   digData.tx_freq = tx_freq;     //transmit frequency    Hotspot
-  digData.localID = mySettings.localID; //local     ID1-16776415
+  digData.localID = dmrSettings.localID; //local     ID1-16776415
   for (int i = 0; i < 32; i++)
   {
-    if (rxTGStatus[i] == 1)
+    if (dmrSettings.rxTGStatus[i] == 1)
     {
-      digData.GroupList[i] = rxTalkGroup[i]; //receive  group   list
+      digData.GroupList[i] = dmrSettings.rxTalkGroup[i]; //receive  group   list
     }
     else
     {
@@ -353,7 +353,7 @@ boolean DMRupdateDigChannel()
 //--------------------------------------------------------------- DMRupdateDigChannel
 {
   int len = sizeof(digData);
-  digData.localID = mySettings.localID; //local
+  digData.localID = dmrSettings.localID; //local
   digData.pwrsave = 2;       //power save switch 2:disable 1:enable
   digData.volume = audioVolume;        //Volume 1-9
   digData.mic = micVolume;           //micgain 0-15

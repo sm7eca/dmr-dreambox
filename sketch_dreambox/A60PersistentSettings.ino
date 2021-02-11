@@ -1,6 +1,6 @@
 
-#import "EEPROM.h"
-#import "Settings.h"
+#include "EEPROM.h"
+#include "Settings.h"
 
 
 EepromSettings eepromContainer;
@@ -17,6 +17,8 @@ void settingsPrintMsg(const String msg)
 
 void settingsInit(void)
 {
+  //  initialize the EEPROM with the predefined size
+  
   EEPROM.begin(sizeof(EepromSettings));
   settingsPrintMsg("settingsInit, finished");
 }
