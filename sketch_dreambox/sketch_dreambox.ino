@@ -311,6 +311,7 @@ boolean calculateFreq(long int chan)
 //*************************************************************************************
 
 DmrSettingsS dmrSettings;
+WifiSettingS  WifiAp;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(serial_speed);                   //Serial monitor
@@ -350,8 +351,22 @@ void setup() {
       dmrSettings.rxTGStatus[x]=rxTGStatus[x] ;
       dmrSettings.rxTalkGroup[x]=rxTalkGroup[x];
     } 
-    settingsWrite(&dmrSettings);
   }
+//  strcpy(WifiAp.ssid,"malmoe99");
+//  strcpy(WifiAp.passwd,"Nitton99");
+//  settingsAddWifiAp(&dmrSettings, &WifiAp, 0);
+//  strcpy(WifiAp.ssid,"jullen11");
+//  strcpy(WifiAp.passwd,"19nittionio");
+//  settingsAddWifiAp(&dmrSettings, &WifiAp, 1);
+//  strcpy(WifiAp.ssid,"Arnes iPhone");
+//  strcpy(WifiAp.passwd,"9x8z0utpnp5md");
+//  settingsAddWifiAp(&dmrSettings, &WifiAp, 2);
+  Serial.print(dmrSettings.wifisettings[0].ssid);
+  Serial.println(dmrSettings.wifisettings[0].passwd);
+  Serial.print(dmrSettings.wifisettings[1].ssid);
+  Serial.println(dmrSettings.wifisettings[1].passwd);
+  Serial.print(dmrSettings.wifisettings[2].ssid);
+  Serial.println(dmrSettings.wifisettings[2].passwd); 
   wifiConnect();                                //Connect to WiFi
   WiFisetTime();
   DMRDebug = false;                            //tracing on Serial monitor

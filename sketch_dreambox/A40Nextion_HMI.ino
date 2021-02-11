@@ -487,6 +487,34 @@ void NX_P8_viewSMS(String rxContactChar, String SMStext)
   Serial1.print("\"");
   NXend(81);
 }
+//========================================================================== page 9
+void NX_P9_displaySSID()
+{
+  Serial1.print("setup.t9.txt=\"");
+  Serial1.print(dmrSettings.wifisettings[0].ssid);
+  Serial1.print("\"");
+  NXend(900);
+  Serial1.print("setup.t10.txt=\"");
+  Serial1.print(dmrSettings.wifisettings[0].passwd);
+  Serial1.print("\"");  
+  NXend(910);
+  Serial1.print("setup.t11.txt=\"");
+  Serial1.print(dmrSettings.wifisettings[1].ssid);
+  Serial1.print("\"");
+  NXend(901);
+  Serial1.print("setup.t12.txt=\"");
+  Serial1.print(dmrSettings.wifisettings[1].passwd);
+  Serial1.print("\"");  
+  NXend(911);  
+  Serial1.print("setup.t13.txt=\"");
+  Serial1.print(dmrSettings.wifisettings[2].ssid);
+  Serial1.print("\"");
+  NXend(902);
+  Serial1.print("setup.t14.txt=\"");
+  Serial1.print(dmrSettings.wifisettings[2].passwd);
+  Serial1.print("\"");  
+  NXend(912);  
+}
 void NX_P9_set_callsign_id()
 {
   Serial1.print("setup.t1.txt=\"");
@@ -908,6 +936,7 @@ void  NX_page_init()
       DMRsendSMS();
       break;
     case 0x09:                                      //setup parameters (wifi, TS scanning
+      NX_P9_displaySSID();
       NX_P9_set_channelinfo();
       NX_P9_showVol();
       NX_P9_showMicVol();
