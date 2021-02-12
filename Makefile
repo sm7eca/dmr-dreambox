@@ -3,7 +3,8 @@ all: binary
 
 PROJECT_NAME = dmr_dreambox
 SOURCEDIR = sketch_dreambox
-SOURCES = $(wildcard ${SOURCEDIR}/*.ino)
+SOURCES_C = $(wildcard ${SOURCEDIR}/*.ino)
+SOURCES_H = $(wildcard ${SOURCEDIR}/*.h)
 ARDUINO_BOARD_FQDN = "esp32:esp32:esp32-DevKitLipo"
 ARDUINO_PROGRAMMER_PORT = /dev/ttyUSB0
 ARDUINO_CLI_DOCKER_TAG = local/arduino-cli:latest
@@ -20,7 +21,7 @@ CHANGES := $(shell git diff-index --name-only HEAD -- | wc -l)
 
 binary: venv boards libs ${BUILD_DIR}/${SOURCEDIR}.ino.bin
 
-${BUILD_DIR}/%.bin: Makefile ${SOURCES}
+${BUILD_DIR}/%.bin: Makefile ${SOURCES_C} ${SOURCES_H}
 	@echo "==> Compiling binary for ${ARDUINO_BOARD_FQDN}"
 	@test -d ${BUILD_DIR} || mkdir -p ${BUILD_DIR}
 	@( \
@@ -127,7 +128,7 @@ boards: .built-boards
 
 ctags: .built-ctags
 
-.ctags-files: ${SOURCES}
+.ctags-files: ${SOURCES_C} ${SOURCES_H}
 	ls -1 ${SOURCEDIR}/*.ino > $@
 
 ${SOURCEDIR}/.tags: .ctags-files
