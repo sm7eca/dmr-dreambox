@@ -20,6 +20,19 @@
 - Review will merge the Pull Request.
 - Done!
 
+## Prepare HW
+
+### Nextion Display
+
+- format a micro SD card on a Windows 10 system
+- copy the file with file extension "tft" to the SD card
+- power off the Nextion display
+- insert the SD card
+- power up the Nextion display
+- wait until the process is finished with a SUCCESS message
+- remove power, remove SD card
+- restart the DMR hardware
+
 ## Release Process
 
 - Ensure that you have updated the version string in [sketch_dreambox.ino](sketch_dreambox/sketch_dreambox.ino)
@@ -39,3 +52,4 @@ make release
 # References
 
 * [How to write a good commit message](https://chris.beams.io/posts/git-commit/)
+* [Nextion protocol specification](https://nextion.tech/instruction-set/)
