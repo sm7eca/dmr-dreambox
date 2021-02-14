@@ -1,0 +1,53 @@
+version: "3.7"
+
+services:
+
+  eim-core:
+    build:
+      context: ./docker/eim-core/.
+    image: eim-core
+    container_name: eim-core
+    hostname: eim-core
+    ports:
+      - "80:80"
+    depends_on:
+      - eim-mongodb
+    networks:
+      - backend
+      - eim-core
+    environment:
+      - "EIM_DB_HOST=eim-mongodb"
+      - "EIM_DB_PORT=27017"
+      - "EIM_DB_NAME=eim-dmr-dreambox"
+      - "EIM_DB_USER=eim"
+      - "EIM_DB_PASSWORD=980a98s0d9a80sd"
+      - "TZ=Europe/Stockholm"
+
+  eim-mongodb:
+    build:
+      context: ./docker/eim-mongodb/.
+    image: eim-mongodb
+    container_name: eim-mongodb
+    hostname: eim-mongodb
+    environment:
+      - "MONGO_INITDB_ADMIN_DB"
+      - "MONGO_INITDB_ROOT_USERNAME=eim-root"
+      - "MONGO_INITDB_ROOT_PASSWORD=7a09s8d09asd"
+      - "EIM_DB_NAME=eim-dmr-dreambox"
+      - "EIM_DB_USER=eim"
+      - "EIM_DB_PASSWORD=980a98s0d9a80sd"
+      - "TZ=Europe/Stockholm"
+    networks:
+      - backend
+    volumes:
+      - "mongodb:/data/db"
+    restart: unless-stopped
+
+networks:
+  eim-core:
+  backend:
+    internal: true
+
+volumes:
+  mongodb:
+  
