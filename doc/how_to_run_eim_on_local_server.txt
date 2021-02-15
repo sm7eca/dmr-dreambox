@@ -1,0 +1,17 @@
+**EIM on local Windows Desktop
+
+Install Docker Windows Desktop from docker.com
+Open windows Shell:
+
+ cd C:\Users\arne_\Onedrive\Dokument\Arduino\dmr-dreambox\eim-service>
+
+ docker build -t eim-core-base:latest docker/eim-core-base/.
+
+ docker-compose up -d
+
+Open browser and call:
+
+http://localhost/docs#/
+
+to show how to call the service.
+
