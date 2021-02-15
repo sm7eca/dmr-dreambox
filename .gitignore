@@ -5,3 +5,4 @@ build/
 .venv*/
 sketch_dreambox/.tags
 .ctags-files
+.idea/**/*
