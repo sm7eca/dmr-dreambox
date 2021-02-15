@@ -1,4 +1,4 @@
-FROM eim-core:latest
+FROM eim-core-base:latest
 
 ENV PYTHON_PATH="/app"
 

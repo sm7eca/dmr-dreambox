@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List
 
 
@@ -17,3 +17,10 @@ class Repeater(BaseModel):
     name: str
     location: str
     tg: Optional[List[TalkGroup]]
+
+
+class SysInfo(BaseModel):
+    uptime: str
+    version: str
+    maintainer: str
+    repeater: int
