@@ -1,0 +1,4 @@
+timezone: Europe/Stockholm
+service_user: eim
+systemd_enabled: true
+target_folder: "/opt/{{ service_name }}"

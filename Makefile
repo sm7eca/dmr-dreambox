@@ -1,8 +1,9 @@
 
-all: binary
+all: help
 
 PROJECT_NAME = dmr_dreambox
 SOURCEDIR = sketch_dreambox
+SOURCES_EIM_SERVICE = $(shell find eim-service/ -type f)
 SOURCES_C = $(wildcard ${SOURCEDIR}/*.ino)
 SOURCES_H = $(wildcard ${SOURCEDIR}/*.h)
 ARDUINO_BOARD_FQDN = "esp32:esp32:esp32-DevKitLipo"
@@ -17,9 +18,17 @@ TIMESTAMP = $(shell date +"%Y%m%d_%H%M%S")
 
 CHANGES := $(shell git diff-index --name-only HEAD -- | wc -l)
 
-# ${BUILD_DIR}/${SOURCEDIR}.bin
+.PHONY = help
+help:
+	@echo -e "\n  Make system for DMR Dreambox project"
+	@echo "    release     : build ESP binary, create ZIP file, build and upload Docker container"
+	@echo "    esp-binary  : build ESP binary "
+	@echo "    esp-upload  : build and upload ESP binary"
+	@echo "    eim-release : build and upload EIM Docker container"
+	@echo "    eim-deploy  : deploy EIM service to production"
+	@echo
 
-binary: venv boards libs ${BUILD_DIR}/${SOURCEDIR}.ino.bin
+esp-binary: venv boards libs ${BUILD_DIR}/${SOURCEDIR}.ino.bin
 
 ${BUILD_DIR}/%.bin: Makefile ${SOURCES_C} ${SOURCES_H}
 	@echo "==> Compiling binary for ${ARDUINO_BOARD_FQDN}"
@@ -29,11 +38,11 @@ ${BUILD_DIR}/%.bin: Makefile ${SOURCES_C} ${SOURCES_H}
 		arduino-cli compile --config-file arduino-cli.yaml --output-dir ${BUILD_DIR} --fqbn ${ARDUINO_BOARD_FQDN} ${SOURCEDIR}/ ; \
 	)
 
-upload: binary
+esp-upload: esp-binary
 	@echo "ready to upload file to board: ${ARDUINO_BOARD_FQDN}"
 	arduino-cli upload --input-dir ${BUILD_DIR} -p ${ARDUINO_PROGRAMMER_PORT} --fqbn ${ARDUINO_BOARD_FQDN}
 
-release: ${BUILD_DIR}/${RELEASE_NAME}.zip release-tag
+release: ${BUILD_DIR}/${RELEASE_NAME}.zip eim-release release-tag
 	@echo "==> Release DONE, push tags and upload binaries to Github https://github.com/sm7eca/dmr-dreambox/releases"
 
 ${RELEASE_DIR}:
@@ -55,7 +64,7 @@ check-changes:
 	  echo "local changes, please cleanup"; exit 1 ; \
 	fi
 
-${BUILD_DIR}/%.zip: check-changes binary manifest ${RELEASE_DIR}
+${BUILD_DIR}/%.zip: check-changes esp-binary manifest ${RELEASE_DIR}
 	@echo "==> Creating a release $@"
 	@cp ${BUILD_DIR}/*.{bin,elf} ${RELEASE_DIR}/.
 	@( \
@@ -64,12 +73,6 @@ ${BUILD_DIR}/%.zip: check-changes binary manifest ${RELEASE_DIR}
 		sha256sum ${RELEASE_NAME}.zip > ${RELEASE_NAME}.zip.sha256 ; \
 		rm -rf ${RELEASE_NAME}/ ; \
 	)
-
-docker: .built-docker
-
-.built-docker: docker/Dockerfile
-	docker build -t ${ARDUINO_CLI_DOCKER_TAG} docker/
-	@touch $@
 
 .PHONY=clean
 clean:
@@ -126,6 +129,19 @@ boards: .built-boards
 	else echo "---> MISSING requirements.boards.txt file"; \
 	fi
 
+eim-release: .pushed-docker
+
+.PHONY = .pushed-docker
+.pushed-docker: Makefile
+	@echo "==> Build and push Docker container"
+	@docker build -t eim-core-base:latest eim-service/docker/eim-core-base/.
+	@docker-compose -f eim-service/docker-compose.yml build
+	@docker tag eim-core:latest smangelsen/eim-core:${RELEASE_NAME}
+	@docker tag eim-mongodb:latest smangelsen/eim-mongodb:${RELEASE_NAME}
+	@docker push smangelsen/eim-core:${RELEASE_NAME}
+	@docker push smangelsen/eim-mongodb:${RELEASE_NAME}
+	@touch $@
+
 ctags: .built-ctags
 
 .ctags-files: ${SOURCES_C} ${SOURCES_H}
@@ -137,9 +153,20 @@ ${SOURCEDIR}/.tags: .ctags-files
 .built-ctags: ${SOURCEDIR}/.tags
 	@touch $@
 
+eim-deploy: .built-eim-deploy
+
+.built-eim-deploy: Makefile ${SOURCES_EIM_SERVICE}
+	@echo "==> deploy EIM service to production"
+	@( \
+		cd eim-service/deployment ; \
+		ansible-playbook -i inventory.yml --extra-vars "dmr_release_name=${RELEASE_NAME}" --limit production site.yml -K; \
+	)
+	pwd
+	@touch $@
 
 release-tag:
 	$(call git-create-tag,${RELEASE_VERSION_STRING})
+	@echo "==> create GIT tag: ${RELEASE_VERSION_STRING}"
 
 #
 # functions

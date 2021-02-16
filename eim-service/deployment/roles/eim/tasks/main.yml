@@ -1,0 +1,64 @@
+
+- name: Debugging
+  debug:
+    msg: "Here I am: {{ inventory_hostname }}"
+
+- name: Create group for EIM service
+  tags:
+    - account
+  group:
+    name: "{{ service_user }}"
+    system: true
+  when: inventory_hostname in groups.production
+
+- name: Create a user for EIM service
+  tags:
+    - account
+  user:
+    name: "{{ service_user }}"
+    system: true
+    groups:
+      - docker
+      - "{{ service_user }}"
+  when: inventory_hostname in groups.production
+
+- name: Create Folder
+  file:
+    dest: "{{ target_folder }}"
+    state: directory
+    owner: "{{ service_user }}"
+    mode: 0740
+
+- name: Generate required docker-compose files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ service_user }}"
+    mode: 0640
+  loop:
+    - { "src": "templates/docker-compose.yml.j2", "dest": "{{ target_folder }}/docker-compose.yml"}
+    - { "src": "templates/env.j2", "dest": "{{ target_folder }}/.env"}
+
+- name: Copy systemd service files (prod only)
+  tags:
+    - smangels
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0644
+  loop:
+    - { "src": "files/docker-compose@.service", "dest": "/etc/systemd/system/docker-compose@.service"}
+    - { "src": "files/docker-cleanup.service", "dest": "/etc/systemd/system/docker-cleanup.service"}
+    - { "src": "files/docker-cleanup.timer", "dest": "/etc/systemd/system/docker-cleanup.timer" }
+  when: inventory_hostname in groups.production
+
+- name: Enable systemd services for EIM
+  systemd:
+    daemon_reload: yes
+    state: started
+    enabled: yes
+    name: "{{ item }}"
+  loop:
+    - "docker-compose@eim.service"
+    - "docker-cleanup.timer"
+  when: inventory_hostname in groups.production
