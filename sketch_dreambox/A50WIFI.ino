@@ -8,9 +8,6 @@ boolean  wifiConnect()
 //----------------------------------------------------------- wifiConnect
 //
 {
-//  wifiMulti.addAP("jullen11", "19nittionio");   // add Wi-Fi networks you want to connect to
-//  wifiMulti.addAP("malmoe99", "Nitton99");
-//  wifiMulti.addAP("Arnes iPhone", "9x8z0utpnp5md");
   wifiMulti.addAP(dmrSettings.wifisettings[0].ssid, dmrSettings.wifisettings[0].passwd);   // add Wi-Fi networks you want to connect to
   wifiMulti.addAP(dmrSettings.wifisettings[1].ssid, dmrSettings.wifisettings[1].passwd);
   wifiMulti.addAP(dmrSettings.wifisettings[2].ssid, dmrSettings.wifisettings[2].passwd);

@@ -88,8 +88,6 @@ void NX_P0_updateTXinfo()
   Serial1.print(digData.tx_contact);
   NXend(14);
   NX_P0_DisplayCurrentTS();
-  Serial.print(" cc: ");
-  Serial.println(digData.cc);
   Serial1.print("main.n3.val=");
   Serial1.print(digData.cc);
   NXend(16);
@@ -490,38 +488,38 @@ void NX_P8_viewSMS(String rxContactChar, String SMStext)
 //========================================================================== page 9
 void NX_P9_displaySSID()
 {
-  Serial1.print("setup.t9.txt=\"");
+  Serial1.print("setup.t11.txt=\"");
   Serial1.print(dmrSettings.wifisettings[0].ssid);
   Serial1.print("\"");
   NXend(900);
-  Serial1.print("setup.t10.txt=\"");
+  Serial1.print("setup.t12.txt=\"");
   Serial1.print(dmrSettings.wifisettings[0].passwd);
   Serial1.print("\"");  
   NXend(910);
-  Serial1.print("setup.t11.txt=\"");
+  Serial1.print("setup.t13.txt=\"");
   Serial1.print(dmrSettings.wifisettings[1].ssid);
   Serial1.print("\"");
   NXend(901);
-  Serial1.print("setup.t12.txt=\"");
+  Serial1.print("setup.t14.txt=\"");
   Serial1.print(dmrSettings.wifisettings[1].passwd);
   Serial1.print("\"");  
   NXend(911);  
-  Serial1.print("setup.t13.txt=\"");
+  Serial1.print("setup.t15.txt=\"");
   Serial1.print(dmrSettings.wifisettings[2].ssid);
   Serial1.print("\"");
   NXend(902);
-  Serial1.print("setup.t14.txt=\"");
+  Serial1.print("setup.t16.txt=\"");
   Serial1.print(dmrSettings.wifisettings[2].passwd);
   Serial1.print("\"");  
   NXend(912);  
 }
 void NX_P9_set_callsign_id()
 {
-  Serial1.print("setup.t1.txt=\"");
+  Serial1.print("setup.t8.txt=\"");
   Serial1.print(dmrSettings.callSign);
   Serial1.print("\"");
   NXend(90);
-  Serial1.print("setup.n1.val=");
+  Serial1.print("setup.n9.val=");
   Serial1.print(dmrSettings.localID);
   NXend(91);
 }
@@ -582,28 +580,60 @@ void NX_P9_showMicVol()
 void NX_P9_getCallsign()
 //------------------------------------------------------NX_P9_getCallsign
 {
-  char tmp[10];
   for (int x=0;x<10;x++)
   {
-    if (NXbuff[x+1]==0xFF)
+    if (NXbuff[x+3]==0xFF)
     {
-      tmp[x]=0x00;
+      dmrSettings.callSign[x]=0x00;
       break;
     }
-    tmp[x]=NXbuff[x+1];
+    if (NXbuff[x+3]!=0x20)
+    {
+      dmrSettings.callSign[x]=NXbuff[x+3];
+    }
   }
-  strcpy(dmrSettings.callSign,tmp);
   settingsWrite(&dmrSettings);
 }
 void NX_P9_getDMRid()
 //------------------------------------------------------NX_P9_getDMRid
-{
-//    dmrSettings.localID =  (uint32_t)buff[4] << 24 | (uint32_t)buff[3] << 16 |
-//                           (uint32_t)buff[2] << 8 | (uint32_t)buff[1];
-    dmrSettings.localID =  (uint32_t)NXbuff[3] << 16 | (uint32_t)NXbuff[2] << 8 | (uint32_t)NXbuff[1];
-    Serial.print("localID update: ");
-    Serial.println(dmrSettings.localID);
+{   
+    dmrSettings.localID =  (uint32_t)NXbuff[5] << 16 | (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
     settingsWrite(&dmrSettings); 
+}
+void  NX_P9_saveSSID(int indx)
+//------------------------------------------------------NX_P9_saveSSID
+{
+  char tmp[16];
+  for (int x=0;x<16;x++)
+  {
+    if (NXbuff[x+3]==0xFF)
+    {
+      tmp[x]=0x00;
+      break;
+    }
+    tmp[x]=NXbuff[x+3];
+  }
+  strcpy(WifiAp.passwd,dmrSettings.wifisettings[indx].passwd);
+  strcpy(WifiAp.ssid,tmp);
+  settingsAddWifiAp(&dmrSettings, &WifiAp, indx);
+}
+  
+void  NX_P9_savePasswd(int indx)
+//------------------------------------------------------NX_P9_savePasswd
+{
+  char tmp[16];
+  for (int x=0;x<16;x++)
+  {
+    if (NXbuff[x+3]==0xFF)
+    {
+      tmp[x]=0x00;
+      break;
+    }
+    tmp[x]=NXbuff[x+3];
+  }
+  strcpy(WifiAp.ssid,dmrSettings.wifisettings[indx].ssid);
+  strcpy(WifiAp.passwd,tmp);
+  settingsAddWifiAp(&dmrSettings, &WifiAp, indx);
 }
 //========================================================================== page 10
 void NX_P10_rxLastHeard()
@@ -671,15 +701,56 @@ void NX_txtfield_touched()
           break;
       }
       break;
-      //    case 0x09:
-      //      switch (NXbuff[2])
-      //      {
-      //        case 0x02:
-      //          Serial.print("replist.va1.val=1");
-      //          NXend(12);
-      //          Serial.print("page 4");
-      //          NXend(13);
-      //      }
+          case 0x09:
+            switch (NXbuff[2])
+            {
+              case 0x8:
+                NX_P9_getCallsign();
+                break;
+              case 0x9:
+                NX_P9_getDMRid();
+                break;
+              case 0x11:
+                NX_P9_saveSSID(0);
+                break;
+              case 0x12:
+                NX_P9_savePasswd(0);
+                break;
+              case 0x13:
+                NX_P9_saveSSID(1);
+                break;
+              case 0x14:
+                NX_P9_savePasswd(1);
+                break;
+              case 0x15:
+                NX_P9_saveSSID(2);
+                break;
+              case 0x16:
+                NX_P9_savePasswd(2);
+                break;
+              case 0x18:
+                NX_P9_saveSSID(3);
+                break;
+              case 0x19:
+                NX_P9_savePasswd(3);
+                break;
+            }
+  }
+}
+//========================================================================== field or button touch
+void NX_numfield_touched()
+//----------------------------------------------------- NX_txtfield_touched
+{
+  switch (NXbuff[1])        // page
+  {
+
+    case 0x09:
+      switch (NXbuff[2])
+      {
+        case 0x9:
+          NX_P9_getDMRid();
+          break;
+      }
   }
 }
 
@@ -1019,11 +1090,11 @@ void NXhandler()
         //         in the users HMI design.
         //         PP is page number, CC is component ID,
         //         AA is activity (0x01 Press and 0x00 Release)
-        //----- 70 <text>
-        //----- 71 <num.value>
         //----- 1A Error message from Nextion
         //----- 00 Error message from Nextion
       {
+        case 0x31:
+          NX_numfield_touched();
         case 0x32:
           NX_txtfield_touched();
           break;
@@ -1035,13 +1106,6 @@ void NXhandler()
           break;
         case 0x65:                  // Nextion standard message
           break;
-        case 0x70:
-          NX_P9_getCallsign();
-          break;
-        case 0x71:
-          NX_P9_getDMRid();
-          break;
-
         case 0x1A:                                  // Returned when invalid Variable name
           Serial.print("Error NX message 0x1A ");    // or invalid attribute was used
           Serial.println(lastNXtrans);
