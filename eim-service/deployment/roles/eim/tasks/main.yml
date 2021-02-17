@@ -88,8 +88,8 @@
     url: "{{ uri_expected }}"
     method: GET
     return_content: yes
-  until: uri_data.status == 200
-  retries: 10 
   register: uri_data
+  until: uri_data.status == 200
+  retries: 10
   delay: 2
   failed_when: false

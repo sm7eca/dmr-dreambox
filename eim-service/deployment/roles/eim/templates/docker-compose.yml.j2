@@ -21,6 +21,7 @@ services:
       - EIM_DB_PASSWORD
       - EIM_GIT_HASH
       - DMR_RELEASE_NAME
+      - EIM_LOG_LEVEL
       - "TZ=Europe/Stockholm"
 
   eim-mongodb:
@@ -30,15 +31,36 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME
       - MONGO_INITDB_ROOT_PASSWORD
+      - MONGO_INITDB_DATABASE
       - EIM_DB_NAME
       - EIM_DB_USER
       - EIM_DB_PASSWORD
+      - EIM_LOG_LEVEL
       - TZ=Europe/Stockholm
     networks:
       - backend
     volumes:
       - "mongodb:/data/db"
     restart: unless-stopped
+
+  eim-harvester:
+    image: {{ eim_docker_harvester }}
+    image: eim-harvester
+    container_name: eim-harvester
+    hostname: eim-harvester
+    depends_on:
+      - eim-mongodb
+    networks:
+      - eim-core
+      - backend
+    environment:
+      - EIM_HARVESTER_PERIODICITY_SEC
+      - EIM_LOG_LEVEL
+      - EIM_DB_HOST
+      - EIM_DB_PORT
+      - EIM_DB_NAME
+      - EIM_DB_USER
+      - EIM_DB_PASSWORD
 
 networks:
   eim-core:

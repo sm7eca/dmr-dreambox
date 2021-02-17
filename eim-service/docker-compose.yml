@@ -42,6 +42,19 @@ services:
       - "mongodb:/data/db"
     restart: unless-stopped
 
+  eim-harvester:
+    build:
+      context: ./docker/eim-harvester/.
+    image: eim-harvester
+    container_name: eim-harvester
+    hostname: eim-harvester
+    depends_on:
+      - eim-mongodb
+    networks:
+      - eim-core
+    environment:
+      - "EIM_HARVESTER_PERIODICITY_SEC=10"
+
 networks:
   eim-core:
   backend:

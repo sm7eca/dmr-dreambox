@@ -1,6 +1,8 @@
+ansible_become: false
 ansible_connection: local
-become: false
 service_user: "{{ lookup('env', 'USER') }}"
 uri_expected: http://localhost/info
 eim_docker_core: "eim-core:latest"
 eim_docker_db : "eim-mongodb:latest"
+eim_docker_harvester: "eim-harvester:latest"
+eim_log_level: DEBUG
