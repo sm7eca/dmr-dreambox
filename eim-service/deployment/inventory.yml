@@ -1,0 +1,16 @@
+all:
+  hosts:
+    dmrbox:
+  vars:
+    service_name: eim
+  children:
+    production:
+      hosts:
+        dmrdreambox-eim:
+    local:
+      hosts:
+        localhost:
+      vars:
+        systemd_enabled: false
+        target_folder: "/tmp/{{ service_name }}"
+

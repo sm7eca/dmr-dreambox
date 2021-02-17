@@ -6,3 +6,4 @@ build/
 sketch_dreambox/.tags
 .ctags-files
 .idea/**/*
+.pushed-*
