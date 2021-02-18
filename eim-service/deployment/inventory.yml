@@ -1,8 +1,8 @@
 all:
-  hosts:
-    dmrbox:
   vars:
     service_name: eim
+    service_user: eim
+    timezone: Europe/Stockholm
   children:
     production:
       hosts:
@@ -13,4 +13,3 @@ all:
       vars:
         systemd_enabled: false
         target_folder: "/tmp/{{ service_name }}"
-

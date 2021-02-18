@@ -1,8 +1,4 @@
 
-- name: Debugging
-  debug:
-    msg: "Here I am: {{ inventory_hostname }}"
-
 - name: Create group for EIM service
   tags:
     - account
@@ -22,6 +18,16 @@
       - "{{ service_user }}"
   when: inventory_hostname in groups.production
 
+- name: Get current GIT commit
+  delegate_to: localhost
+  shell:
+    cmd: git rev-parse HEAD
+  register: git_rev_parse
+
+- name: SetFact. Git Hash
+  set_fact:
+    git_commit_hash: "{{ git_rev_parse.stdout }}"
+
 - name: Create Folder
   file:
     dest: "{{ target_folder }}"
@@ -38,6 +44,7 @@
   loop:
     - { "src": "templates/docker-compose.yml.j2", "dest": "{{ target_folder }}/docker-compose.yml"}
     - { "src": "templates/env.j2", "dest": "{{ target_folder }}/.env"}
+  register: compose_files
 
 - name: Copy systemd service files (prod only)
   tags:
@@ -51,14 +58,37 @@
     - { "src": "files/docker-cleanup.service", "dest": "/etc/systemd/system/docker-cleanup.service"}
     - { "src": "files/docker-cleanup.timer", "dest": "/etc/systemd/system/docker-cleanup.timer" }
   when: inventory_hostname in groups.production
+  register: systemd_files
 
-- name: Enable systemd services for EIM
+- name: Docker, pull new images
+  shell:
+    cmd: "docker-compose -f {{ target_folder }}/docker-compose.yml pull"
+  when: inventory_hostname in groups.production
+
+- name: Restart systemd services for EIM
   systemd:
     daemon_reload: yes
-    state: started
+    state: restarted
     enabled: yes
     name: "{{ item }}"
   loop:
     - "docker-compose@eim.service"
     - "docker-cleanup.timer"
   when: inventory_hostname in groups.production
+
+- name: Restart the stack in /tmp/eim
+  shell:
+    cmd: docker-compose -f /tmp/eim/docker-compose.yml up -d --build
+  when: inventory_hostname in groups.local
+
+
+- name: "Validate connectivity to {{ uri_expected }}"
+  uri:
+    url: "{{ uri_expected }}"
+    method: GET
+    return_content: yes
+  until: uri_data.status == 200
+  retries: 10 
+  register: uri_data
+  delay: 2
+  failed_when: false
