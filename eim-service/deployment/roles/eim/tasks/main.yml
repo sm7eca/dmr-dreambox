@@ -19,6 +19,7 @@
   when: inventory_hostname in groups.production
 
 - name: Get current GIT commit
+  become: false
   delegate_to: localhost
   shell:
     cmd: git rev-parse HEAD
