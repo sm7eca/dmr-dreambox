@@ -67,6 +67,7 @@ check-changes:
 ${BUILD_DIR}/%.zip: check-changes esp-binary manifest ${RELEASE_DIR}
 	@echo "==> Creating a release $@"
 	@cp ${BUILD_DIR}/*.{bin,elf} ${RELEASE_DIR}/.
+	@cp hmi/*.tft ${RELEASE_DIR}/.
 	@( \
 		cd ${BUILD_DIR} ; \
 		zip -r ${RELEASE_NAME}.zip ${RELEASE_NAME}/ 1> /dev/null ; \
