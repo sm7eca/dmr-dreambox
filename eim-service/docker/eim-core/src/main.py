@@ -7,13 +7,13 @@ from common.definitions import Repeater, TalkGroup, SysInfo
 app = FastAPI(
     title="DMR Dreambox - EIM",
     description="External Information Management for DMR dreambox",
-    version="0.1.1"
+    version="0.1.2"
 )
 
 
 @app.get("/repeater/master", response_model=Repeater, tags=['repeater'])
 async def repeater_master(master: int):
-    tg = {"dmr_id": 24006, "ts": 1}
+    tg = {"tg_id": 24006, "ts": 1}
     response = {
         "dmr_id": 24060811,
         "tx": 436600000,
@@ -31,7 +31,7 @@ async def repeater_master(master: int):
 
 @app.get("/repeater/location", response_model=Repeater, tags=['repeater'])
 async def repeater_location(city: str, country: str, distance: Optional[int] = 30):
-    tg = {"dmr_id": 24006, "ts": 1}
+    tg = {"tg_id": 24006, "ts": 1}
     response = {
         "dmr_id": 24060811,
         "tx": 436600000,
@@ -49,7 +49,7 @@ async def repeater_location(city: str, country: str, distance: Optional[int] = 3
 
 @app.get("/hotspot", response_model=Repeater, description="Retrieve hotspots based on callsign", tags=["hotspot"])
 async def hotspot(callsign: str):
-    tg = {"dmr_id": 24006, "ts": 1}
+    tg = {"tg_id": 24006, "ts": 1}
     response = {
         "dmr_id": 24060811,
         "tx": 436600000,
