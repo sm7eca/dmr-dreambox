@@ -374,6 +374,9 @@ void setup() {
   Serial.println(dmrSettings.wifisettings[2].passwd);
   wifiConnect();                                //Connect to WiFi
   WiFisetTime();
+  EIMreadStatus();
+  EIMreadRepeaters();
+  EIMreadHotspots();
   DMRDebug = false;                            //tracing on Serial monitor
   NXDebug = false;
   //--------------------------------------------initiation - will be maintained on NX setup page
