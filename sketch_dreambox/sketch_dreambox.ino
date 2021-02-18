@@ -1,5 +1,5 @@
 //  --
-char SoftwareVersion[21] = "SM7ECA-210210-2L";
+char SoftwareVersion[21] = "SM7ECA-210218-2L";
 #include <Arduino.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
@@ -258,6 +258,7 @@ typedef struct
   uint8_t   msg[60];    // message max len 60
   uint8_t   tail;       // trailing character
 } db_SMSget_info;
+
 //-------------------------------------------------------------- Channel item struct - future use
 typedef struct {        //all our data of each channel in EEPROM
   uint8_t   chnr;
@@ -271,6 +272,11 @@ typedef struct {        //all our data of each channel in EEPROM
   //so you only have 11 chars
 } ChanItem ;
 ChanItem curChanItem;
+
+DmrSettingsS dmrSettings;
+WifiSettingS  WifiAp;
+
+void   NXinitDisplay();
 
 void beep(bool bp)
 //---------------------------------------------------------------- beep
@@ -306,16 +312,15 @@ boolean calculateFreq(long int chan)
   }
   return false;
 }
-  void   NXinitDisplay();
+
 //************************************************************************* start setup
 //*************************************************************************************
 
-DmrSettingsS dmrSettings;
-WifiSettingS  WifiAp;
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(serial_speed);                   //Serial monitor
-  Serial1.begin(9600, SERIAL_8N1, RXD1, TXD1);  //Nextion Display
+  Serial1.begin(57600, SERIAL_8N1, RXD1, TXD1);  //Nextion Display
   Serial2.begin(57600, SERIAL_8N1, RXD2, TXD2); //DMR module
   Serial2.setRxBufferSize(264);                 //We need at least 177 bytes for 0x24
   pinMode(14, OUTPUT);                          //LED not used
@@ -335,48 +340,48 @@ void setup() {
   else
   {
     dmrSettings.version = 0x1;
- //   dmrSettings.wifisettings[][2]= {{"jullen11", "19nittionio"},
- //                                   {"malmoe99", "Nitton99"},
- //                                   {"Arnes iPhone", "9x8z0utpnp5md"},
- //                                   {"",""}};
-    dmrSettings.audioLevel =8;          //  1-9; default = 8
-    dmrSettings.micLevel=7;             //  0-15, mic gain setting
-    strcpy (dmrSettings.callSign,"SM7ECA");     // callsign, max 12 chars
-    dmrSettings.localID=2400530;        //   DMRID
-    dmrSettings.chnr=2;                 // 
-    dmrSettings.TG=2406;                //  current talk group
-    dmrSettings.ts_scan=false;          //
-    for (int x=0;x<33;x++)
+    //   dmrSettings.wifisettings[][2]= {{"jullen11", "19nittionio"},
+    //                                   {"malmoe99", "Nitton99"},
+    //                                   {"Arnes iPhone", "9x8z0utpnp5md"},
+    //                                   {"",""}};
+    dmrSettings.audioLevel = 8;         //  1-9; default = 8
+    dmrSettings.micLevel = 7;           //  0-15, mic gain setting
+    strcpy (dmrSettings.callSign, "SM7ECA");    // callsign, max 12 chars
+    dmrSettings.localID = 2400530;      //   DMRID
+    dmrSettings.chnr = 2;               //
+    dmrSettings.TG = 2406;              //  current talk group
+    dmrSettings.ts_scan = false;        //
+    for (int x = 0; x < 33; x++)
     {
-      dmrSettings.rxTGStatus[x]=rxTGStatus[x] ;
-      dmrSettings.rxTalkGroup[x]=rxTalkGroup[x];
-    } 
+      dmrSettings.rxTGStatus[x] = rxTGStatus[x] ;
+      dmrSettings.rxTalkGroup[x] = rxTalkGroup[x];
+    }
   }
-//  strcpy(WifiAp.ssid,"malmoe99");
-//  strcpy(WifiAp.passwd,"Nitton99");
-//  settingsAddWifiAp(&dmrSettings, &WifiAp, 0);
-//  strcpy(WifiAp.ssid,"jullen11");
-//  strcpy(WifiAp.passwd,"19nittionio");
-//  settingsAddWifiAp(&dmrSettings, &WifiAp, 1);
-//  strcpy(WifiAp.ssid,"Arnes iPhone");
-//  strcpy(WifiAp.passwd,"9x8z0utpnp5md");
-//  settingsAddWifiAp(&dmrSettings, &WifiAp, 2);
+  //  strcpy(WifiAp.ssid,"malmoe99");
+  //  strcpy(WifiAp.passwd,"Nitton99");
+  //  settingsAddWifiAp(&dmrSettings, &WifiAp, 0);
+  //  strcpy(WifiAp.ssid,"jullen11");
+  //  strcpy(WifiAp.passwd,"19nittionio");
+  //  settingsAddWifiAp(&dmrSettings, &WifiAp, 1);
+  //  strcpy(WifiAp.ssid,"Arnes iPhone");
+  //  strcpy(WifiAp.passwd,"9x8z0utpnp5md");
+  //  settingsAddWifiAp(&dmrSettings, &WifiAp, 2);
   Serial.print(dmrSettings.wifisettings[0].ssid);
   Serial.println(dmrSettings.wifisettings[0].passwd);
   Serial.print(dmrSettings.wifisettings[1].ssid);
   Serial.println(dmrSettings.wifisettings[1].passwd);
   Serial.print(dmrSettings.wifisettings[2].ssid);
-  Serial.println(dmrSettings.wifisettings[2].passwd); 
+  Serial.println(dmrSettings.wifisettings[2].passwd);
   wifiConnect();                                //Connect to WiFi
   WiFisetTime();
   DMRDebug = false;                            //tracing on Serial monitor
   NXDebug = false;
   //--------------------------------------------initiation - will be maintained on NX setup page
-//  strcpy(mySettings.callSign, "SM7ECA");
-//  mySettings.localID = 2400530;
-//  mySettings.chnr = 2;
-//  mySettings.TG = 2406;
-//  mySettings.ts_scan = false;
+  //  strcpy(mySettings.callSign, "SM7ECA");
+  //  mySettings.localID = 2400530;
+  //  mySettings.chnr = 2;
+  //  mySettings.TG = 2406;
+  //  mySettings.ts_scan = false;
   audioVolume = dmrSettings.audioLevel;
   micVolume = dmrSettings.micLevel;
   curChanItem.chnr = dmrSettings.chnr;

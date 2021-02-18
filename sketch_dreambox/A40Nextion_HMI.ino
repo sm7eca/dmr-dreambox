@@ -4,8 +4,8 @@ void NXinitDisplay()
 //----------------------------------------------------- NXinitDisplay
 //    start Nextion Screen
 {
-    Serial1.print("page DMRlogga");   //page 3
-    NXend(2);
+  Serial1.print("page DMRlogga");   //page 3
+  NXend(2);
 }
 //========================================================================== page 0
 void NX_P0_DisplayMainPage()
@@ -98,7 +98,7 @@ void  NX_P0_DisplayCurrentTS()
 {
   Serial1.print("main.n2.val=");
   Serial1.print(digData.InboundSlot + 1);
-  NXend(15); 
+  NXend(15);
 }
 void  NX_P0_DisplayTransmit(boolean on)
 //----------------------------------------------------------- DisplayTransmit
@@ -221,8 +221,8 @@ void NX_P0_DisplayReceive(boolean rec_on, byte calltype, uint32_t TGId)
     //    NXend(30);
     Serial1.print("main.t7.txt=\"     \"");
     NXend(31);
- //   Serial1.print("main.t8.txt=\"     \"");
- //   NXend(31);
+    //   Serial1.print("main.t8.txt=\"     \"");
+    //   NXend(31);
   }
 }
 void NX_P0_updateRSSI(uint8_t rssi)
@@ -239,7 +239,7 @@ void NX_P0_showVol()
 
 {
   Serial1.print("main.j0.val="); // Changing the value of progress bar
-  int volproc = (100 * (audioVolume-1)) / (maxAudioVolume-1);
+  int volproc = (100 * (audioVolume - 1)) / (maxAudioVolume - 1);
   Serial1.print(volproc); // show set volume level
   NXend(22);
 }
@@ -417,7 +417,7 @@ void NX_P5_buttonHandler()
     {
       dmrSettings.chnr = NXp4Ch[p4_selectedRow].chnr;
       dmrSettings.TG = NXp5repTG[NXbuff[2]].TG;
-      settingsWrite(&dmrSettings);     
+      settingsWrite(&dmrSettings);
       Serial1.print("page 9");
     }
     NXend(55);
@@ -494,7 +494,7 @@ void NX_P9_displaySSID()
   NXend(900);
   Serial1.print("setup.t12.txt=\"");
   Serial1.print(dmrSettings.wifisettings[0].passwd);
-  Serial1.print("\"");  
+  Serial1.print("\"");
   NXend(910);
   Serial1.print("setup.t13.txt=\"");
   Serial1.print(dmrSettings.wifisettings[1].ssid);
@@ -502,16 +502,16 @@ void NX_P9_displaySSID()
   NXend(901);
   Serial1.print("setup.t14.txt=\"");
   Serial1.print(dmrSettings.wifisettings[1].passwd);
-  Serial1.print("\"");  
-  NXend(911);  
+  Serial1.print("\"");
+  NXend(911);
   Serial1.print("setup.t15.txt=\"");
   Serial1.print(dmrSettings.wifisettings[2].ssid);
   Serial1.print("\"");
   NXend(902);
   Serial1.print("setup.t16.txt=\"");
   Serial1.print(dmrSettings.wifisettings[2].passwd);
-  Serial1.print("\"");  
-  NXend(912);  
+  Serial1.print("\"");
+  NXend(912);
 }
 void NX_P9_set_callsign_id()
 {
@@ -540,19 +540,19 @@ void NX_P9_displayVersion()
 //
 // Display software version from current code module
 // Query DMR module version and display on oled, last line (unused for now)
-{  
-    Serial1.print("t6.txt=\"");
-    Serial1.print(SoftwareVersion);
-    Serial1.print("\"");
-    NXend(94);
+{
+  Serial1.print("t6.txt=\"");
+  Serial1.print(SoftwareVersion);
+  Serial1.print("\"");
+  NXend(94);
   if (DMRgetVersion())
   {
-    char ModuleVersion[19]="                  ";
+    char ModuleVersion[19] = "                  ";
     for (int x = 8; x < 26; x++)
     {
       ModuleVersion[x - 8] = char(buff[x]);
     }
-//    ModuleVersion[18] = 0x0;
+    //    ModuleVersion[18] = 0x0;
     Serial1.print("t7.txt=\"");
     Serial1.print(ModuleVersion);
     Serial1.print("\"");
@@ -564,7 +564,7 @@ void NX_P9_showVol()
 
 {
   Serial1.print("setup.j0.val="); // Changing the value of progress bar
-  int volproc = (100 * (dmrSettings.audioLevel-1)) / (maxAudioVolume-1);
+  int volproc = (100 * (dmrSettings.audioLevel - 1)) / (maxAudioVolume - 1);
   Serial1.print(volproc); // show set volume level
   NXend(96);
 }
@@ -580,59 +580,59 @@ void NX_P9_showMicVol()
 void NX_P9_getCallsign()
 //------------------------------------------------------NX_P9_getCallsign
 {
-  for (int x=0;x<10;x++)
+  for (int x = 0; x < 10; x++)
   {
-    if (NXbuff[x+3]==0xFF)
+    if (NXbuff[x + 3] == 0xFF)
     {
-      dmrSettings.callSign[x]=0x00;
+      dmrSettings.callSign[x] = 0x00;
       break;
     }
-    if (NXbuff[x+3]!=0x20)
+    if (NXbuff[x + 3] != 0x20)
     {
-      dmrSettings.callSign[x]=NXbuff[x+3];
+      dmrSettings.callSign[x] = NXbuff[x + 3];
     }
   }
   settingsWrite(&dmrSettings);
 }
 void NX_P9_getDMRid()
 //------------------------------------------------------NX_P9_getDMRid
-{   
-    dmrSettings.localID =  (uint32_t)NXbuff[5] << 16 | (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
-    settingsWrite(&dmrSettings); 
+{
+  dmrSettings.localID =  (uint32_t)NXbuff[5] << 16 | (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
+  settingsWrite(&dmrSettings);
 }
 void  NX_P9_saveSSID(int indx)
 //------------------------------------------------------NX_P9_saveSSID
 {
   char tmp[16];
-  for (int x=0;x<16;x++)
+  for (int x = 0; x < 16; x++)
   {
-    if (NXbuff[x+3]==0xFF)
+    if (NXbuff[x + 3] == 0xFF)
     {
-      tmp[x]=0x00;
+      tmp[x] = 0x00;
       break;
     }
-    tmp[x]=NXbuff[x+3];
+    tmp[x] = NXbuff[x + 3];
   }
-  strcpy(WifiAp.passwd,dmrSettings.wifisettings[indx].passwd);
-  strcpy(WifiAp.ssid,tmp);
+  strcpy(WifiAp.passwd, dmrSettings.wifisettings[indx].passwd);
+  strcpy(WifiAp.ssid, tmp);
   settingsAddWifiAp(&dmrSettings, &WifiAp, indx);
 }
-  
+
 void  NX_P9_savePasswd(int indx)
 //------------------------------------------------------NX_P9_savePasswd
 {
   char tmp[16];
-  for (int x=0;x<16;x++)
+  for (int x = 0; x < 16; x++)
   {
-    if (NXbuff[x+3]==0xFF)
+    if (NXbuff[x + 3] == 0xFF)
     {
-      tmp[x]=0x00;
+      tmp[x] = 0x00;
       break;
     }
-    tmp[x]=NXbuff[x+3];
+    tmp[x] = NXbuff[x + 3];
   }
-  strcpy(WifiAp.ssid,dmrSettings.wifisettings[indx].ssid);
-  strcpy(WifiAp.passwd,tmp);
+  strcpy(WifiAp.ssid, dmrSettings.wifisettings[indx].ssid);
+  strcpy(WifiAp.passwd, tmp);
   settingsAddWifiAp(&dmrSettings, &WifiAp, indx);
 }
 //========================================================================== page 10
@@ -701,40 +701,40 @@ void NX_txtfield_touched()
           break;
       }
       break;
-          case 0x09:
-            switch (NXbuff[2])
-            {
-              case 0x8:
-                NX_P9_getCallsign();
-                break;
-              case 0x9:
-                NX_P9_getDMRid();
-                break;
-              case 0x11:
-                NX_P9_saveSSID(0);
-                break;
-              case 0x12:
-                NX_P9_savePasswd(0);
-                break;
-              case 0x13:
-                NX_P9_saveSSID(1);
-                break;
-              case 0x14:
-                NX_P9_savePasswd(1);
-                break;
-              case 0x15:
-                NX_P9_saveSSID(2);
-                break;
-              case 0x16:
-                NX_P9_savePasswd(2);
-                break;
-              case 0x18:
-                NX_P9_saveSSID(3);
-                break;
-              case 0x19:
-                NX_P9_savePasswd(3);
-                break;
-            }
+    case 0x09:
+      switch (NXbuff[2])
+      {
+        case 0x8:
+          NX_P9_getCallsign();
+          break;
+        case 0x9:
+          NX_P9_getDMRid();
+          break;
+        case 0x11:
+          NX_P9_saveSSID(0);
+          break;
+        case 0x12:
+          NX_P9_savePasswd(0);
+          break;
+        case 0x13:
+          NX_P9_saveSSID(1);
+          break;
+        case 0x14:
+          NX_P9_savePasswd(1);
+          break;
+        case 0x15:
+          NX_P9_saveSSID(2);
+          break;
+        case 0x16:
+          NX_P9_savePasswd(2);
+          break;
+        case 0x18:
+          NX_P9_saveSSID(3);
+          break;
+        case 0x19:
+          NX_P9_savePasswd(3);
+          break;
+      }
   }
 }
 //========================================================================== field or button touch
@@ -962,17 +962,17 @@ void NX_button_pressed()
 void  NX_page_init()
 //----------------------------------------------------- Events based on PP
 {
-//  Serial.print("Page_init ");
-//  Serial.print(NXbuff[1],HEX);
-//  Serial.print(" ");
-//  Serial.print(ESP.getFreeHeap());
-//  Serial.print(" min heap ");
-//  Serial.println(ESP.getMinFreeHeap());
+  //  Serial.print("Page_init ");
+  //  Serial.print(NXbuff[1],HEX);
+  //  Serial.print(" ");
+  //  Serial.print(ESP.getFreeHeap());
+  //  Serial.print(" min heap ");
+  //  Serial.println(ESP.getMinFreeHeap());
 
   switch (NXbuff[1])
   {
     case 0x00:                                      //main page
-//      DMRinitChannel(curChanItem.chnr,curChanItem.TG);
+      //      DMRinitChannel(curChanItem.chnr,curChanItem.TG);
       DMRupdateDigChannel();
       NX_P0_DisplayCurrent();
       break;
@@ -1076,8 +1076,8 @@ void NXhandler()
     if (NXlisten())
     {
       switch (NXbuff[0])
-        //----- 31 PP FF     Numeric field
-        //----- 32 PP FF     TextField
+        //----- 31 PP FF <number>  Numeric field
+        //----- 32 PP FF <text>    TextField
         //----- 33 PP BB AA  Button
         //----- 34 PP        Page
         //         PP = page no
