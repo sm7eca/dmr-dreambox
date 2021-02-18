@@ -3,7 +3,7 @@ from typing import Optional, List
 
 
 class TalkGroup(BaseModel):
-    dmr_id: int
+    tg_id: int
     ts: int
 
 
