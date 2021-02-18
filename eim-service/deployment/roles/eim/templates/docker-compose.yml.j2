@@ -3,7 +3,7 @@ version: "3.7"
 services:
 
   eim-core:
-    image: smangelsen/eim-core:{{ dmr_release_name }}
+    image: {{ eim_docker_core }}
     container_name: eim-core
     hostname: eim-core
     ports:
@@ -19,10 +19,12 @@ services:
       - EIM_DB_NAME
       - EIM_DB_USER
       - EIM_DB_PASSWORD
+      - EIM_GIT_HASH
+      - DMR_RELEASE_NAME
       - "TZ=Europe/Stockholm"
 
   eim-mongodb:
-    image: smangelsen/eim-mongodb:{{ dmr_release_name }}
+    image: {{ eim_docker_db }}
     container_name: eim-mongodb
     hostname: eim-mongodb
     environment:

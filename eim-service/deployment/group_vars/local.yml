@@ -1,0 +1,6 @@
+ansible_connection: local
+become: false
+service_user: "{{ lookup('env', 'USER') }}"
+uri_expected: http://localhost/info
+eim_docker_core: "eim-core:latest"
+eim_docker_db : "eim-mongodb:latest"

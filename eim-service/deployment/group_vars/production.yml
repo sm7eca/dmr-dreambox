@@ -2,3 +2,6 @@ timezone: Europe/Stockholm
 service_user: eim
 systemd_enabled: true
 target_folder: "/opt/{{ service_name }}"
+uri_expected: http://api.dmrdream.com/info
+eim_docker_core: "smangelsen/eim-core:{{ dmr_release_name }}"
+eim_docker_db: "smangelsen/eim-mongodb:{{ dmr_release_name }}"

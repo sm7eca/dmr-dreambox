@@ -156,6 +156,16 @@ ${SOURCEDIR}/.tags: .ctags-files
 
 eim-deploy: .built-eim-deploy
 
+PHONY = eim-deploy-local
+eim-deploy-local:
+	@echo "==> deploy EIM service locally"
+	@docker-compose -f eim-service/docker-compose.yml build
+	@( \
+		cd eim-service/deployment ; \
+		ansible-playbook -i inventory.yml --extra-vars "dmr_release_name=${RELEASE_NAME}" --limit local site.yml; \
+	)
+	pwd
+
 .built-eim-deploy: Makefile ${SOURCES_EIM_SERVICE}
 	@echo "==> deploy EIM service to production"
 	@( \
