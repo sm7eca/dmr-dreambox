@@ -405,6 +405,7 @@ void NX_P5_buttonHandler()
   {
     Serial1.print("TGlist.va0.val=0");
     NXend(54);
+    p5_lastRecord = -1; // ----- reset scroll page
     if (NXbuff[3] == 1)
     {
       curChanItem.chnr = NXp4Ch[p4_selectedRow].chnr;
@@ -422,7 +423,6 @@ void NX_P5_buttonHandler()
       Serial1.print("page 9");
     }
     NXend(55);
-    p5_lastRecord = -1;
   }
 }
 //========================================================================== page 6
@@ -987,6 +987,7 @@ void  NX_page_init()
       NXend(4);
 
     case 0x04:                                      //select repeater
+      p5_lastRecord = -1;
       if (NXbuff[2] == 0x00)
       {
         p4_curPage = 0;
