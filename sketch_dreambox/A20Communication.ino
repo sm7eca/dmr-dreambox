@@ -1,3 +1,4 @@
+
 uint16_t PcCheckSum(uint8_t * buf, int len)
 
 //----------------------------------------------------------- PcCheckSum
@@ -120,6 +121,7 @@ void DMRvoicemessageEnd()
 }
 void DMRsendTo(int len) {
   //--------------------------------------------------------------- DMRsendTo
+#ifdef INC_DMR_CALLS
   uint8_t antsent;
 
   if (DMRDebug)
@@ -155,10 +157,12 @@ void DMRsendTo(int len) {
   {
     Serial.println();
   }
+#endif
 }
 
 boolean DMRreceive() {
   //----------------------------------------------------------------- DMRreceive
+#ifdef INC_DMR_CALLS
   int i = 0;
   int j = 0;
   boolean rcode = false;
@@ -208,6 +212,10 @@ boolean DMRreceive() {
     }
   }
   return rcode;         // return false if not a complete message is captured
+#endif
+#ifndef INC_DMR_CALLS
+  return true;
+#endif
 }
 
 boolean DMRreceiveReply(uint8_t CMD)
@@ -595,7 +603,7 @@ void DMRsetaudioVolume()
   NX_P0_showVol();
 }
 
-void setMicVolume(byte micVolume)
+void DMRsetMicVolume(byte micVolume)
 {
   DMRTransmit(micVolume, SET_MIC_GAIN);
 }

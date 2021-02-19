@@ -69,7 +69,7 @@ void EIMreadRepeaters()
         int max_ts = doc["max_ts"]; // 1
         const char* name = doc["name"]; // "SQ7JSK"
         const char* location = doc["location"]; // "Falkenberg"
-        int tg_0_dmr_id = doc["tg"][0]["dmr_id"]; // 24006
+        int tg_0_tg_id = doc["tg"][0]["tg_id"]; // 24006
         int tg_0_ts = doc["tg"][0]["ts"]; // 1
         Serial.println(dmr_id);
         Serial.println(tx);
@@ -79,7 +79,7 @@ void EIMreadRepeaters()
         Serial.println(max_ts);
         Serial.println(name);
         Serial.println(location);
-        Serial.println(tg_0_dmr_id);
+        Serial.println(tg_0_tg_id);
         Serial.println(tg_0_ts);
       }
     }
@@ -117,7 +117,7 @@ void EIMreadHotspots()
         int max_ts = doc["max_ts"]; // 1
         const char* name = doc["name"]; // "SQ7JSK"
         const char* location = doc["location"]; // "Falkenberg"
-        int tg_0_dmr_id = doc["tg"][0]["dmr_id"]; // 24006
+        int tg_0_tg_id = doc["tg"][0]["tg_id"]; // 24006
         int tg_0_ts = doc["tg"][0]["ts"]; // 1
         Serial.println(dmr_id);
         Serial.println(tx);
@@ -127,7 +127,7 @@ void EIMreadHotspots()
         Serial.println(max_ts);
         Serial.println(name);
         Serial.println(location);
-        Serial.println(tg_0_dmr_id);
+        Serial.println(tg_0_tg_id);
         Serial.println(tg_0_ts);
       }
     }

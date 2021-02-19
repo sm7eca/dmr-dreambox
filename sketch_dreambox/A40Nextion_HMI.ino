@@ -1,4 +1,5 @@
 //========================================================================== startup
+void NXend(int nr);
 
 void NXinitDisplay()
 //----------------------------------------------------- NXinitDisplay
@@ -541,10 +542,12 @@ void NX_P9_displayVersion()
 // Display software version from current code module
 // Query DMR module version and display on oled, last line (unused for now)
 {
+
   Serial1.print("t6.txt=\"");
   Serial1.print(SoftwareVersion);
   Serial1.print("\"");
   NXend(94);
+#ifdef INC_DMR_CALLS
   if (DMRgetVersion())
   {
     char ModuleVersion[19] = "                  ";
@@ -558,6 +561,7 @@ void NX_P9_displayVersion()
     Serial1.print("\"");
     NXend(95);
   }
+#endif
 }
 void NX_P9_showVol()
 //----------------------------------------------------- NXshowVol
@@ -897,7 +901,7 @@ void NX_button_pressed()
           dmrSettings.micLevel++;
           NX_P9_showMicVol();
           micVolume = dmrSettings.micLevel;
-          setMicVolume(micVolume);
+          DMRsetMicVolume(micVolume);
           settingsWrite(&dmrSettings);
           break;
         case 0x03:
@@ -908,7 +912,7 @@ void NX_button_pressed()
           dmrSettings.micLevel--;
           NX_P9_showMicVol();
           micVolume = dmrSettings.micLevel;
-          setMicVolume(micVolume);
+          DMRsetMicVolume(micVolume);
           settingsWrite(&dmrSettings);
           break;
       }

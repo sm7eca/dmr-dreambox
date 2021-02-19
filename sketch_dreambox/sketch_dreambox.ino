@@ -1,10 +1,11 @@
 //  --
-char SoftwareVersion[21] = "SM7ECA-210305-2X";
+char SoftwareVersion[21] = "SM7ECA-210219-3A";
 #include <Arduino.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include "Settings.h"
+//#define INC_DMR_CALLS
 
 //----------------------------------------- DMR MODULE COMMANDS
 //
@@ -277,6 +278,13 @@ DmrSettingsS dmrSettings;
 WifiSettingS  WifiAp;
 
 void   NXinitDisplay();
+boolean  wifiConnect();
+void WiFisetTime();
+void  EIMreadStatus();
+void  EIMreadRepeaters();
+void  EIMreadHotspots();
+void  NXhandler();
+void  wifiGetDMRID();
 
 void beep(bool bp)
 //---------------------------------------------------------------- beep
@@ -321,8 +329,10 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(serial_speed);                   //Serial monitor
   Serial1.begin(57600, SERIAL_8N1, RXD1, TXD1);  //Nextion Display
+#ifdef INC_DMR_CALLS
   Serial2.begin(57600, SERIAL_8N1, RXD2, TXD2); //DMR module
   Serial2.setRxBufferSize(264);                 //We need at least 177 bytes for 0x24
+#endif
   pinMode(14, OUTPUT);                          //LED not used
   beep(true);                                   //set LED on
   while (!Serial)
@@ -330,7 +340,7 @@ void setup() {
     //  ; // wait for serial port to connect. Needed for native USB port only
   }
   Serial.println("Startar");
-  NXinitDisplay();                                         // Show the Nextion main page (0)
+  NXinitDisplay();                                         // Show the DMR page
   settingsInit();
   bool initiated = settingsInitiated();
   if (initiated) {
@@ -389,12 +399,13 @@ void setup() {
   micVolume = dmrSettings.micLevel;
   curChanItem.chnr = dmrSettings.chnr;
   curChanItem.TG = dmrSettings.TG;
-
+#ifdef INC_DMR_CALLS
   while (not DMRTransmit(FUNC_ENABLE, QUERY_INIT_FINISHED)) // Check - DMR Module running?
   {
     delay(1000);
   }
   //NXdisplayVersion();
+#endif
   DMRinitChannel(curChanItem.chnr, curChanItem.TG);        // Setup initial DMR digital channel
   DMRTransmit(FUNC_ENABLE, GET_DIGITAL_CHANNEL);           // Verify digital channel set
   NX_P9_set_callsign_id();
@@ -439,16 +450,19 @@ void loop()
     bSMSmessageReceived = false;
     UnitState = SMS_REC_STATE;
   }
+  #ifdef INC_DMR_CALLS
   //------------------------------- take care of message from DMR
   if (Serial2.available() != 0)
   {
     DMRhandler();
   }
+  #endif
   //-------------------------------- take care of message from Nextion
   if (Serial1.available() != 0)
   {
     NXhandler();
   }
+ #ifdef INC_DMR_CALLS
   //------------------------------- state machine handling certain situations
   switch (UnitState)
   {
@@ -462,5 +476,6 @@ void loop()
       do_RecDMR();
       break;
   }
+#endif
 }
 //************************************************************************** end main loop
