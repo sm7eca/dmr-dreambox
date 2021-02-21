@@ -5,7 +5,7 @@ char SoftwareVersion[21] = "SM7ECA-210219-3A";
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include "Settings.h"
-//#define INC_DMR_CALLS
+#define INC_DMR_CALLS
 
 //----------------------------------------- DMR MODULE COMMANDS
 //
@@ -102,9 +102,9 @@ static unsigned long lastInterruptTime = 0, lastInterruptRSSITime = 0;
 boolean btnPTT = false;
 boolean btnChangeCh = false;
 
-//------------------------------------------------------------ Calculated freq from chan no
-long int  tx_freq, rx_freq;
-
+////------------------------------------------------------------ Calculated freq from chan no
+//long int  tx_freq, rx_freq;
+//
 // ----------------------------------------------------------- Scanning of time slots in IDLE_STATE
 boolean   ts_scan = true;
 uint32_t  tsSwitchLast;
@@ -301,25 +301,25 @@ void beep(bool bp)
   }
 }
 
-boolean calculateFreq(long int chan)
-//-------------------------------------------------------------- calculate freq
-// calculate frequency pairs fråm Channel RUxxx and Uxxx
-//
-{
-  if (chan > 360 and chan < 399)      // repeater channels RUxxx
-  {
-    rx_freq = 430000000 + 12500 * chan;
-    tx_freq = rx_freq - 2000000;
-    return true;
-  }
-  if (chan > 260 and chan < 303)      // simplex channels Uxxx
-  {
-    rx_freq = 430000000 + 12500 * chan;
-    tx_freq = rx_freq;
-    return true;
-  }
-  return false;
-}
+//boolean calculateFreq(long int chan)
+////-------------------------------------------------------------- calculate freq
+//// calculate frequency pairs fråm Channel RUxxx and Uxxx
+////
+//{
+//  if (chan > 360 and chan < 399)      // repeater channels RUxxx
+//  {
+//    rx_freq = 430000000 + 12500 * chan;
+//    tx_freq = rx_freq - 2000000;
+//    return true;
+//  }
+//  if (chan > 260 and chan < 303)      // simplex channels Uxxx
+//  {
+//    rx_freq = 430000000 + 12500 * chan;
+//    tx_freq = rx_freq;
+//    return true;
+//  }
+//  return false;
+//}
 
 //************************************************************************* start setup
 //*************************************************************************************

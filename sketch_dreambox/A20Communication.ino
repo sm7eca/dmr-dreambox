@@ -703,8 +703,8 @@ void DMRinitChannel(uint8_t chnr, uint32_t TG)
     Serial.print("DBgetChannel fail");
     return;
   }
-  calculateFreq(curdigCh.IARUchannel);
-  DMRsetDigChannel(rx_freq, tx_freq, currepTG.TG,
+  //calculateFreq(curdigCh.IARUchannel);
+  DMRsetDigChannel(curdigCh.rx, curdigCh.tx, currepTG.TG,
                    curTG.calltype, curdigCh.cc, currepTG.TS, 0, 2);
 }
 

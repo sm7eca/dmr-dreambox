@@ -28,7 +28,7 @@ void NX_P0_DisplayCurrent()
   String fT = tempS.substring(0, 3) + "." + tempS.substring(3, 8);
   String fullName = String(curdigCh.Name) + " " + String(curdigCh.Location);
   fullName.trim();
-  String firstBlock = " RU" + String(curdigCh.IARUchannel);
+  String firstBlock = String(dmrSettings.localID);
   Serial1.print("main.t0.txt=\"");
   Serial1.print(firstBlock);
   Serial1.print("\"");
@@ -134,7 +134,7 @@ void  NX_P0_DisplayTransmit(boolean on)
     Serial1.print(tempS);
     Serial1.print("\"");
     NXend(20);
-    Serial1.print("main.t7.txt=\"    \""); //4 spaces to erase the "on"
+    Serial1.print("main.t7.txt=\"idle\""); // to erase the "on"
     NXend(21);
     rxS = String(digData.rx_freq);
     Serial1.print("main.t6.txt=\"");
@@ -220,7 +220,7 @@ void NX_P0_DisplayReceive(boolean rec_on, byte calltype, uint32_t TGId)
   {
     //    Serial1.print("main.t10.txt=\"Last\""); Ska kanske vara byte av färg istället?
     //    NXend(30);
-    Serial1.print("main.t7.txt=\"     \"");
+    Serial1.print("main.t7.txt=\"idle\"");
     NXend(31);
     //   Serial1.print("main.t8.txt=\"     \"");
     //   NXend(31);
@@ -527,8 +527,10 @@ void NX_P9_set_callsign_id()
 void NX_P9_set_channelinfo()
 //---------------------------------------------------------- get channelinfo from dmrSettings
 {
+  String fullName = String(digChlist[dmrSettings.chnr].Name) + " " + String(digChlist[dmrSettings.chnr].Location);
+  fullName.trim();
   Serial1.print("setup.t2.txt=\"");
-  Serial1.print(digChlist[dmrSettings.chnr].Name);
+  Serial1.print(fullName);
   Serial1.print("\"");
   NXend(92);
   Serial1.print("setup.n2.val=");
