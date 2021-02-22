@@ -139,8 +139,10 @@ eim-release: .pushed-docker
 	@docker-compose -f eim-service/docker-compose.yml build
 	@docker tag eim-core:latest smangelsen/eim-core:${RELEASE_NAME}
 	@docker tag eim-mongodb:latest smangelsen/eim-mongodb:${RELEASE_NAME}
+	@docker tag eim-harvester:latest smangelsen/eim-harvester:${RELEASE_NAME}
 	@docker push smangelsen/eim-core:${RELEASE_NAME}
 	@docker push smangelsen/eim-mongodb:${RELEASE_NAME}
+	@docker push smangelsen/eim-harvester:${RELEASE_NAME}
 	@touch $@
 
 ctags: .built-ctags
