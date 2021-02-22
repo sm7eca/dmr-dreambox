@@ -25,7 +25,7 @@ async def repeater_master(master_id: int, limit: int = 0, skip: int = 0):
     if repeaters:
         logger.debug(f"received {len(repeaters)} repeater from DB")
 
-    return repeaters
+    return repeaters[:10]
 
 
 @router.get("/location", response_model=Repeater)

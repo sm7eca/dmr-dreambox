@@ -24,4 +24,4 @@ async def hotspot(callsign: str):
     if hotspots:
         logger.debug(f"Received {len(hotspots)} hotspots for callsign {callsign} from DB")
 
-    return hotspots
+    return hotspots[:10]
