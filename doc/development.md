@@ -49,6 +49,15 @@ make release
 - Attach both ZIP file as well as sha256sum file to the release
 - Done!
 
+## Brandmeister API
+
+- risk for being blocked when asking the API too often
+- we maybe have to apply for an account so that we're doing authenticated requests
+- the database is huge and contains many repeater/hotspots that haven't been
+  updated since quite some time ago.
+- thus we made the decision to keep all entries and only return those that have
+  been updated during the last 24 hours
+
 # References
 
 * [How to write a good commit message](https://chris.beams.io/posts/git-commit/)
