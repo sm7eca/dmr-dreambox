@@ -7,13 +7,13 @@ import pathlib
 
 
 router = APIRouter(
-    prefix="/info",
+    prefix="/system",
     tags=["system"],
     responses={404: {"description": "Not found"}}
 )
 
 
-@router.get("/", response_model=SysInfo)
+@router.get("/info", response_model=SysInfo)
 async def get_sys_info():
     fname = pathlib.Path('/proc/1/cmdline')
     uptime = None

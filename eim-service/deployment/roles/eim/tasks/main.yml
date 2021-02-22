@@ -82,13 +82,13 @@
     cmd: docker-compose -f /tmp/eim/docker-compose.yml up -d --build
   when: inventory_hostname in groups.local
 
-
 - name: "Validate connectivity to {{ uri_expected }}"
   uri:
     url: "{{ uri_expected }}"
     method: GET
-    return_content: yes
   register: uri_data
+  tags:
+    - sebman
   until: uri_data.status == 200
   retries: 10
   delay: 2
