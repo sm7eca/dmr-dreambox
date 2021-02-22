@@ -53,7 +53,7 @@ class MongoDB:
         try:
             client.admin.command("ismaster")
         except ConnectionFailure as ex:
-            sys.exit(f"Failed to connect to MongoDB at {host}:{port}")
+            sys.exit(f"Failed to connect to MongoDB at {host}:{port} => {ex}")
 
         logger.info(f"successfully connected to MongoDB at {host}:{port}")
 
@@ -71,22 +71,28 @@ class MongoDB:
         """
 
         col = self._db.get_collection("repeater")
-        timestamp_now = datetime.now().timestamp()
+        timestamp_24_hours_ago = int(datetime.now().timestamp()) - 86400
 
-        # try to find all repeater (status == 3) for a given master
+        # try to find all repeater (status == 3) for a given master, updated 24 hours ago
         query = {
             "lastKnownMaster": str(master_id),
-            "status": "3"
+            "status": "3",
+            "last_updated_ts": {"$gt": timestamp_24_hours_ago}
         }
 
-        docs = col.find(filter=query, limit=0)
+        docs = col.find(filter=query, limit=0).sort("callsign")
         logger.debug(f"received {docs.count()} items from DB")
 
         list_repeater = []
 
         for record in docs:
-            if "last_updated_ts" not in record.keys():
-                logger.critical("==> item do not have TS")
             logger.debug(f"item received: {repr(record)}")
 
         return list_repeater
+
+    def get_hotspot(self, call_sign: str, limit: int = 0, skip: int = 0) -> Optional[List[Repeater]]:
+        """
+        Return a list of Repeater for a given callsign
+            - filter for status == 4, updated < 1 day and call sign
+        """
+        pass

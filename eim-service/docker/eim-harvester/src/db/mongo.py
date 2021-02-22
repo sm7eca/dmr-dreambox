@@ -41,6 +41,10 @@ class MongoDB:
 
         logger.debug(f"MDB: prepare {host}:{port}")
         client = MongoClient(uri)
+        try:
+            client.admin.command("ismaster")
+        except ConnectionFailure as ex:
+            raise MongoDbError(f"Failed to connect to MongoDB at {host}:{port} => {ex}")
         logger.info(f"successfully connected to MongoDB at {host}:{port}")
 
         eim = client.get_database("eim")
@@ -74,7 +78,6 @@ class MongoDB:
             logger.debug("created index \"id_status_updated\"")
         else:
             logger.debug("indexes already existed, nothing to do")
-
 
     @staticmethod
     def _str_to_timestamp(time_str: str) -> float:
