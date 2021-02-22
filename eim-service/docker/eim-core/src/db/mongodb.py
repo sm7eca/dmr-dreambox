@@ -85,6 +85,8 @@ class MongoDB:
         list_repeater = []
 
         for record in docs:
+            if "last_updated_ts" not in record.keys():
+                logger.critical("==> item do not have TS")
             logger.debug(f"item received: {repr(record)}")
 
         return list_repeater

@@ -9,6 +9,7 @@ from dmr.definitions import Repeater
 from datetime import datetime
 from urllib.parse import quote_plus
 from common.logger import harvester_logger
+from common.time import timestr_to_timestamp
 from typing import List, Optional
 
 
