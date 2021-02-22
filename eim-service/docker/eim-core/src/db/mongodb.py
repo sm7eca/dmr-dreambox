@@ -8,7 +8,7 @@ from pymongo.errors import ConnectionFailure
 
 from common.logger import get_logger
 from common.definitions import Repeater
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from datetime import datetime
 
@@ -61,6 +61,23 @@ class MongoDB:
 
         self._db = Database(client, name=db_name)
 
+    @staticmethod
+    def _translate_db_2_repeater(db_entry: Dict) -> Repeater:
+        tg = [{"tg_id": 0, "ts": 0}]
+        r_object = {
+            "dmr_id": db_entry["repeaterid"],
+            "tx": float(db_entry["tx"]) * 1e6,
+            "rx": float(db_entry["rx"]) * 1e6,
+            "cc": int(db_entry["colorcode"]),
+            "ts": 1,
+            "max_ts": 0,
+            "name": db_entry["callsign"],
+            "location": f"{db_entry['lat']},{db_entry['lng']}"
+        }
+        r = Repeater(**r_object)
+        logger.debug(f"item translated: {repr(r)}")
+        return r
+
     def get_repeater(self, master_id: int, limit: int = 0, skip: int = 0) -> Optional[List[Repeater]]:
         """
         Return a list of Repeater objects for a given master ID.
@@ -86,7 +103,7 @@ class MongoDB:
         list_repeater = []
 
         for record in docs:
-            logger.debug(f"item received: {repr(record)}")
+            list_repeater.append(self._translate_db_2_repeater(record))
 
         return list_repeater
 
