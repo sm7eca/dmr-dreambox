@@ -98,7 +98,7 @@ class MongoDB:
         }
 
         docs = col.find(filter=query, limit=0).sort("callsign")
-        logger.debug(f"received {docs.count()} items from DB")
+        logger.debug(f"received {docs.count()} repeater from DB")
 
         list_repeater = []
 
@@ -112,4 +112,21 @@ class MongoDB:
         Return a list of Repeater for a given callsign
             - filter for status == 4, updated < 1 day and call sign
         """
-        pass
+        logger.debug(f"==> Received hotspot request, callsign: {call_sign}")
+        timestamp_24_hours_ago = int(datetime.now().timestamp()) - 86400
+
+        col = self._db.get_collection("repeater")
+
+        query = {
+            "callsign": call_sign,
+            "status": "4"
+        }
+
+        docs = col.find(filter=query, limit=0).sort("repeaterid")
+        logger.debug(f"received {docs.count()} hotspots from DB")
+        list_hotspots = []
+
+        for record in docs:
+            list_hotspots.append(self._translate_db_2_repeater(record))
+
+        return list_hotspots
