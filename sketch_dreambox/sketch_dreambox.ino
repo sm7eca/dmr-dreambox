@@ -1,11 +1,11 @@
 //  --
-char SoftwareVersion[21] = "SM7ECA-210219-3A";
+char SoftwareVersion[21] = "SM7ECA-210220-3A";
 #include <Arduino.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include "Settings.h"
-#define INC_DMR_CALLS
+//// #define INC_DMR_CALLS
 
 //----------------------------------------- DMR MODULE COMMANDS
 //
@@ -33,7 +33,7 @@ char SoftwareVersion[21] = "SM7ECA-210219-3A";
 #define FUNC_DISABLE                   0x02
 
 // ---------------------------------------------------- Pin definitions
-#define  beepPin    14  //beepPin; OUTPUT, this is is actually A0 but we are to use it
+#define  beepPin    14  //beepPin; OUTPUT, this is is actually A0 but we are to use it 
 //for the beeper as pin 13 was used by SPI in this case
 
 //-------------------------------------------------------------- Main state machine states
@@ -385,8 +385,12 @@ void setup() {
   wifiConnect();                                //Connect to WiFi
   WiFisetTime();
   EIMreadStatus();
-  EIMreadRepeaters();
-  EIMreadHotspots();
+  EIMreadRepeatersMaster(2401, 10, 0);
+  char city[15]="Falkenberg";
+  char  country[15]="Sweden";
+  EIMreadRepeatersDistance(city, country,30, 10, 20);
+  EIMreadHotspots(dmrSettings.callSign);
+ 
   DMRDebug = false;                            //tracing on Serial monitor
   NXDebug = false;
   //--------------------------------------------initiation - will be maintained on NX setup page

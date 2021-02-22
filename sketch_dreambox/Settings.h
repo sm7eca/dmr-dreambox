@@ -17,7 +17,8 @@ typedef struct _TalkGroupS {
 typedef struct _RepeaterS {
   uint8_t     zone;
   uint32_t    dmrId;
-  uint16_t    iaruChannel;        // IARU channel
+  uint32_t    tx;                 // tx freq
+  uint32_t    rx;                 // rx freq
   uint8_t     cc;                 // colour code
   uint8_t     timeSlot;           //
   uint8_t     timeSlotNo;         // number of timeslots
