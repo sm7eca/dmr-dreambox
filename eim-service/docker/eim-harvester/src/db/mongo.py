@@ -44,16 +44,37 @@ class MongoDB:
         logger.info(f"successfully connected to MongoDB at {host}:{port}")
 
         eim = client.get_database("eim")
+        if not eim:
+            raise MongoDbError("Database \"eim\" doesn't exist or no access granted")
 
         if "repeater" not in eim.collection_names():
             r = eim.create_collection("repeater")
-            index = ("repeaterid", DESCENDING)
-            r.create_index([index], unique=True)
-            logger.debug("Collection: repeater created")
+        else:
+            r = eim.repeater
 
-        logger.debug(f"{eim.repeater.index_information()}")
+        self._create_indexes(r)
+        self._db = eim
 
-        self._db = Database(client, name=db_name)
+    @staticmethod
+    def _create_indexes(col: Collection):
+
+        logger.debug(f"list_indexes: {col.list_indexes()}")
+
+        if "id_status_updated" not in col.list_indexes():
+            idx_repeater_id = ("repeaterid", DESCENDING)
+            idx_status = ("status", DESCENDING)
+            idx_updated = ("last_updated_ts", DESCENDING)
+
+            col.create_index(
+                [idx_repeater_id, idx_status, idx_updated],
+                unique=True,
+                background=True,
+                name="id_status_updated"
+            )
+            logger.debug("created index \"id_status_updated\"")
+        else:
+            logger.debug("indexes already existed, nothing to do")
+
 
     @staticmethod
     def _str_to_timestamp(time_str: str) -> float:
