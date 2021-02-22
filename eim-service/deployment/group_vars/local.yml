@@ -6,3 +6,4 @@ eim_docker_core: "eim-core:latest"
 eim_docker_db : "eim-mongodb:latest"
 eim_docker_harvester: "eim-harvester:latest"
 eim_log_level: DEBUG
+eim_harvester_periodicity: 600
