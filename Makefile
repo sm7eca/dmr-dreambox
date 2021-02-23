@@ -3,7 +3,7 @@ all: help
 
 PROJECT_NAME = dmr_dreambox
 SOURCEDIR = sketch_dreambox
-SOURCES_EIM_SERVICE = $(shell find eim-service/ -type f)
+SOURCES_EIM_SERVICE = $(shell find eim-service/ -type f -name "*.py")
 SOURCES_C = $(wildcard ${SOURCEDIR}/*.ino)
 SOURCES_H = $(wildcard ${SOURCEDIR}/*.h)
 ARDUINO_BOARD_FQDN = "esp32:esp32:esp32-DevKitLipo"

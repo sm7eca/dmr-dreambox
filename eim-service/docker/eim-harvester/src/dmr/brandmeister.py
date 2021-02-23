@@ -1,10 +1,8 @@
 
-import os
-import sys
+
 import requests
-import json
 from common.logger import harvester_logger
-from typing import Optional, List
+from typing import List
 from dmr.definitions import Repeater
 
 logger = harvester_logger(__name__)
