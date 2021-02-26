@@ -8,6 +8,7 @@ from pymongo.errors import ConnectionFailure
 
 from common.logger import get_logger
 from common.definitions import Repeater
+from common.tools import compute_end_index
 from typing import List, Optional, Dict
 
 from datetime import datetime
@@ -78,7 +79,7 @@ class MongoDB:
         logger.debug(f"item translated: {repr(r)}")
         return r
 
-    def get_repeater(self, master_id: int, limit: int = 0, skip: int = 0) -> Optional[List[Repeater]]:
+    def get_repeater_by_master(self, master_id: int, limit: int = 0, skip: int = 0) -> Optional[List[Repeater]]:
         """
         Return a list of Repeater objects for a given master ID.
         :param master_id: DMR master ID
@@ -100,11 +101,44 @@ class MongoDB:
         docs = col.find(filter=query, limit=0).sort("callsign")
         logger.debug(f"received {docs.count()} repeater from DB")
 
-        list_repeater = []
+        list_repeater = [self._translate_db_2_repeater(record) for record in docs]
+        return list_repeater
 
-        for record in docs:
-            list_repeater.append(self._translate_db_2_repeater(record))
+    def get_repeater_by_callsign(self, call_sign) -> Optional[List[Repeater]]:
 
+        col = self._db.get_collection("repeater")
+        timestamp_24_hours_ago = int(datetime.now().timestamp()) - 86400
+
+        query = {
+            "status": "3",
+            "callsign": call_sign,
+            "last_updated_ts": {"$gt": timestamp_24_hours_ago}
+        }
+
+        docs = col.find(filter=query, limit=0).sort("callsign")
+        logger.debug(f"received {docs.count()} repeater for callsign={call_sign} from DB")
+
+        list_repeater = [self._translate_db_2_repeater(record) for record in docs]
+
+        return list_repeater
+
+    def get_repeater_by_dmrid(self, dmr_id: int) -> Optional[List[Repeater]]:
+
+        col = self._db.get_collection("repeater")
+        timestamp_24_hours_ago = int(datetime.now().timestamp()) - 86400
+
+        query = {
+            "status": "3",
+            "repeaterid": str(dmr_id),
+            "last_updated_ts": {"$gt": timestamp_24_hours_ago}
+        }
+
+        logger.debug(f"query: {repr(query)}")
+
+        docs = col.find(filter=query, limit=0)
+        logger.debug(f"received {docs.count()} repeater for repeater_id={dmr_id} from DB")
+
+        list_repeater = [self._translate_db_2_repeater(record) for record in docs]
         return list_repeater
 
     def get_hotspot(self, call_sign: str, limit: int = 0, skip: int = 0) -> Optional[List[Repeater]]:

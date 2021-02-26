@@ -8,3 +8,4 @@ sketch_dreambox/.tags
 **/.idea/**/*
 .pushed-*
 **/venv
+__pycache__/
