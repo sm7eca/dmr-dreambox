@@ -64,6 +64,21 @@ class MongoDB:
 
         logger.debug(f"list_indexes: {col.list_indexes()}")
 
+        if "id_callsign_updated" not in col.list_indexes():
+            idx_callsign = ("callsign", DESCENDING)
+            idx_status = ("status", DESCENDING)
+            idx_repeater_id = ("repeaterid", DESCENDING)
+            idx_updated = ("last_updated_ts", DESCENDING)
+
+            col.create_index(
+                [idx_repeater_id, idx_callsign, idx_status, idx_updated],
+                unique=False,
+                background=True,
+                name="id_callsign_updated"
+            )
+
+            logger.debug("created index \"id_callsign_updated\"")
+
         if "id_status_updated" not in col.list_indexes():
             idx_repeater_id = ("repeaterid", DESCENDING)
             idx_status = ("status", DESCENDING)

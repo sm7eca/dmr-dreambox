@@ -1,5 +1,5 @@
 //  --
-char SoftwareVersion[21] = "SM7ECA-210222-2O";
+char SoftwareVersion[21] = "SM7ECA-210222-2P";
 #include <Arduino.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
@@ -32,7 +32,7 @@ char SoftwareVersion[21] = "SM7ECA-210222-2O";
 #define FUNC_DISABLE                   0x02
 
 // ---------------------------------------------------- Pin definitions
-#define  beepPin    14  //beepPin; OUTPUT, this is is actually A0 but we are to use it 
+#define  beepPin    14  //beepPin; OUTPUT, this is is actually A0 but we are to use it
 //for the beeper as pin 13 was used by SPI in this case
 
 //-------------------------------------------------------------- Main state machine states

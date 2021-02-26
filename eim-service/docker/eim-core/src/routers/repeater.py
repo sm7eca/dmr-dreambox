@@ -3,6 +3,7 @@
 from fastapi import APIRouter, HTTPException
 from common.definitions import Repeater, TalkGroup
 from common.logger import get_logger
+from common.tools import compute_end_index
 from db.mongodb import MongoDB, MongoDbError
 from typing import Optional, List
 
@@ -20,12 +21,43 @@ router = APIRouter(
 async def repeater_master(master_id: int, limit: int = 0, skip: int = 0):
 
     db = MongoDB()
-    repeaters = db.get_repeater(master_id=master_id)
+    repeaters = db.get_repeater_by_master(master_id=master_id)
+    length = len(repeaters)
 
     if repeaters:
-        logger.debug(f"received {len(repeaters)} repeater from DB")
+        logger.debug(f"received {length} repeater from DB")
 
-    return repeaters[:10]
+    start, end = compute_end_index(length, skip, limit)
+    return repeaters[start:end]
+
+
+@router.get("/callsign/{callsign}", response_model=List[Repeater])
+async def repeater_master_callsign(call_sign: str, limit: int = 0, skip: int = 0):
+
+    db = MongoDB()
+    repeaters = db.get_repeater_by_callsign(call_sign)
+    length = len(repeaters)
+    if repeaters:
+        logger.debug(f"received {length} repeater from DB")
+
+    start, end = compute_end_index(length, skip, limit)
+
+    return repeaters[start:end]
+
+
+@router.get("/dmr/{dmr_id}", response_model=List[Repeater])
+async def repeater_master_dmrid(dmr_id: int):
+
+    db = MongoDB()
+    repeaters = db.get_repeater_by_dmrid(dmr_id)
+    length = len(repeaters)
+    if repeaters:
+        logger.debug(f"received {length} repeater from DB")
+
+    if length > 1:
+        logger.critical(f"unexpected number of results for DMR_ID: {dmr_id}, expected 0/1")
+
+    return repeaters[0:1]
 
 
 @router.get("/location", response_model=Repeater)
