@@ -30,7 +30,7 @@ help:
 
 esp-binary: venv boards libs ${BUILD_DIR}/${SOURCEDIR}.ino.bin
 
-${BUILD_DIR}/%.bin: Makefile ${SOURCES_C} ${SOURCES_H}
+${BUILD_DIR}/%.bin: venv Makefile ${SOURCES_C} ${SOURCES_H}
 	@echo "==> Compiling binary for ${ARDUINO_BOARD_FQDN}"
 	@test -d ${BUILD_DIR} || mkdir -p ${BUILD_DIR}
 	@( \
