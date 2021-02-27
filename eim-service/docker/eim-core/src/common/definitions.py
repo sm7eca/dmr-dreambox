@@ -19,6 +19,7 @@ class Repeater(BaseModel):
     max_ts: int
     name: str
     location: str
+    city: str
     tg: Optional[List[TalkGroup]]
 
 
@@ -33,6 +34,7 @@ class RepeaterItem(BaseModel):
     cc: int
     name: str
     location: str
+    city: str
 
 
 class SysInfo(BaseModel):
