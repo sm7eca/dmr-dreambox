@@ -83,6 +83,7 @@
   when: inventory_hostname in groups.local
 
 - name: "Validate connectivity to {{ uri_expected }}"
+  delegate_to: localhost
   uri:
     url: "{{ uri_expected }}"
     method: GET

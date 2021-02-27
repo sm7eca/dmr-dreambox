@@ -5,10 +5,10 @@ from urllib.parse import quote_plus
 from pymongo import MongoClient
 from pymongo.database import Database
 from pymongo.errors import ConnectionFailure
+from pymongo.collection import Collection
 
 from common.logger import get_logger
 from common.definitions import Repeater
-from common.tools import compute_end_index
 from typing import List, Optional, Dict
 
 from datetime import datetime
@@ -164,3 +164,18 @@ class MongoDB:
             list_hotspots.append(self._translate_db_2_repeater(record))
 
         return list_hotspots
+
+    def count_docs(self, collection: str) -> int:
+        """
+        Return the number of documents for a given collection
+
+        - throw an exception if collection doesn't exist
+
+        """
+        col: Collection = self._db.get_collection("repeater")
+        if "repeater" not in self._db.list_collection_names():
+            raise MongoDbError(f"no collection {col} found in DB")
+
+        num_docs = col.count_documents(filter={})
+        return num_docs
+
