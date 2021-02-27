@@ -21,6 +21,7 @@ class Repeater(BaseModel):
 
 class SysInfo(BaseModel):
     uptime: str
-    version: str
+    release: str
+    git_commit: str
     maintainer: str
     repeater: int
