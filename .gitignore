@@ -2,10 +2,15 @@ build/*
 .built-*
 Arduino/
 build/
-.venv*/
 sketch_dreambox/.tags
 .ctags-files
 **/.idea/**/*
 .pushed-*
 **/venv
 __pycache__/
+
+# Environments
+.env
+.venv
+env/
+venv/
