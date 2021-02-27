@@ -2,7 +2,8 @@
 Description=Docker cleanup timer
 
 [Timer]
-OnUnitInactiveSec=12h
+OnUnitActiveSec=6h
+OnBootSec=10min
 
 [Install]
 WantedBy=timers.target
