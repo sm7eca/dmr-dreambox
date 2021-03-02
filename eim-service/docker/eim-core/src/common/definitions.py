@@ -8,6 +8,9 @@ class TalkGroup(BaseModel):
 
 
 class Repeater(BaseModel):
+    """
+    Detailed information for a Repeater, including talk groups
+    """
     dmr_id: int
     tx: int
     rx: int
@@ -19,7 +22,23 @@ class Repeater(BaseModel):
     tg: Optional[List[TalkGroup]]
 
 
+class RepeaterItem(BaseModel):
+    """
+    A short version of data stored in DB. Returned DMR ID can be used
+    to fetch more detailed information.
+    """
+    dmr_id: int
+    tx: int
+    rx: int
+    cc: int
+    name: str
+    location: str
+
+
 class SysInfo(BaseModel):
+    """
+    SysInfo describing the installation
+    """
     uptime: str
     release: str
     git_commit: str

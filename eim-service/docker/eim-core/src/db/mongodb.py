@@ -8,7 +8,7 @@ from pymongo.errors import ConnectionFailure
 from pymongo.collection import Collection
 
 from common.logger import get_logger
-from common.definitions import Repeater
+from common.definitions import Repeater, RepeaterItem
 from typing import List, Optional, Dict
 
 from datetime import datetime
@@ -58,13 +58,10 @@ class MongoDB:
 
         logger.info(f"successfully connected to MongoDB at {host}:{port}")
 
-        eim = client.get_database(db_name)
-
         self._db = Database(client, name=db_name)
 
     @staticmethod
     def _translate_db_2_repeater(db_entry: Dict) -> Repeater:
-        tg = [{"tg_id": 0, "ts": 0}]
         r_object = {
             "dmr_id": db_entry["repeaterid"],
             "tx": float(db_entry["tx"]) * 1e6,
@@ -79,12 +76,29 @@ class MongoDB:
         logger.debug(f"item translated: {repr(r)}")
         return r
 
-    def get_repeater_by_master(self, master_id: int, limit: int = 0, skip: int = 0) -> Optional[List[Repeater]]:
+    @staticmethod
+    def _translate_db_2_repeater_item(db_entry: Dict) -> RepeaterItem:
+        """
+        Translate into a shorter Repeater Item, the data can be reused
+        in order to make additional calls retrieving detailed information
+        using the unique DMR ID.
+        """
+        ri_object = {
+            "dmr_id": db_entry["repeaterid"],
+            "tx": float(db_entry["tx"]) * 1e6,
+            "rx": float(db_entry["rx"]) * 1e6,
+            "cc": int(db_entry["colorcode"]),
+            "name": db_entry["callsign"],
+            "location": f"{db_entry['lat']},{db_entry['lng']}"
+        }
+        ri = RepeaterItem(**ri_object)
+        logger.debug(f"RepeaterItem translated: {repr(ri)}")
+        return ri
+
+    def get_repeater_by_master(self, master_id: int) -> Optional[List[RepeaterItem]]:
         """
         Return a list of Repeater objects for a given master ID.
         :param master_id: DMR master ID
-        :param limit: limit number of items returned
-        :param skip:
         :return: List[Repeater]
         """
 
@@ -101,10 +115,10 @@ class MongoDB:
         docs = col.find(filter=query, limit=0).sort("callsign")
         logger.debug(f"received {docs.count()} repeater from DB")
 
-        list_repeater = [self._translate_db_2_repeater(record) for record in docs]
+        list_repeater = [self._translate_db_2_repeater_item(record) for record in docs]
         return list_repeater
 
-    def get_repeater_by_callsign(self, call_sign) -> Optional[List[Repeater]]:
+    def get_repeater_by_callsign(self, call_sign) -> Optional[List[RepeaterItem]]:
 
         col = self._db.get_collection("repeater")
         timestamp_24_hours_ago = int(datetime.now().timestamp()) - 86400
@@ -118,11 +132,17 @@ class MongoDB:
         docs = col.find(filter=query, limit=0).sort("callsign")
         logger.debug(f"received {docs.count()} repeater for callsign={call_sign} from DB")
 
-        list_repeater = [self._translate_db_2_repeater(record) for record in docs]
+        list_repeater = [self._translate_db_2_repeater_item(record) for record in docs]
 
         return list_repeater
 
     def get_repeater_by_dmrid(self, dmr_id: int) -> Optional[List[Repeater]]:
+        """
+        Here we are looking for a detailed list for each repeater, including talk groups.
+
+        The talk groups are fetched using additional request towards the RestAPI and
+        cached in the database
+        """
 
         col = self._db.get_collection("repeater")
         timestamp_24_hours_ago = int(datetime.now().timestamp()) - 86400
@@ -141,7 +161,7 @@ class MongoDB:
         list_repeater = [self._translate_db_2_repeater(record) for record in docs]
         return list_repeater
 
-    def get_hotspot(self, call_sign: str, limit: int = 0, skip: int = 0) -> Optional[List[Repeater]]:
+    def get_hotspot(self, call_sign: str) -> Optional[List[RepeaterItem]]:
         """
         Return a list of Repeater for a given callsign
             - filter for status == 4, updated < 1 day and call sign
@@ -161,7 +181,7 @@ class MongoDB:
         list_hotspots = []
 
         for record in docs:
-            list_hotspots.append(self._translate_db_2_repeater(record))
+            list_hotspots.append(self._translate_db_2_repeater_item(record))
 
         return list_hotspots
 
