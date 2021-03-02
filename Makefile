@@ -14,6 +14,7 @@ RELEASE_VERSION_STRING=$(shell sed -n 's/^.*SoftwareVersion.* *= *//p' sketch_dr
 RELEASE_NAME = ${PROJECT_NAME}_${RELEASE_VERSION_STRING}
 RELEASE_DIR = ${BUILD_DIR}/${RELEASE_NAME}
 GIT_COMMIT_HASH = $(shell git rev-parse HEAD)
+GITHUB_TOKEN = invalid_token
 TIMESTAMP = $(shell date +"%Y%m%d_%H%M%S")
 
 CHANGES := $(shell git diff-index --name-only HEAD -- | wc -l)
@@ -44,6 +45,29 @@ esp-upload: esp-binary
 
 release: ${BUILD_DIR}/${RELEASE_NAME}.zip function-test eim-release release-tag
 	@echo "==> Release DONE, push tags and upload binaries to Github https://github.com/sm7eca/dmr-dreambox/releases"
+
+github-release: github-create-release .built-github-upload-asset
+
+github-create-release: .built-github-create-release
+
+.built-github-create-release: Makefile
+	@echo "==> Github: create new pre-release: "
+	curl \
+		-X POST \
+		-H "Accept: application/vnd.github.v3+json" \
+		-H "Authorization: token ${GITHUB_TOKEN}" \
+		"https://api.github.com/repos/sm7eca/dmr-dreambox/releases" \
+		-d '{"tag_name":"${RELEASE_NAME}_pre", "name": "${RELEASE_NAME}_pre", "prerelease": true}'
+	@touch $@
+
+.built-github-upload-asset: Makefile
+	@echo "==> Github: upload asset to release"
+	curl \
+		-H "Authorization: token ${GITHUB_TOKEN}" \
+		-H "Content-Type: $(file -b --mime-type ${BUILD_DIR}/${RELEASE_NAME}.zip)" \
+		--data-binary @${BUILD_DIR}/${RELEASE_NAME}.zip \
+		"https://uploads.github.com/repos/sm7eca/dmr-dreambox/releases/${GITHUB_RELEASE_ID}/assets?name=$(basename ${BUILD_DIR}/${RELEASE_NAME}.zip)"
+	@touch $@
 
 ${RELEASE_DIR}:
 	@test -d $@ || mkdir -p $@
