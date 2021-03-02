@@ -14,7 +14,7 @@ RELEASE_VERSION_STRING=$(shell sed -n 's/^.*SoftwareVersion.* *= *//p' sketch_dr
 RELEASE_NAME = ${PROJECT_NAME}_${RELEASE_VERSION_STRING}
 RELEASE_DIR = ${BUILD_DIR}/${RELEASE_NAME}
 GIT_COMMIT_HASH = $(shell git rev-parse HEAD)
-GITHUB_TOKEN = invalid_token
+GITHUB_TOKEN = $(shell cat ~/.github-token)
 TIMESTAMP = $(shell date +"%Y%m%d_%H%M%S")
 
 CHANGES := $(shell git diff-index --name-only HEAD -- | wc -l)
