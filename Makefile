@@ -52,21 +52,12 @@ github-create-release: .built-github-create-release
 
 .built-github-create-release: Makefile
 	@echo "==> Github: create new pre-release: "
-	curl \
-		-X POST \
-		-H "Accept: application/vnd.github.v3+json" \
-		-H "Authorization: token ${GITHUB_TOKEN}" \
-		"https://api.github.com/repos/sm7eca/dmr-dreambox/releases" \
-		-d '{"tag_name":"${RELEASE_NAME}_pre", "name": "${RELEASE_NAME}_pre", "prerelease": true}'
+	GITHUB_ASSET_URL := $(call github_create_release,${RELEASE_NAME})
 	@touch $@
 
 .built-github-upload-asset: Makefile
 	@echo "==> Github: upload asset to release"
-	curl \
-		-H "Authorization: token ${GITHUB_TOKEN}" \
-		-H "Content-Type: $(file -b --mime-type ${BUILD_DIR}/${RELEASE_NAME}.zip)" \
-		--data-binary @${BUILD_DIR}/${RELEASE_NAME}.zip \
-		"https://uploads.github.com/repos/sm7eca/dmr-dreambox/releases/${GITHUB_RELEASE_ID}/assets?name=$(basename ${BUILD_DIR}/${RELEASE_NAME}.zip)"
+	$(call github_upload_assert,${BUILD_DIR}${RELEASE_NAME}.zip,${GITHUB_ASSET_URL})
 	@touch $@
 
 ${RELEASE_DIR}:
@@ -233,4 +224,21 @@ venv-test: .built-venv-test
 #
 define git-create-tag
    @git tag -a -m "this_is_a_tag" $(1) HEAD
+endef
+
+define github_create_release
+	curl \
+		-X POST \
+		-H "Accept: application/vnd.github.v3+json" \
+		-H "Authorization: token ${GITHUB_TOKEN}" \
+		"https://api.github.com/repos/sm7eca/dmr-dreambox/releases" \
+		-d '{"tag_name":"${1}", "name": "${1}", "prerelease": true}'
+endef
+
+define github_upload_asset
+	curl \
+		-H "Authorization: token ${GITHUB_TOKEN}" \
+		-H "Content-Type: $(file -b --mime-type ${1})" \
+		--data-binary @${1} \
+		"${2}?name=$(basename ${BUILD_DIR}/${RELEASE_NAME}.zip)"
 endef
