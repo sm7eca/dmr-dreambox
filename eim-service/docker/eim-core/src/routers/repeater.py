@@ -52,7 +52,7 @@ async def repeater_master(
     return repeaters[start:end]
 
 
-@router.get("/callsign/{callsign}", response_model=List[RepeaterItem], status_code=status.HTTP_200_OK)
+@router.get("/callsign/{call_sign}", response_model=List[RepeaterItem], status_code=status.HTTP_200_OK)
 async def repeater_master_callsign(
         call_sign: str = path_callsign,
         limit: Optional[int] = query_limit,
@@ -106,7 +106,8 @@ async def repeater_location(
         "rx": 432600000,
         "cc": 4,
         "name": "SQ7JSK",
-        "location": "Falkenberg"
+        "location": "Falkenberg, SE",
+        "city": "Falkenberg"
     }
 
     response.status_code = status.HTTP_501_NOT_IMPLEMENTED

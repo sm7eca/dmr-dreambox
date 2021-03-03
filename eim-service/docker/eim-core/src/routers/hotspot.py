@@ -1,6 +1,6 @@
 
 from fastapi import APIRouter, Path, status, Response, Query
-from common.definitions import Repeater
+from common.definitions import RepeaterItem
 from common.logger import get_logger
 from common.tools import compute_end_index
 from db.mongodb import MongoDB
@@ -23,8 +23,8 @@ query_skip = Query(0, ge=0, example=0, description="skip N items")
 
 
 @router.get(
-    "/callsign/{callsign}",
-    response_model=List[Repeater],
+    "/callsign/{call_sign}",
+    response_model=List[RepeaterItem],
     description="Retrieve hotspots based on call sign",
     status_code=status.HTTP_200_OK
 )

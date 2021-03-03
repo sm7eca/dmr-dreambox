@@ -42,7 +42,7 @@ esp-upload: esp-binary
 	@echo "ready to upload file to board: ${ARDUINO_BOARD_FQDN}"
 	arduino-cli upload --input-dir ${BUILD_DIR} -p ${ARDUINO_PROGRAMMER_PORT} --fqbn ${ARDUINO_BOARD_FQDN}
 
-release: ${BUILD_DIR}/${RELEASE_NAME}.zip eim-release release-tag
+release: ${BUILD_DIR}/${RELEASE_NAME}.zip function-test eim-release release-tag
 	@echo "==> Release DONE, push tags and upload binaries to Github https://github.com/sm7eca/dmr-dreambox/releases"
 
 ${RELEASE_DIR}:
@@ -130,10 +130,10 @@ boards: .built-boards
 	else echo "---> MISSING requirements.boards.txt file"; \
 	fi
 
-eim-release: .pushed-docker
+eim-release: .built-pushed-docker
 
-.PHONY = .pushed-docker
-.pushed-docker: Makefile
+.PHONY = .built-pushed-docker
+.built-pushed-docker: Makefile
 	@echo "==> Build and push Docker container"
 	@docker build -t eim-core-base:latest eim-service/docker/eim-core-base/.
 	@docker-compose -f eim-service/docker-compose.yml build
@@ -159,7 +159,7 @@ ${SOURCEDIR}/.tags: .ctags-files
 eim-deploy: .built-eim-deploy
 
 PHONY = eim-deploy-local
-eim-deploy-local:
+eim-deploy-local: ${SOURCES_EIM_SERVICE}
 	@echo "==> deploy EIM service locally"
 	@docker-compose -f eim-service/docker-compose.yml build
 	@( \
@@ -180,6 +180,29 @@ eim-deploy-local:
 release-tag:
 	$(call git-create-tag,${RELEASE_VERSION_STRING})
 	@echo "==> create GIT tag: ${RELEASE_VERSION_STRING}"
+
+function-test: venv-test eim-deploy-local .built-function-test
+
+venv-test: .built-venv-test
+
+.built-venv-test: Makefile requirements-test.txt
+	@( \
+		echo "==> build VENV"; \
+		python3 -m venv .venv ; \
+		. .venv/bin/activate ; \
+		python3 -m pip install --upgrade pip ; \
+		python3 -m pip install -r requirements-test.txt ; \
+	)
+	@touch $@
+
+.built-function-test: venv-test Makefile
+	@( \
+		echo "==> run function tests"; \
+		python3 -m venv .venv ; \
+		. .venv/bin/activate ; \
+		python3 -m pytest -xvs tests/ ; \
+	)
+	@touch $@
 
 #
 # functions
