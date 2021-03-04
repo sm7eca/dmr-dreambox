@@ -65,7 +65,8 @@ def test_repeater_dmrid(dmr_id: int, expected_status: int, expected_len: int):
 	response = requests.get(url=f"http://localhost/repeater/dmr/{dmr_id}")
 	assert response.status_code == expected_status
 	if response.status_code == 200:
-		assert len(response.json()) == expected_len
+		assert not isinstance(response.json(), list)
+		assert isinstance(response.json(), dict)
 
 
 def test_repeater_location():
