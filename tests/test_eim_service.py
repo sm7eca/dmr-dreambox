@@ -91,3 +91,16 @@ def test_hotspot(callsign: str, expected_status: int):
 	"""
 	response = requests.get(url=f"http://localhost/hotspot/callsign/{callsign}")
 	assert response.status_code == expected_status
+
+
+def test_redirect_root():
+	"""Given a GET request sent towards root, we expect to be redirected to /docs"""
+
+	# call the UUT
+	response = requests.get(url=f"http://localhost", allow_redirects=True)
+	
+	# assert results
+	assert response.status_code == 200
+	assert response.url == "http://localhost/docs"
+	assert response.history[0].is_redirect
+	assert response.history[0].status_code == 307

@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 
 from routers import repeater
 from routers import hotspot
@@ -21,6 +22,14 @@ app = FastAPI(
                 f'Commit at Github: <a target="_blank" href="{github_ref}/commit/{eim_git_hash}">{eim_git_hash[:6]}</a>',
     version=f"0.1.{eim_git_hash[:6]}"
 )
+
+
+@app.get("/", include_in_schema=False)
+def redirect_docs():
+    """Redirect ROOT to docs, so that a user by default end up reading something."""
+    response = RedirectResponse(url="/docs")
+    return response
+
 
 app.include_router(repeater.router)
 app.include_router(hotspot.router)
