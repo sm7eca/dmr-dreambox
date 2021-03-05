@@ -5,8 +5,15 @@ void NXinitDisplay()
 //----------------------------------------------------- NXinitDisplay
 //    start Nextion Screen
 {
-  Serial1.print("page DMRlogga");   //page 3
+  Serial1.print("page 3");   //page 3
   NXend(2);
+}
+void NXinitialSetup()
+//----------------------------------------------------------- Initial setup screen (
+//
+{
+  Serial1.print("page 13");
+  NXend(201);
 }
 //========================================================================== page 0
 void NX_P0_DisplayMainPage()
@@ -143,7 +150,7 @@ void  NX_P0_DisplayTransmit(boolean on)
     Serial1.print(rxS.substring(3, 6));
     Serial1.print(rxS.substring(6, 40));
     Serial1.print("\"");
-    NXend(22);
+    NXend(23);
   }
 }
 void NX_P0_DisplayReceive(boolean rec_on, byte calltype, uint32_t TGId)
@@ -513,6 +520,15 @@ void NX_P9_displaySSID()
   Serial1.print(dmrSettings.wifisettings[2].passwd);
   Serial1.print("\"");
   NXend(912);
+  Serial1.print("setup.t18.txt=\"");
+  Serial1.print(dmrSettings.wifisettings[3].ssid);
+  Serial1.print("\"");
+  NXend(903);
+  Serial1.print("setup.t19.txt=\"");
+  Serial1.print(dmrSettings.wifisettings[3].passwd);
+  Serial1.print("\"");
+  NXend(913);
+
 }
 void NX_P9_set_callsign_id()
 {
@@ -569,7 +585,7 @@ void NX_P9_showVol()
 //----------------------------------------------------- NXshowVol
 
 {
-  Serial1.print("setup.j0.val="); // Changing the value of progress bar
+  Serial1.print("j0.val="); // Changing the value of progress bar
   int volproc = (100 * (dmrSettings.audioLevel - 1)) / (maxAudioVolume - 1);
   Serial1.print(volproc); // show set volume level
   NXend(96);
@@ -578,7 +594,7 @@ void NX_P9_showMicVol()
 //----------------------------------------------------- NXshowVol
 
 {
-  Serial1.print("setup.j1.val="); // Changing the value of progress bar
+  Serial1.print("j1.val="); // Changing the value of progress bar
   int volproc = (100 * dmrSettings.micLevel) / maxMicVolume;
   Serial1.print(volproc); // show set volume level
   NXend(97);
@@ -622,6 +638,7 @@ void  NX_P9_saveSSID(int indx)
   strcpy(WifiAp.passwd, dmrSettings.wifisettings[indx].passwd);
   strcpy(WifiAp.ssid, tmp);
   settingsAddWifiAp(&dmrSettings, &WifiAp, indx);
+  settingsWrite(&dmrSettings);
 }
 
 void  NX_P9_savePasswd(int indx)
@@ -640,6 +657,7 @@ void  NX_P9_savePasswd(int indx)
   strcpy(WifiAp.ssid, dmrSettings.wifisettings[indx].ssid);
   strcpy(WifiAp.passwd, tmp);
   settingsAddWifiAp(&dmrSettings, &WifiAp, indx);
+  settingsWrite(&dmrSettings);
 }
 //========================================================================== page 10
 void NX_P10_rxLastHeard()
@@ -671,6 +689,7 @@ void NX_P10_rxLastHeard()
     }
   }
 }
+//========================================================================= page 13
 
 //========================================================================== field or button touch
 void NX_txtfield_touched()
@@ -741,6 +760,42 @@ void NX_txtfield_touched()
           NX_P9_savePasswd(3);
           break;
       }
+      break;
+    case 0x0D:
+      switch (NXbuff[2])
+      {
+        case 0x05:
+          NX_P9_getCallsign();
+          break;
+        case 0x06:
+          NX_P9_getDMRid();
+          break;
+        case 0x0E:
+          NX_P9_saveSSID(0);
+          break;
+        case 0x0F:
+          NX_P9_savePasswd(0);
+          break;
+        case 0x10:
+          NX_P9_saveSSID(1);
+          break;
+        case 0x11:
+          NX_P9_savePasswd(1);
+          break;
+        case 0x12:
+          NX_P9_saveSSID(2);
+          break;
+        case 0x13:
+          NX_P9_savePasswd(2);
+          break;
+        case 0x15:
+          NX_P9_saveSSID(3);
+          break;
+        case 0x16:
+          NX_P9_savePasswd(3);
+          break;
+      }
+      break;
   }
 }
 //========================================================================== field or button touch
@@ -751,6 +806,7 @@ void NX_numfield_touched()
   {
 
     case 0x09:
+    case 0x0D:
       switch (NXbuff[2])
       {
         case 0x9:
@@ -872,6 +928,7 @@ void NX_button_pressed()
     case  0x07:               //---------------------Send SMS
       break;
     case  0x09:               //---------------------Setup
+    case  0x0D:               //---------------------init Setup
       switch (NXbuff[2])
       {
         case 0x01:                   //lower audio b1
@@ -916,6 +973,9 @@ void NX_button_pressed()
           micVolume = dmrSettings.micLevel;
           DMRsetMicVolume(micVolume);
           settingsWrite(&dmrSettings);
+          break;
+        case 0x18:
+          UnitState = SYSTEM_STARTING;          // page 13 (initSetup) exit button
           break;
       }
       break;
@@ -1068,6 +1128,11 @@ void  NX_page_init()
         Serial1.print("bt2.val=0");
       }
       NXend(44);
+      break;
+    case 0x13:                                      //setup parameters (wifi, TS scanning
+      NX_P9_showVol();
+      NX_P9_showMicVol();
+      NX_P9_displayVersion();
       break;
   }
 }

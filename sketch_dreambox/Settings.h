@@ -47,7 +47,7 @@ typedef struct _DmrSettingsS {
   bool          ts_scan;          //
   uint8_t       rxTGStatus[33];   //
   uint32_t      rxTalkGroup[33];
-  RepeaterS     repeater[100];
+  RepeaterS     repeater[50];
 } DmrSettingsS;
 
 

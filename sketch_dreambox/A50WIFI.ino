@@ -8,48 +8,58 @@ boolean  wifiConnect()
 //----------------------------------------------------------- wifiConnect
 //
 {
+  uint32_t Connecttimer = 10000; // max time to wait för WLAN connect
+  uint32_t starttime;
   wifiMulti.addAP(dmrSettings.wifisettings[0].ssid, dmrSettings.wifisettings[0].passwd);   // add Wi-Fi networks you want to connect to
-  wifiMulti.addAP(dmrSettings.wifisettings[1].ssid, dmrSettings.wifisettings[1].passwd);
-  wifiMulti.addAP(dmrSettings.wifisettings[2].ssid, dmrSettings.wifisettings[2].passwd);
+//  wifiMulti.addAP(dmrSettings.wifisettings[1].ssid, dmrSettings.wifisettings[1].passwd);
+//  wifiMulti.addAP(dmrSettings.wifisettings[2].ssid, dmrSettings.wifisettings[2].passwd);
 
   Serial.println("Connecting ...");
   int i = 0;
-  while (wifiMulti.run() != WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
+  starttime = millis();
+  while (wifiMulti.run() != WL_CONNECTED and (millis() - starttime) < Connecttimer) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
     delay(1000);
     Serial.print('.');
   }
-  Serial.println('\n');
-  Serial.print("Connected to ");
-  Serial.println(WiFi.SSID());              // Tell us what network we're connected to
-  Serial.print("IP address:\t");
-  Serial.println(WiFi.localIP());           // Send the IP address of the ESP8266 to the computer
+  if (wifiMulti.run() == WL_CONNECTED)
+  {
+    Serial.println('\n');
+    Serial.print("Connected to ");
+    Serial.println(WiFi.SSID());              // Tell us what network we're connected to
+    Serial.print("IP address:\t");
+    Serial.println(WiFi.localIP());           // Send the IP address of the ESP8266 to the computer
+    return true;
+  }
+  return false;
 }
 void WiFisetTime()
 {
-
-  configTime(3600 * timezone, daysavetime * 3600, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
-  struct tm tmstruct ;
-  delay(2000);
-  tmstruct.tm_year = 0;
-  getLocalTime(&tmstruct, 5000);
-  Serial.printf("\nNow is : %d-%02d-%02d %02d:%02d:%02d\n", (tmstruct.tm_year) + 1900, ( tmstruct.tm_mon) + 1, tmstruct.tm_mday, tmstruct.tm_hour , tmstruct.tm_min, tmstruct.tm_sec);
-  Serial.println("");
+  if (BwifiOn)
+  {
+    configTime(3600 * timezone, daysavetime * 3600, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
+    struct tm tmstruct ;
+    delay(2000);
+    tmstruct.tm_year = 0;
+    getLocalTime(&tmstruct, 5000);
+    Serial.printf("\nNow is : %d-%02d-%02d %02d:%02d:%02d\n", (tmstruct.tm_year) + 1900, ( tmstruct.tm_mon) + 1, tmstruct.tm_mday, tmstruct.tm_hour , tmstruct.tm_min, tmstruct.tm_sec);
+    Serial.println("");
+  }
 }
 void wifiGetDMRID()
 //----------------------------------------------------------- wifiGetDMRID
 {
-  String tempS = String(rxContactChar);
-  tempS = tempS.substring(0, 3);
-  //    Serial.print("wifiGetDMRID:");
-  //    Serial.print(tempS);
-  
-  if (tempS == "240")
+  if (BwifiOn)
   {
-    wifiGetDMRIDswe();
-  }
-  else
-  {
-    wifiGetDMRIDint();
+    String tempS = String(rxContactChar);
+    tempS = tempS.substring(0, 3);
+    if (tempS == "240")
+    {
+      wifiGetDMRIDswe();
+    }
+    else
+    {
+      wifiGetDMRIDint();
+    }
   }
 }
 void wifiGetDMRIDswe()
