@@ -164,7 +164,7 @@ boolean EIMreadHotspots(char* callsign)
     }
   }
 }
-boolean EIMdeserializeSingleRepeater(String input)
+boolean EIMdeserializeSingleRepeater(String input, int k)
 {
   // String input;
 
@@ -178,31 +178,51 @@ boolean EIMdeserializeSingleRepeater(String input)
     return false;
   }
 
-  long dmr_id = doc["dmr_id"]; // 240701
-  long tx = doc["tx"]; // 434587500
-  long rx = doc["rx"]; // 432587500
-  int cc = doc["cc"]; // 7
-  int ts = doc["ts"]; // 1
-  int max_ts = doc["max_ts"]; // 0
-  const char* name = doc["name"]; // "SK7RJL"
+  dmrSettings.repeater[k+4].dmrId = doc["dmr_id"]; // 240701
+  dmrSettings.repeater[k+4].tx = doc["tx"]; // 434587500
+  dmrSettings.repeater[k+4].rx = doc["rx"]; // 432587500
+  dmrSettings.repeater[k+4].cc = doc["cc"]; // 7
+  dmrSettings.repeater[k+4].timeSlot = doc["ts"]; // 1
+  dmrSettings.repeater[k+4].timeSlotNo =  2;
+//  int max_ts = doc["max_ts"]; // 0
+  strcat(dmrSettings.repeater[k+4].repeaterName,doc["name"]); // "SK7RJL"
   const char* location = doc["location"]; // "55.720459,13.222694"
-  const char* city = doc["city"]; // "Lund"
+  strcat(dmrSettings.repeater[k+4].repeaterLoc,doc["city"]); // "Lund"
+//  long dmr_id = doc["dmr_id"]; // 240701
+//  long tx = doc["tx"]; // 434587500
+//  long rx = doc["rx"]; // 432587500
+//  int cc = doc["cc"]; // 7
+//  int ts = doc["ts"]; // 1
+//  int max_ts = doc["max_ts"]; // 0
+//  const char* name = doc["name"]; // "SK7RJL"
+//  const char* location = doc["location"]; // "55.720459,13.222694"
+//  const char* city = doc["city"]; // "Lund"
 
   for (JsonObject elem : doc["tg"].as<JsonArray>()) {
 
-    int tg_id = elem["tg_id"]; // 240, 240, 2400, 2401, 2402, 2403, 2404, 2405, 2406, 2407, 2407
-    int master_id = elem["master_id"]; // 2401, 2401, 2401, 2401, 2401, 2401, 2401, 2401, 2401, 2401, 2401
-    long rep_id = elem["rep_id"]; // 240701, 240701, 240701, 240701, 240701, 240701, 240701, 240701, 240701, ...
-    int ts = elem["ts"]; // 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2
-    bool is_dynamic = elem["is_dynamic"]; // false, false, false, false, false, false, false, false, false, ...
+    if (elem<10)
+    {
+      dmrSettings.repeater[k+4].groups[elem].tg_id = elem["tg_id"];
+//    int master_id = elem["master_id"];
+//    long rep_id = elem["rep_id"];
+      dmrSettings.repeater[k+4].groups[elem].ts = elem["ts"];
+//    bool is_dynamic = elem["is_dynamic"];
+//    int tg_id = elem["tg_id"]; // 240, 240, 2400, 2401, 2402, 2403, 2404, 2405, 2406, 2407, 2407
+//    int master_id = elem["master_id"]; // 2401, 2401, 2401, 2401, 2401, 2401, 2401, 2401, 2401, 2401, 2401
+//    long rep_id = elem["rep_id"]; // 240701, 240701, 240701, 240701, 240701, 240701, 240701, 240701, 240701, ...
+//    int ts = elem["ts"]; // 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2
+//    bool is_dynamic = elem["is_dynamic"]; // false, false, false, false, false, false, false, false, false, ...
+    Serial.println(dmrSettings.repeater[k+4].groups[elem].tg_id);
+    Serial.println(dmrSettings.repeater[k+4].groups[elem].ts);
+    }
   }
-  Serial.println(name);
-  Serial.println(city);
-  sprintf(NXrepeaterName, "%s %s",name,city);
+  Serial.println(dmrSettings.repeater[k+4].repeaterName);
+  Serial.println(dmrSettings.repeater[k+4].repeaterLoc);
+  sprintf(NXrepeaterName, "%s %s",dmrSettings.repeater[k+4].repeaterName,dmrSettings.repeater[k+4].repeaterLoc);
   Serial.println(NXrepeaterName);
   return true;
 }
-boolean EIMreadRepeaterDMRid(char* DMRid)
+boolean EIMreadRepeaterDMRid(char* DMRid, int k)
 {
   if ((wifiMulti.run() == WL_CONNECTED))
   {
@@ -220,7 +240,7 @@ boolean EIMreadRepeaterDMRid(char* DMRid)
         WIFIcallfound = true;
         String payload = http.getString();
         Serial.println(payload);
-        if (EIMdeserializeSingleRepeater(payload))
+        if (EIMdeserializeSingleRepeater(payload,k))
         {
           return true;
         }

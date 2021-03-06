@@ -317,7 +317,7 @@ void beep(bool bp)
 
 //************************************************************************* start setup
 //*************************************************************************************
-void setup() 
+void setup()
 {
   // put your setup code here, to run once:
   Serial.begin(serial_speed);                   //Serial monitor
@@ -346,13 +346,11 @@ void setup()
   {
     UnitState = INITIAL_INPUT;                              // firsta app strt - need to init EEPROM parameter data
     dmrSettings.version = 0x1;
-
-//        dmrSettings.audioLevel = 8;         //  1-9; default = 8
-//        dmrSettings.micLevel = 7;           //  0-15, mic gain setting
-//        strcpy (dmrSettings.callSign, "SM7ECA");    // callsign, max 12 chars
-//        dmrSettings.localID = 2400530;      //   DMRID
-//        dmrSettings.chnr = 2;               //
-//        dmrSettings.TG = 2406;              //  current talk group
+    for (int k = 0; k < 30; k++)
+    {
+      dmrSettings.repeater[k].zone  = 0;
+      dmrSettings.repeater[k].dmrId = 0;
+    }
     dmrSettings.ts_scan = false;        //
     for (int x = 0; x < 33; x++)
     {
@@ -361,7 +359,14 @@ void setup()
     }
     settingsWrite(&dmrSettings);
   }
-  initiated = settingsInitiated();                    // Check if memory initiate by the app
+//  for (int k = 0; k < 50; k++)
+//  {
+//    dmrSettings.repeater[k].zone  = 0;
+//    dmrSettings.repeater[k].dmrId = 0;
+//  }
+//    settingsWrite(&dmrSettings);
+//
+    initiated = settingsInitiated();                    // Check if memory initiate by the app
 
   //  Serial.print(dmrSettings.wifisettings[0].ssid);
   //  Serial.println(dmrSettings.wifisettings[0].passwd);
@@ -377,8 +382,8 @@ void setup()
   //  EIMreadHotspots(dmrSettings.callSign);
 
   DMRDebug = false;                            //  on Serial monitor
-  NXDebug = false;                             //  display communication
-//  UnitState=INITIAL_INPUT;
+  NXDebug = true;                             //  display communication
+  //  UnitState=INITIAL_INPUT;
   if (UnitState == INITIAL_INPUT)              //  app strt - need to init EEPROM parameter data
   {
     NXinitialSetup();                          //  for initial init -test

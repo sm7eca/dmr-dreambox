@@ -697,9 +697,6 @@ void NX_P14_getRepeaterDMRid()
   char repeaterIDChar[10];
   uint32_t repeaterID =  (uint32_t)NXbuff[5] << 16 | (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
   ltoa(repeaterID, repeaterIDChar, 10);
-  EIMreadStatus();
-  EIMreadRepeaterDMRid(repeaterIDChar);
-  NXrepeaterName[29]=0x0;
   switch (NXbuff[2])
   {
     case 0x02:
@@ -724,6 +721,20 @@ void NX_P14_getRepeaterDMRid()
       k = 6;
       break;
   }
+  strcat(NXrepeaterName,"");
+  if (repeaterID > 0)
+  {
+    EIMreadStatus();
+    EIMreadRepeaterDMRid(repeaterIDChar, k);
+    NXrepeaterName[29] = 0x0;
+    settingsWrite(&dmrSettings);
+  }
+  Serial1.print("n");
+  Serial1.print(k);
+  Serial1.print(".val=");
+  Serial1.print(repeaterID);
+  NXend(142);
+
   Serial1.print("t");
   Serial1.print(k);
   Serial1.print(".txt=");
@@ -731,6 +742,30 @@ void NX_P14_getRepeaterDMRid()
   Serial1.print(NXrepeaterName);
   Serial1.print("\"");
   NXend(140);
+}
+
+void  NX_P14_fillRepeaterlist()
+{
+  for (int k = 0; k < 7; k++)
+  {
+    if (dmrSettings.repeater[k + 4].dmrId != 0)
+    {
+      Serial1.print("n");
+      Serial1.print(k);
+      Serial1.print(".val=");
+      Serial1.print(dmrSettings.repeater[k + 4].dmrId);
+      NXend(141);
+
+      sprintf(NXrepeaterName, "%s,%s", dmrSettings.repeater[k + 4].repeaterName, dmrSettings.repeater[k + 4].repeaterLoc);
+      Serial1.print("t");
+      Serial1.print(k);
+      Serial1.print(".txt=");
+      Serial1.print("\"");
+      Serial1.print(NXrepeaterName);
+      Serial1.print("\"");
+      NXend(142);
+    }
+  }
 }
 
 
@@ -1180,6 +1215,10 @@ void  NX_page_init()
       NX_P9_showVol();
       NX_P9_showMicVol();
       NX_P9_displayVersion();
+      break;
+    case 0x14:
+    case 0x0E:
+      NX_P14_fillRepeaterlist();
       break;
   }
 }

@@ -11,7 +11,8 @@ typedef struct _WifiSettingS {
 } WifiSettingS;
 
 typedef struct _TalkGroupS {
-  uint32_t    dmrId;
+  uint32_t    tg_id;
+  uint8_t     ts;
 } TalkGroupS;
 
 typedef struct _RepeaterS {
@@ -31,7 +32,7 @@ typedef struct _RepeaterS {
 
 
 typedef struct _RepeaterConfigS {
-  RepeaterS   repeater[50];
+  RepeaterS   repeater[30];
 } RepeaterConfigS;
 
 
@@ -47,7 +48,7 @@ typedef struct _DmrSettingsS {
   bool          ts_scan;          //
   uint8_t       rxTGStatus[33];   //
   uint32_t      rxTalkGroup[33];
-  RepeaterS     repeater[50];
+  RepeaterS     repeater[30];
 } DmrSettingsS;
 
 
