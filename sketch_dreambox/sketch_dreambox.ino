@@ -94,6 +94,7 @@ uint8_t p6_numRows = 6;       // number of rows of channels on page 6
 uint8_t p6_curPage = 0;        // current page of scroll list
 uint8_t p6_startRecord = 0;     // index of first record on a page
 boolean p6_eof = false;
+char NXrepeaterName[35];
 //------------------------------------------------------------ State Machine
 int     UnitState = IDLE_STATE;
 int     lastUnitState;
@@ -275,6 +276,7 @@ void WiFisetTime();
 void  EIMreadStatus();
 void  EIMreadRepeaters();
 void  EIMreadHotspots();
+boolean EIMreadRepeaterDMRid(char* DMRid);
 void  NXhandler();
 void  wifiGetDMRID();
 

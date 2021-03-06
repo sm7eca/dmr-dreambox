@@ -689,7 +689,50 @@ void NX_P10_rxLastHeard()
     }
   }
 }
-//========================================================================= page 13
+//========================================================================= page 14
+void NX_P14_getRepeaterDMRid()
+//------------------------------------------------------NX_P9_getDMRid
+{
+  int k = 0;
+  char repeaterIDChar[10];
+  uint32_t repeaterID =  (uint32_t)NXbuff[5] << 16 | (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
+  ltoa(repeaterID, repeaterIDChar, 10);
+  EIMreadStatus();
+  EIMreadRepeaterDMRid(repeaterIDChar);
+  NXrepeaterName[29]=0x0;
+  switch (NXbuff[2])
+  {
+    case 0x02:
+      k = 0;
+      break;
+    case 0x04:
+      k = 1;
+      break;
+    case 0x06:
+      k = 2;
+      break;
+    case 0x08:
+      k = 3;
+      break;
+    case 0x0A:
+      k = 4;
+      break;
+    case 0x0C:
+      k = 5;
+      break;
+    case 0x0E:
+      k = 6;
+      break;
+  }
+  Serial1.print("t");
+  Serial1.print(k);
+  Serial1.print(".txt=");
+  Serial1.print("\"");
+  Serial1.print(NXrepeaterName);
+  Serial1.print("\"");
+  NXend(140);
+}
+
 
 //========================================================================== field or button touch
 void NX_txtfield_touched()
@@ -813,6 +856,10 @@ void NX_numfield_touched()
           NX_P9_getDMRid();
           break;
       }
+      break;
+    case 0x0E:
+      NX_P14_getRepeaterDMRid();
+      break;
   }
 }
 

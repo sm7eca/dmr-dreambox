@@ -1,7 +1,8 @@
 
 char  EIMrepeaterUrl[] = "http://api.dmrdream.com/repeater/";
-char  EIMhotspotUrl[] = "http://dmrdream.com/hotspot/callsign/";
-char  EIMstatusUrl[] = "http://dmrdream.com/system/info";
+char  EIMrepeaterDMRUrl[] = "http://api.dmrdream.com/repeater/dmr/";
+char  EIMhotspotUrl[] = "http://api.dmrdream.com/hotspot/callsign/";
+char  EIMstatusUrl[] = "http://api.dmrdream.com/system/info";
 
 void  EIMreadStatus()
 {
@@ -40,7 +41,7 @@ void  EIMreadStatus()
 }
 boolean EIMdeserializeRepHot(String payload)
 {
-//  Serial.println(payload);
+  //  Serial.println(payload);
   StaticJsonDocument<384> doc;
   DeserializationError error = deserializeJson(doc, payload);
   if (error)
@@ -152,6 +153,74 @@ boolean EIMreadHotspots(char* callsign)
         String payload = http.getString();
         Serial.println(payload);
         if (EIMdeserializeRepHot(payload))
+        {
+          return true;
+        }
+        else
+        {
+          return false;
+        }
+      }
+    }
+  }
+}
+boolean EIMdeserializeSingleRepeater(String input)
+{
+  // String input;
+
+  StaticJsonDocument<1536> doc;
+
+  DeserializationError error = deserializeJson(doc, input);
+
+  if (error) {
+    Serial.print(F("deserializeJson() failed: "));
+    Serial.println(error.f_str());
+    return false;
+  }
+
+  long dmr_id = doc["dmr_id"]; // 240701
+  long tx = doc["tx"]; // 434587500
+  long rx = doc["rx"]; // 432587500
+  int cc = doc["cc"]; // 7
+  int ts = doc["ts"]; // 1
+  int max_ts = doc["max_ts"]; // 0
+  const char* name = doc["name"]; // "SK7RJL"
+  const char* location = doc["location"]; // "55.720459,13.222694"
+  const char* city = doc["city"]; // "Lund"
+
+  for (JsonObject elem : doc["tg"].as<JsonArray>()) {
+
+    int tg_id = elem["tg_id"]; // 240, 240, 2400, 2401, 2402, 2403, 2404, 2405, 2406, 2407, 2407
+    int master_id = elem["master_id"]; // 2401, 2401, 2401, 2401, 2401, 2401, 2401, 2401, 2401, 2401, 2401
+    long rep_id = elem["rep_id"]; // 240701, 240701, 240701, 240701, 240701, 240701, 240701, 240701, 240701, ...
+    int ts = elem["ts"]; // 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2
+    bool is_dynamic = elem["is_dynamic"]; // false, false, false, false, false, false, false, false, false, ...
+  }
+  Serial.println(name);
+  Serial.println(city);
+  sprintf(NXrepeaterName, "%s %s",name,city);
+  Serial.println(NXrepeaterName);
+  return true;
+}
+boolean EIMreadRepeaterDMRid(char* DMRid)
+{
+  if ((wifiMulti.run() == WL_CONNECTED))
+  {
+    HTTPClient http;
+    char combinedArray[sizeof(EIMrepeaterUrl)  + 1536];
+    sprintf(combinedArray, "%s%s", EIMrepeaterDMRUrl, DMRid); // with word space
+    Serial.println("EIMreadRepeaterDMRid");
+    Serial.println(combinedArray);
+    http.begin(combinedArray);
+    int httpCode = http.GET();
+    if (httpCode > 0)
+    {
+      if (httpCode == HTTP_CODE_OK)
+      {
+        WIFIcallfound = true;
+        String payload = http.getString();
+        Serial.println(payload);
+        if (EIMdeserializeSingleRepeater(payload))
         {
           return true;
         }
