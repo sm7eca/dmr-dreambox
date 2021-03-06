@@ -49,22 +49,28 @@ def test_repeater_callsign(call_sign: str, expected_status: int, expected_len: i
 		assert len(response.json()) == expected_len
 
 
+def test_no_repeater_dmr_id():
+	response = requests.get(url=f"http://localhost/repeater/dmr/240701")
+	assert response.status_code == 404
+
 
 @pytest.mark.parametrize(
 	argnames="dmr_id,expected_status,expected_len",
 	argvalues=[
 		(204342, 200, 1),
 		(999999, 204, 0),
-		(240701, 200, 1)
+		(240701, 200, 1),
+		(240048111, 200, 1)
 	],
 	ids=[
 		"valid_dmr_id",
 		"invalid_dmr_id",
-		"check_tgs"
+		"check_tgs",
+		"check_hotspot"
 	]
 )
 def test_repeater_dmrid(dmr_id: int, expected_status: int, expected_len: int):
-	response = requests.get(url=f"http://localhost/repeater/dmr/{dmr_id}")
+	response = requests.get(url=f"http://localhost/dmr/{dmr_id}")
 	assert response.status_code == expected_status
 	if response.status_code == 200:
 		assert not isinstance(response.json(), list)
