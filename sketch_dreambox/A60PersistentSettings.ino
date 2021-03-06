@@ -36,6 +36,8 @@ bool settingsInitiated(void)
     settingsPrintMsg("settingsInitiated, TRUE");
     return true;
   } else {
+    Serial.println(eepromContainer.flag,HEX);
+    Serial.println(eepromContainer.version,HEX);
     settingsPrintMsg("settingsInitiated, FALSE");
     return false;
   }

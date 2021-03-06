@@ -1,3 +1,4 @@
+#ifdef INC_DMR_CALLS
 //------------------------------------------------------------------
 //-------------------------------MAIN ---STATE --- WAIT LOOP -------
 //------------------------------------------------------------------
@@ -25,7 +26,7 @@ void  do_idle()
     {
       digData.InboundSlot = digData.OutboundSlot = 0;
     }
- //   DMRupdateDigChannel();
+    DMRupdateDigChannel();
     //    updateLine49();
  //   NX_P0_updateTXinfo();
     NX_P0_DisplayCurrentTS();
@@ -66,3 +67,4 @@ void do_RecDMR()
     RSSItimer = millis();
   }
 }
+#endif

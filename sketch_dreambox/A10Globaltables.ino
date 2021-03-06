@@ -2,31 +2,33 @@
 //----------------------------------------------------------- Channel base struct
 typedef struct  {
   //Digital hotspot and repeater data
-  uint8_t  zone;            //zone no = collection of repeaters or hotspots
+  uint8_t  zone;            //zone no = collection of repeaters or hotspots, not used yet
   uint8_t  chnr;            //internal channel for sorting and scrolling
   uint32_t DMRid;           //DMRid för repeater eller Hotspot
-  uint16_t IARUchannel;      //freq.channel according to IARU like RUxxx and Uxxx, but saved without prefix.
-  uint8_t  power;           //0:low power  1：high power
+  uint32_t tx;              // tx freq
+  uint32_t rx;              // rx freq
+//  uint16_t IARUchannel;      //freq.channel according to IARU like RUxxx and Uxxx, but saved without prefix.
+//  uint8_t  power;           //0:low power  1：high power
   uint8_t  cc;              //color code0~15
-  uint8_t  TimeSlot;        //0:slot 1 1:slot 2  TS numbering like the 22 command states
+  uint8_t  TimeSlot;        //0:slot 1 1:slot 2  TS numbering like the 22 command states (Current time slot when active)
   uint8_t  TimeSlotNo;       //number of time slots 1 or 2.
   uint8_t  ChannelMode;     //0:direct connection mode 4: true dual slot (DMR tier 2)
   char     Name[15];        //name of the channel, 14 chars
   char     Location[15];    //location of device Hotspot or repeater, 14 chars
 } digCh;
-uint8_t maxdigChlist = 50; //current highest index of records in CHlist (number of records - 1)
-uint8_t startrow = 0;    //only c channels will show on  the display at a time. Will be incremented
+uint16_t maxdigChlist = 100; //current highest index of records in CHlist (number of records - 1)
+uint16_t startrow = 0;    //only c channels will show on  the display at a time. Will be incremented
 // or decremented with p4_numRows when scrolling on page 4
-digCh digChlist[50] = {
-  {0, 0, 240048102, 261, 0, 1, 2, 1, 0, "Min Hotspot", "At home"},
-  {0, 1, 240618, 391, 1, 6, 1, 2, 0, "SK6JX", "Falkenberg"},
-  {0, 2, 240701, 367, 1, 7, 1, 2, 0, "SK7RJL", "Lund"},
-  {0, 3, 240711, 382, 1, 7, 1, 2, 0, "SK7RJL", "Malmö"},
-  {0, 4, 240048103, 261, 0, 1, 2, 1, 0, "BMin Hotspot", "At home"},
-  {0, 5, 240619, 391, 1, 6, 1, 2, 0, "BSK6JX", "Falkenberg"},
-  {0, 6, 240702, 367, 1, 7, 1, 2, 0, "BSK7RJL", "Lund"},
-  {0, 7, 240712, 382, 1, 7, 1, 2, 0, "BSK7RJL", "Malmö"},
-  {0, 255, 0, 0, 0, 0, 0, 0, 0, " ", " "}
+digCh digChlist[100] = {
+  {0,   0, 240048102, 433262500,433262500,    1, 2, 1 ,0, "Min Hotspot",   "At home"},
+  {0,   1, 240618,    434587500,432587500,    6, 1, 2, 0, "SK6JX",         "Falkenberg"},
+  {0,   2, 240701,    434587500,432587500,    7, 1, 2, 0, "SK7RJL",        "Lund"},
+  {0,   3, 240711,    434775000,432775000,    7, 1, 2, 0, "SK7RJL",        "Malmö"},
+  {0,   4, 240048103, 433262500,433262500,    1, 1, 1, 0, "BMin Hotspot",  "At home"},
+  {0,   5, 240619,    434587500,432587500,    6, 1, 2, 0, "BSK6JX",        "Falkenberg"},
+  {0,   6, 240702,    434587500,432587500,    7, 1, 2, 0, "BSK7RJL",       "Lund"},
+  {0,   7, 240712,    434775000,432775000,    7, 1, 2, 0, "BSK7RJL",       "Malmö"},
+  {0, 255, 0,         0,        0,            0, 0, 0, 0, " ",              " "}
 };
 
 digCh curdigCh;
@@ -38,7 +40,7 @@ typedef struct  {
   uint8_t  TS;
 } repTG;
 
-uint8_t maxrepTGlist = 200;      //current highest index of records in repTGlist (number of records - 1)
+uint16_t maxrepTGlist = 200;      //current highest index of records in repTGlist (number of records - 1)
 
 repTG currepTG;
 repTG repTGlist[200] =
@@ -123,7 +125,7 @@ repTG repTGlist[200] =
   {240048103, 24077, 2},
   {240048103, 240850, 2},
   {240048103, 240240, 2},
-  {9999999, 0, 0}
+  {9999999,   0,      0}
 };
 //----------------------------------------------------------- Talk Groups
 typedef struct {              // Talk Group list
@@ -132,9 +134,9 @@ typedef struct {              // Talk Group list
   uint8_t calltype;
   uint8_t rxgroup;
 } TG ;
-uint8_t  maxTGlist = 28;  //current highest index of records in TGlist (number of records - 1)
+uint8_t  maxTGlist = 29;  //current highest index of records in TGlist (number of records - 1)
 TG  curTG;
-TG TGlist[28] =
+TG TGlist[29] =
 {
   {7, "Lokalt kluster", 1, 0},
   {8, "Lokalt kluster", 1, 0},
@@ -156,6 +158,7 @@ TG TGlist[28] =
   {9990, "Parrot", 0, 0},
   {24062, "Reg. Taktisk SM6", 1, 1},
   {24077, "SM7 QSO grupp", 1, 1},
+  {240711,"Östersjölänken",1,1},
   {24098, "Robust Packet", 1, 1},
   {240216, "Swedenhub", 1, 1},
   {240240, "Brygga till D-Star", 1, 1},

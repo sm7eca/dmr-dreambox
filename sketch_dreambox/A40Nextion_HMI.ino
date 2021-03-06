@@ -1,11 +1,19 @@
 //========================================================================== startup
+void NXend(int nr);
 
 void NXinitDisplay()
 //----------------------------------------------------- NXinitDisplay
 //    start Nextion Screen
 {
-  Serial1.print("page DMRlogga");   //page 3
+  Serial1.print("page 3");   //page 3
   NXend(2);
+}
+void NXinitialSetup()
+//----------------------------------------------------------- Initial setup screen (
+//
+{
+  Serial1.print("page 13");
+  NXend(201);
 }
 //========================================================================== page 0
 void NX_P0_DisplayMainPage()
@@ -27,7 +35,7 @@ void NX_P0_DisplayCurrent()
   String fT = tempS.substring(0, 3) + "." + tempS.substring(3, 8);
   String fullName = String(curdigCh.Name) + " " + String(curdigCh.Location);
   fullName.trim();
-  String firstBlock = " RU" + String(curdigCh.IARUchannel);
+  String firstBlock = String(dmrSettings.localID);
   Serial1.print("main.t0.txt=\"");
   Serial1.print(firstBlock);
   Serial1.print("\"");
@@ -133,7 +141,7 @@ void  NX_P0_DisplayTransmit(boolean on)
     Serial1.print(tempS);
     Serial1.print("\"");
     NXend(20);
-    Serial1.print("main.t7.txt=\"    \""); //4 spaces to erase the "on"
+    Serial1.print("main.t7.txt=\"idle\""); // to erase the "on"
     NXend(21);
     rxS = String(digData.rx_freq);
     Serial1.print("main.t6.txt=\"");
@@ -142,7 +150,7 @@ void  NX_P0_DisplayTransmit(boolean on)
     Serial1.print(rxS.substring(3, 6));
     Serial1.print(rxS.substring(6, 40));
     Serial1.print("\"");
-    NXend(22);
+    NXend(23);
   }
 }
 void NX_P0_DisplayReceive(boolean rec_on, byte calltype, uint32_t TGId)
@@ -219,7 +227,7 @@ void NX_P0_DisplayReceive(boolean rec_on, byte calltype, uint32_t TGId)
   {
     //    Serial1.print("main.t10.txt=\"Last\""); Ska kanske vara byte av färg istället?
     //    NXend(30);
-    Serial1.print("main.t7.txt=\"     \"");
+    Serial1.print("main.t7.txt=\"idle\"");
     NXend(31);
     //   Serial1.print("main.t8.txt=\"     \"");
     //   NXend(31);
@@ -404,6 +412,7 @@ void NX_P5_buttonHandler()
   {
     Serial1.print("TGlist.va0.val=0");
     NXend(54);
+    p5_lastRecord = -1; // ----- reset scroll page
     if (NXbuff[3] == 1)
     {
       curChanItem.chnr = NXp4Ch[p4_selectedRow].chnr;
@@ -421,7 +430,6 @@ void NX_P5_buttonHandler()
       Serial1.print("page 9");
     }
     NXend(55);
-    p5_lastRecord = -1;
   }
 }
 //========================================================================== page 6
@@ -512,6 +520,15 @@ void NX_P9_displaySSID()
   Serial1.print(dmrSettings.wifisettings[2].passwd);
   Serial1.print("\"");
   NXend(912);
+  Serial1.print("setup.t18.txt=\"");
+  Serial1.print(dmrSettings.wifisettings[3].ssid);
+  Serial1.print("\"");
+  NXend(903);
+  Serial1.print("setup.t19.txt=\"");
+  Serial1.print(dmrSettings.wifisettings[3].passwd);
+  Serial1.print("\"");
+  NXend(913);
+
 }
 void NX_P9_set_callsign_id()
 {
@@ -526,8 +543,10 @@ void NX_P9_set_callsign_id()
 void NX_P9_set_channelinfo()
 //---------------------------------------------------------- get channelinfo from dmrSettings
 {
+  String fullName = String(digChlist[dmrSettings.chnr].Name) + " " + String(digChlist[dmrSettings.chnr].Location);
+  fullName.trim();
   Serial1.print("setup.t2.txt=\"");
-  Serial1.print(digChlist[dmrSettings.chnr].Name);
+  Serial1.print(fullName);
   Serial1.print("\"");
   NXend(92);
   Serial1.print("setup.n2.val=");
@@ -541,10 +560,12 @@ void NX_P9_displayVersion()
 // Display software version from current code module
 // Query DMR module version and display on oled, last line (unused for now)
 {
+
   Serial1.print("t6.txt=\"");
   Serial1.print(SoftwareVersion);
   Serial1.print("\"");
   NXend(94);
+#ifdef INC_DMR_CALLS
   if (DMRgetVersion())
   {
     char ModuleVersion[19] = "                  ";
@@ -558,12 +579,13 @@ void NX_P9_displayVersion()
     Serial1.print("\"");
     NXend(95);
   }
+#endif
 }
 void NX_P9_showVol()
 //----------------------------------------------------- NXshowVol
 
 {
-  Serial1.print("setup.j0.val="); // Changing the value of progress bar
+  Serial1.print("j0.val="); // Changing the value of progress bar
   int volproc = (100 * (dmrSettings.audioLevel - 1)) / (maxAudioVolume - 1);
   Serial1.print(volproc); // show set volume level
   NXend(96);
@@ -572,7 +594,7 @@ void NX_P9_showMicVol()
 //----------------------------------------------------- NXshowVol
 
 {
-  Serial1.print("setup.j1.val="); // Changing the value of progress bar
+  Serial1.print("j1.val="); // Changing the value of progress bar
   int volproc = (100 * dmrSettings.micLevel) / maxMicVolume;
   Serial1.print(volproc); // show set volume level
   NXend(97);
@@ -616,6 +638,7 @@ void  NX_P9_saveSSID(int indx)
   strcpy(WifiAp.passwd, dmrSettings.wifisettings[indx].passwd);
   strcpy(WifiAp.ssid, tmp);
   settingsAddWifiAp(&dmrSettings, &WifiAp, indx);
+  settingsWrite(&dmrSettings);
 }
 
 void  NX_P9_savePasswd(int indx)
@@ -634,6 +657,7 @@ void  NX_P9_savePasswd(int indx)
   strcpy(WifiAp.ssid, dmrSettings.wifisettings[indx].ssid);
   strcpy(WifiAp.passwd, tmp);
   settingsAddWifiAp(&dmrSettings, &WifiAp, indx);
+  settingsWrite(&dmrSettings);
 }
 //========================================================================== page 10
 void NX_P10_rxLastHeard()
@@ -665,6 +689,85 @@ void NX_P10_rxLastHeard()
     }
   }
 }
+//========================================================================= page 14
+void NX_P14_getRepeaterDMRid()
+//------------------------------------------------------NX_P9_getDMRid
+{
+  int k = 0;
+  char repeaterIDChar[10];
+  uint32_t repeaterID =  (uint32_t)NXbuff[5] << 16 | (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
+  ltoa(repeaterID, repeaterIDChar, 10);
+  switch (NXbuff[2])
+  {
+    case 0x02:
+      k = 0;
+      break;
+    case 0x04:
+      k = 1;
+      break;
+    case 0x06:
+      k = 2;
+      break;
+    case 0x08:
+      k = 3;
+      break;
+    case 0x0A:
+      k = 4;
+      break;
+    case 0x0C:
+      k = 5;
+      break;
+    case 0x0E:
+      k = 6;
+      break;
+  }
+  strcat(NXrepeaterName,"");
+  if (repeaterID > 0)
+  {
+    EIMreadStatus();
+    EIMreadRepeaterDMRid(repeaterIDChar, k);
+    NXrepeaterName[29] = 0x0;
+    settingsWrite(&dmrSettings);
+  }
+  Serial1.print("n");
+  Serial1.print(k);
+  Serial1.print(".val=");
+  Serial1.print(repeaterID);
+  NXend(142);
+
+  Serial1.print("t");
+  Serial1.print(k);
+  Serial1.print(".txt=");
+  Serial1.print("\"");
+  Serial1.print(NXrepeaterName);
+  Serial1.print("\"");
+  NXend(140);
+}
+
+void  NX_P14_fillRepeaterlist()
+{
+  for (int k = 0; k < 7; k++)
+  {
+    if (dmrSettings.repeater[k + 4].dmrId != 0)
+    {
+      Serial1.print("n");
+      Serial1.print(k);
+      Serial1.print(".val=");
+      Serial1.print(dmrSettings.repeater[k + 4].dmrId);
+      NXend(141);
+
+      sprintf(NXrepeaterName, "%s,%s", dmrSettings.repeater[k + 4].repeaterName, dmrSettings.repeater[k + 4].repeaterLoc);
+      Serial1.print("t");
+      Serial1.print(k);
+      Serial1.print(".txt=");
+      Serial1.print("\"");
+      Serial1.print(NXrepeaterName);
+      Serial1.print("\"");
+      NXend(142);
+    }
+  }
+}
+
 
 //========================================================================== field or button touch
 void NX_txtfield_touched()
@@ -735,6 +838,42 @@ void NX_txtfield_touched()
           NX_P9_savePasswd(3);
           break;
       }
+      break;
+    case 0x0D:
+      switch (NXbuff[2])
+      {
+        case 0x05:
+          NX_P9_getCallsign();
+          break;
+        case 0x06:
+          NX_P9_getDMRid();
+          break;
+        case 0x0E:
+          NX_P9_saveSSID(0);
+          break;
+        case 0x0F:
+          NX_P9_savePasswd(0);
+          break;
+        case 0x10:
+          NX_P9_saveSSID(1);
+          break;
+        case 0x11:
+          NX_P9_savePasswd(1);
+          break;
+        case 0x12:
+          NX_P9_saveSSID(2);
+          break;
+        case 0x13:
+          NX_P9_savePasswd(2);
+          break;
+        case 0x15:
+          NX_P9_saveSSID(3);
+          break;
+        case 0x16:
+          NX_P9_savePasswd(3);
+          break;
+      }
+      break;
   }
 }
 //========================================================================== field or button touch
@@ -745,12 +884,17 @@ void NX_numfield_touched()
   {
 
     case 0x09:
+    case 0x0D:
       switch (NXbuff[2])
       {
         case 0x9:
           NX_P9_getDMRid();
           break;
       }
+      break;
+    case 0x0E:
+      NX_P14_getRepeaterDMRid();
+      break;
   }
 }
 
@@ -866,6 +1010,7 @@ void NX_button_pressed()
     case  0x07:               //---------------------Send SMS
       break;
     case  0x09:               //---------------------Setup
+    case  0x0D:               //---------------------init Setup
       switch (NXbuff[2])
       {
         case 0x01:                   //lower audio b1
@@ -897,7 +1042,7 @@ void NX_button_pressed()
           dmrSettings.micLevel++;
           NX_P9_showMicVol();
           micVolume = dmrSettings.micLevel;
-          setMicVolume(micVolume);
+          DMRsetMicVolume(micVolume);
           settingsWrite(&dmrSettings);
           break;
         case 0x03:
@@ -908,8 +1053,11 @@ void NX_button_pressed()
           dmrSettings.micLevel--;
           NX_P9_showMicVol();
           micVolume = dmrSettings.micLevel;
-          setMicVolume(micVolume);
+          DMRsetMicVolume(micVolume);
           settingsWrite(&dmrSettings);
+          break;
+        case 0x18:
+          UnitState = SYSTEM_STARTING;          // page 13 (initSetup) exit button
           break;
       }
       break;
@@ -983,6 +1131,7 @@ void  NX_page_init()
       NXend(4);
 
     case 0x04:                                      //select repeater
+      p5_lastRecord = -1;
       if (NXbuff[2] == 0x00)
       {
         p4_curPage = 0;
@@ -1061,6 +1210,15 @@ void  NX_page_init()
         Serial1.print("bt2.val=0");
       }
       NXend(44);
+      break;
+    case 0x13:                                      //setup parameters (wifi, TS scanning
+      NX_P9_showVol();
+      NX_P9_showMicVol();
+      NX_P9_displayVersion();
+      break;
+    case 0x14:
+    case 0x0E:
+      NX_P14_fillRepeaterlist();
       break;
   }
 }

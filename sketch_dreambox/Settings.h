@@ -11,13 +11,15 @@ typedef struct _WifiSettingS {
 } WifiSettingS;
 
 typedef struct _TalkGroupS {
-  uint32_t    dmrId;
+  uint32_t    tg_id;
+  uint8_t     ts;
 } TalkGroupS;
 
 typedef struct _RepeaterS {
   uint8_t     zone;
   uint32_t    dmrId;
-  uint16_t    iaruChannel;        // IARU channel
+  uint32_t    tx;                 // tx freq
+  uint32_t    rx;                 // rx freq
   uint8_t     cc;                 // colour code
   uint8_t     timeSlot;           //
   uint8_t     timeSlotNo;         // number of timeslots
@@ -30,7 +32,7 @@ typedef struct _RepeaterS {
 
 
 typedef struct _RepeaterConfigS {
-  RepeaterS   repeater[50];
+  RepeaterS   repeater[30];
 } RepeaterConfigS;
 
 
@@ -46,7 +48,7 @@ typedef struct _DmrSettingsS {
   bool          ts_scan;          //
   uint8_t       rxTGStatus[33];   //
   uint32_t      rxTalkGroup[33];
-  RepeaterS     repeater[100];
+  RepeaterS     repeater[30];
 } DmrSettingsS;
 
 

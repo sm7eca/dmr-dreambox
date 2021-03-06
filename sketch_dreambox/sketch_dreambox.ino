@@ -1,10 +1,11 @@
 //  --
-char SoftwareVersion[21] = "SM7ECA-210305-2X";
+char SoftwareVersion[21] = "SM7ECA-210305-3A";
 #include <Arduino.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include "Settings.h"
+#define INC_DMR_CALLS
 
 //----------------------------------------- DMR MODULE COMMANDS
 //
@@ -32,7 +33,7 @@ char SoftwareVersion[21] = "SM7ECA-210305-2X";
 #define FUNC_DISABLE                   0x02
 
 // ---------------------------------------------------- Pin definitions
-#define  beepPin    14  //beepPin; OUTPUT, this is is actually A0 but we are to use it
+#define  beepPin    14  //beepPin; OUTPUT, this is is actually A0 but we are to use it 
 //for the beeper as pin 13 was used by SPI in this case
 
 //-------------------------------------------------------------- Main state machine states
@@ -43,6 +44,9 @@ char SoftwareVersion[21] = "SM7ECA-210305-2X";
 #define SMS_REC_STATE 5       // We are receiving a SMS
 #define SMS_SEND_STATE 6      // We are sending SMS
 #define MODE_CHANGE_STATE 7   // Change mode - not used yet
+#define INITIAL_INPUT 99      // Initial setup enter base information
+#define INITIAL_SAVE 98 // Initial setup enter base information
+#define SYSTEM_STARTING 97    // Normal system startup
 
 //------------------------------------------------------------ serial comm pins
 //RX, TX//additional serial ports for Nextion display
@@ -90,6 +94,7 @@ uint8_t p6_numRows = 6;       // number of rows of channels on page 6
 uint8_t p6_curPage = 0;        // current page of scroll list
 uint8_t p6_startRecord = 0;     // index of first record on a page
 boolean p6_eof = false;
+char NXrepeaterName[35];
 //------------------------------------------------------------ State Machine
 int     UnitState = IDLE_STATE;
 int     lastUnitState;
@@ -100,10 +105,11 @@ static unsigned long lastInterruptTime = 0, lastInterruptRSSITime = 0;
 //------------------------------------------------------------ Button status
 boolean btnPTT = false;
 boolean btnChangeCh = false;
-
-//------------------------------------------------------------ Calculated freq from chan no
-long int  tx_freq, rx_freq;
-
+//------------------------------------------------------------ WIFI status
+boolean BwifiOn = false;
+////------------------------------------------------------------ Calculated freq from chan no
+//long int  tx_freq, rx_freq;
+//
 // ----------------------------------------------------------- Scanning of time slots in IDLE_STATE
 boolean   ts_scan = true;
 uint32_t  tsSwitchLast;
@@ -146,18 +152,6 @@ byte  maxMicVolume = 15;
 byte  audioVolume = 4;
 byte  micVolume = 15;
 
-//----------------------------------------------------------- Saved settings
-//struct allSettings { //all our settings in EEPROM
-//  byte audioLevel; //1-9; default = 8
-//  byte micLevel; //0-15, mic gain setting
-//  char callSign[12]; //callsign, max 12 chars
-//  uint32_t localID;  // DMRID
-//  uint8_t chnr;
-//  uint32_t TG;
-//  bool ts_scan;   //
-//};
-//struct allSettings mySettings;
-//   uint32_t mySetting_localID;  // DMRID
 uint8_t   rxTGStatus[33] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                             1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                             1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0
@@ -166,7 +160,6 @@ uint32_t  rxTalkGroup[33] = {240, 2400, 2401, 2402, 240216, 2403, 2404, 2405, 24
                              24062, 24063, 2407, 240721, 2410, 2411, 2412, 2413, 2414, 2415, // 32 are fed into the rx group list
                              2416, 240240, 91, 9, 240850, 0, 0, 0, 0, 0, 0, 0
                             };                    // in the DMR module
-
 
 //----------------------------------------------------------- Global area setting of digital and analog channels
 typedef struct
@@ -277,6 +270,15 @@ DmrSettingsS dmrSettings;
 WifiSettingS  WifiAp;
 
 void   NXinitDisplay();
+void NXinitialSetup();
+boolean  wifiConnect();
+void WiFisetTime();
+void  EIMreadStatus();
+void  EIMreadRepeaters();
+void  EIMreadHotspots();
+boolean EIMreadRepeaterDMRid(char* DMRid);
+void  NXhandler();
+void  wifiGetDMRID();
 
 void beep(bool bp)
 //---------------------------------------------------------------- beep
@@ -293,124 +295,100 @@ void beep(bool bp)
   }
 }
 
-boolean calculateFreq(long int chan)
-//-------------------------------------------------------------- calculate freq
-// calculate frequency pairs fråm Channel RUxxx and Uxxx
-//
-{
-  if (chan > 360 and chan < 399)      // repeater channels RUxxx
-  {
-    rx_freq = 430000000 + 12500 * chan;
-    tx_freq = rx_freq - 2000000;
-    return true;
-  }
-  if (chan > 260 and chan < 303)      // simplex channels Uxxx
-  {
-    rx_freq = 430000000 + 12500 * chan;
-    tx_freq = rx_freq;
-    return true;
-  }
-  return false;
-}
+//boolean calculateFreq(long int chan)
+////-------------------------------------------------------------- calculate freq
+//// calculate frequency pairs fråm Channel RUxxx and Uxxx
+////
+//{
+//  if (chan > 360 and chan < 399)      // repeater channels RUxxx
+//  {
+//    rx_freq = 430000000 + 12500 * chan;
+//    tx_freq = rx_freq - 2000000;
+//    return true;
+//  }
+//  if (chan > 260 and chan < 303)      // simplex channels Uxxx
+//  {
+//    rx_freq = 430000000 + 12500 * chan;
+//    tx_freq = rx_freq;
+//    return true;
+//  }
+//  return false;
+//}
 
 //************************************************************************* start setup
 //*************************************************************************************
-
-
-void setup() {
+void setup()
+{
   // put your setup code here, to run once:
   Serial.begin(serial_speed);                   //Serial monitor
   Serial1.begin(57600, SERIAL_8N1, RXD1, TXD1);  //Nextion Display
+#ifdef INC_DMR_CALLS
   Serial2.begin(57600, SERIAL_8N1, RXD2, TXD2); //DMR module
   Serial2.setRxBufferSize(264);                 //We need at least 177 bytes for 0x24
+#endif
   pinMode(14, OUTPUT);                          //LED not used
   beep(true);                                   //set LED on
   while (!Serial)
   {
-    //  ; // wait for serial port to connect. Needed for native USB port only
+    ; // wait for serial port to connect. Needed for native USB port only
   }
-  Serial.println("Startar");
-  NXinitDisplay();                                         // Show the Nextion main page (0)
-  settingsInit();
-  bool initiated = settingsInitiated();
-  if (initiated) {
-    settingsRead(&dmrSettings);
+  Serial.println("Serial communication active");
+  NXinitDisplay();                                         // Show the DMR page
+  settingsInit();                                          // EEPROM initate
+  bool initiated = settingsInitiated();                    // Check if memory initiate by the app
+  if (initiated)
+  {
+    settingsRead(&dmrSettings);                            // Collect saved parameter data from EEPROM
     Serial.println(dmrSettings.localID);
+    UnitState = SYSTEM_STARTING;
   }
   else
   {
+    UnitState = INITIAL_INPUT;                              // firsta app strt - need to init EEPROM parameter data
     dmrSettings.version = 0x1;
-    //   dmrSettings.wifisettings[][2]= {{"jullen11", "19nittionio"},
-    //                                   {"malmoe99", "Nitton99"},
-    //                                   {"Arnes iPhone", "9x8z0utpnp5md"},
-    //                                   {"",""}};
-    dmrSettings.audioLevel = 8;         //  1-9; default = 8
-    dmrSettings.micLevel = 7;           //  0-15, mic gain setting
-    strcpy (dmrSettings.callSign, "SM7ECA");    // callsign, max 12 chars
-    dmrSettings.localID = 2400530;      //   DMRID
-    dmrSettings.chnr = 2;               //
-    dmrSettings.TG = 2406;              //  current talk group
+    for (int k = 0; k < 30; k++)
+    {
+      dmrSettings.repeater[k].zone  = 0;
+      dmrSettings.repeater[k].dmrId = 0;
+    }
     dmrSettings.ts_scan = false;        //
     for (int x = 0; x < 33; x++)
     {
       dmrSettings.rxTGStatus[x] = rxTGStatus[x] ;
       dmrSettings.rxTalkGroup[x] = rxTalkGroup[x];
     }
+    settingsWrite(&dmrSettings);
   }
-  //  strcpy(WifiAp.ssid,"malmoe99");
-  //  strcpy(WifiAp.passwd,"Nitton99");
-  //  settingsAddWifiAp(&dmrSettings, &WifiAp, 0);
-  //  strcpy(WifiAp.ssid,"jullen11");
-  //  strcpy(WifiAp.passwd,"19nittionio");
-  //  settingsAddWifiAp(&dmrSettings, &WifiAp, 1);
-  //  strcpy(WifiAp.ssid,"Arnes iPhone");
-  //  strcpy(WifiAp.passwd,"9x8z0utpnp5md");
-  //  settingsAddWifiAp(&dmrSettings, &WifiAp, 2);
-  Serial.print(dmrSettings.wifisettings[0].ssid);
-  Serial.println(dmrSettings.wifisettings[0].passwd);
-  Serial.print(dmrSettings.wifisettings[1].ssid);
-  Serial.println(dmrSettings.wifisettings[1].passwd);
-  Serial.print(dmrSettings.wifisettings[2].ssid);
-  Serial.println(dmrSettings.wifisettings[2].passwd);
-  wifiConnect();                                //Connect to WiFi
-  WiFisetTime();
-  DMRDebug = false;                            //tracing on Serial monitor
-  NXDebug = false;
-  //--------------------------------------------initiation - will be maintained on NX setup page
-  //  strcpy(mySettings.callSign, "SM7ECA");
-  //  mySettings.localID = 2400530;
-  //  mySettings.chnr = 2;
-  //  mySettings.TG = 2406;
-  //  mySettings.ts_scan = false;
-  audioVolume = dmrSettings.audioLevel;
-  micVolume = dmrSettings.micLevel;
-  curChanItem.chnr = dmrSettings.chnr;
-  curChanItem.TG = dmrSettings.TG;
+//  for (int k = 0; k < 50; k++)
+//  {
+//    dmrSettings.repeater[k].zone  = 0;
+//    dmrSettings.repeater[k].dmrId = 0;
+//  }
+//    settingsWrite(&dmrSettings);
+//
+    initiated = settingsInitiated();                    // Check if memory initiate by the app
 
-  while (not DMRTransmit(FUNC_ENABLE, QUERY_INIT_FINISHED)) // Check - DMR Module running?
+  //  Serial.print(dmrSettings.wifisettings[0].ssid);
+  //  Serial.println(dmrSettings.wifisettings[0].passwd);
+  //  Serial.print(dmrSettings.wifisettings[1].ssid);
+  //  Serial.println(dmrSettings.wifisettings[1].passwd);
+  //  Serial.print(dmrSettings.wifisettings[2].ssid);
+  //  Serial.println(dmrSettings.wifisettings[2].passwd);
+  //  EIMreadStatus();
+  //  EIMreadRepeatersMaster(2401, 10, 0);
+  //  char city[15]="Falkenberg";
+  //  char  country[15]="Sweden";
+  //  EIMreadRepeatersDistance(city, country,30, 10, 20);
+  //  EIMreadHotspots(dmrSettings.callSign);
+
+  DMRDebug = false;                            //  on Serial monitor
+  NXDebug = true;                             //  display communication
+  //  UnitState=INITIAL_INPUT;
+  if (UnitState == INITIAL_INPUT)              //  app strt - need to init EEPROM parameter data
   {
-    delay(1000);
+    NXinitialSetup();                          //  for initial init -test
   }
-  //NXdisplayVersion();
-  DMRinitChannel(curChanItem.chnr, curChanItem.TG);        // Setup initial DMR digital channel
-  DMRTransmit(FUNC_ENABLE, GET_DIGITAL_CHANNEL);           // Verify digital channel set
-  NX_P9_set_callsign_id();
-  NX_P0_DisplayMainPage();
-  NX_P0_updateRSSI(0);                                     // reset S meter on page 0
-  NX_P0_showVol();                                         // update the volume display from actual DMR value
-  // long int rx, tx;
-  // NX_P0_DisplayCurrent();
-  //stop the first beep
-  beep(false);                                             // LED off - startup finished
-  //-------------------------------------------------------set start values of state machine and TS scan param
-  UnitState = IDLE_STATE;
-  loopstart = loopstartNext = millis();
-  ts_scan = dmrSettings.ts_scan;
-  tsSwitchLast = millis();
-  Serial.print(" Setup free heap ");
-  Serial.println(ESP.getFreeHeap());
 }
-
 //************************************************************************** start main loop
 //******************************************************************************************
 void loop()
@@ -418,6 +396,13 @@ void loop()
   //  Main loop and State machine
   //---------------------------------development aid - show current state on p0
   NX_P0_showState();
+
+  if (UnitState == SYSTEM_STARTING)
+  {
+    IN_NormalStartup();
+  }
+
+
   //------------------------------- 0x3D start message found when reading from DMR
   if (bRecVoicemessageStart)
   {
@@ -436,16 +421,19 @@ void loop()
     bSMSmessageReceived = false;
     UnitState = SMS_REC_STATE;
   }
+#ifdef INC_DMR_CALLS
   //------------------------------- take care of message from DMR
   if (Serial2.available() != 0)
   {
     DMRhandler();
   }
+#endif
   //-------------------------------- take care of message from Nextion
   if (Serial1.available() != 0)
   {
     NXhandler();
   }
+#ifdef INC_DMR_CALLS
   //------------------------------- state machine handling certain situations
   switch (UnitState)
   {
@@ -459,5 +447,6 @@ void loop()
       do_RecDMR();
       break;
   }
+#endif
 }
 //************************************************************************** end main loop
