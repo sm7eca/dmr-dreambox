@@ -54,11 +54,13 @@ def test_repeater_callsign(call_sign: str, expected_status: int, expected_len: i
 	argnames="dmr_id,expected_status,expected_len",
 	argvalues=[
 		(204342, 200, 1),
-		(999999, 204, 0)
+		(999999, 204, 0),
+		(240701, 200, 1)
 	],
 	ids=[
 		"valid_dmr_id",
-		"invalid_dmr_id"
+		"invalid_dmr_id",
+		"check_tgs"
 	]
 )
 def test_repeater_dmrid(dmr_id: int, expected_status: int, expected_len: int):
@@ -67,6 +69,21 @@ def test_repeater_dmrid(dmr_id: int, expected_status: int, expected_len: int):
 	if response.status_code == 200:
 		assert not isinstance(response.json(), list)
 		assert isinstance(response.json(), dict)
+		
+		# check talk groups
+		repeater = response.json()
+		assert isinstance(repeater['tg'], list)
+
+		# check max_ts
+		assert repeater['max_ts'] == len(set([tg['ts'] for tg in repeater['tg']]))
+		
+		# ensure that we have removed "ts" from Repeater response model
+		assert "ts" not in repeater.keys()
+
+		# check whether we have removed repeater ID and master ID from TG
+		for tg in repeater["tg"]:
+			assert "master_id" not in tg.keys(), "unexpected key \"master_id\""
+			assert "rep_id" not in tg.keys(), "unexpected key \"rep_id\""
 
 
 def test_repeater_location():

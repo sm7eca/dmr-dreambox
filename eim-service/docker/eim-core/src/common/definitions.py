@@ -10,12 +10,11 @@ field_cc = Field(..., example=4, description="color code")
 field_callsign = Field(..., example="PI1SPA", description="repeater callsign/owners callsign when hotspot")
 field_location = Field(..., example="59.426891,24.819180", description="lat, long if provided")
 field_city = Field(..., example="Varberg, SE", description="city, country string provided by owner")
+field_max_ts = Field(..., example="2", description="number of time slots used by the repeater/hotspot")
 
 
 class TalkGroup(BaseModel):
     tg_id: int = Field(..., example=2401, description="talk group ID")
-    master_id: int = Field(..., example=2401, description="current DMR ID of master handling the traffic")
-    rep_id: int = Field(..., example=204342, description="DMR ID of repeater/hotspot handling this TG")
     ts: int = field_ts
     is_dynamic: bool = Field(..., example=True, description="whether this TG is dynamic")
 
@@ -28,8 +27,7 @@ class Repeater(BaseModel):
     tx: int = field_tx
     rx: int = field_rx
     cc: int = field_cc
-    ts: int = field_ts
-    max_ts: int
+    max_ts: int = field_max_ts
     name: str = field_callsign
     location: str = field_location
     city: str = field_city

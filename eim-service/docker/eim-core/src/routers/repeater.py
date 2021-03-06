@@ -93,7 +93,10 @@ async def repeater_dmrid(
 
         tgs = bm.get_talk_groups(dmr_id=dmr_id)
         logger.debug(f"received {len(tgs)} talk groups for DMR: {dmr_id}")
+
         list_repeater[0].tg = tgs
+        list_repeater[0].max_ts = len(set([tg.ts for tg in tgs]))
+
         return_data = list_repeater[0]
     else:
         response.status_code = status.HTTP_204_NO_CONTENT

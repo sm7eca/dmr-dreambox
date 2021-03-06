@@ -67,7 +67,6 @@ class MongoDB:
             "tx": float(db_entry["tx"]) * 1e6,
             "rx": float(db_entry["rx"]) * 1e6,
             "cc": int(db_entry["colorcode"]),
-            "ts": 1,
             "max_ts": 0,
             "name": db_entry["callsign"],
             "location": f"{db_entry['lat']},{db_entry['lng']}",
