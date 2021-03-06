@@ -4,7 +4,9 @@ from fastapi.responses import RedirectResponse
 
 from routers import repeater
 from routers import hotspot
+from routers import dmr
 from routers import info
+
 
 from common.logger import config_root_logger
 
@@ -33,4 +35,5 @@ def redirect_docs():
 
 app.include_router(repeater.router)
 app.include_router(hotspot.router)
+app.include_router(dmr.router)
 app.include_router(info.router)

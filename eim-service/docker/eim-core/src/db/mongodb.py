@@ -148,10 +148,10 @@ class MongoDB:
         col = self._db.get_collection("repeater")
         timestamp_24_hours_ago = int(datetime.now().timestamp()) - 86400
 
+        # we are looking for both repeater ("3") and hotspots ("4")
         query = {
-            "status": "3",
-            "repeaterid": str(dmr_id),
-            "last_updated_ts": {"$gt": timestamp_24_hours_ago}
+            "status": {"$in": ["3", "4"]},
+            "repeaterid": str(dmr_id)
         }
 
         logger.debug(f"query: {repr(query)}")
