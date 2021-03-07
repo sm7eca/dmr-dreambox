@@ -74,34 +74,6 @@ async def repeater_callsign(
     return repeaters[start:end]
 
 
-@router.get("/dmr/{dmr_id}", response_model=Optional[Repeater], status_code=status.HTTP_200_OK)
-async def repeater_dmrid(
-        dmr_id: int = path_dmr_id,
-        response: Response = Response()
-):
-
-    db = MongoDB()
-
-    list_repeater = db.get_repeater_by_dmrid(dmr_id)
-    length = len(list_repeater)
-    if list_repeater:
-        logger.debug(f"received {length} repeater from DB")
-
-        bm = Brandmeister()
-        if length > 1:
-            logger.critical(f"unexpected number of results for DMR_ID: {dmr_id}, expected 0/1")
-
-        tgs = bm.get_talk_groups(dmr_id=dmr_id)
-        logger.debug(f"received {len(tgs)} talk groups for DMR: {dmr_id}")
-        list_repeater[0].tg = tgs
-        return_data = list_repeater[0]
-    else:
-        response.status_code = status.HTTP_204_NO_CONTENT
-        return_data = None
-
-    return return_data
-
-
 @router.get("/location", response_model=List[RepeaterItem], status_code=status.HTTP_501_NOT_IMPLEMENTED)
 async def repeater_location(
         city: str = query_city,

@@ -67,7 +67,6 @@ class MongoDB:
             "tx": float(db_entry["tx"]) * 1e6,
             "rx": float(db_entry["rx"]) * 1e6,
             "cc": int(db_entry["colorcode"]),
-            "ts": 1,
             "max_ts": 0,
             "name": db_entry["callsign"],
             "location": f"{db_entry['lat']},{db_entry['lng']}",
@@ -149,10 +148,10 @@ class MongoDB:
         col = self._db.get_collection("repeater")
         timestamp_24_hours_ago = int(datetime.now().timestamp()) - 86400
 
+        # we are looking for both repeater ("3") and hotspots ("4")
         query = {
-            "status": "3",
-            "repeaterid": str(dmr_id),
-            "last_updated_ts": {"$gt": timestamp_24_hours_ago}
+            "status": {"$in": ["3", "4"]},
+            "repeaterid": str(dmr_id)
         }
 
         logger.debug(f"query: {repr(query)}")

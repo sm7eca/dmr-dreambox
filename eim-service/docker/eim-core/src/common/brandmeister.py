@@ -38,8 +38,6 @@ class Brandmeister:
         for tg in profile.get("staticSubscriptions"):
             tg_object = {
                 "tg_id": tg["talkgroup"],
-                "master_id": tg["networkid"],
-                "rep_id": tg["repeaterid"],
                 "ts": tg["slot"],
                 "is_dynamic": False
             }
@@ -49,8 +47,6 @@ class Brandmeister:
         for tg in profile.get("dynamicSubscriptions"):
             tg_object = {
                 "tg_id": tg["talkgroup"],
-                "master_id": tg["networkid"],
-                "rep_id": tg["repeaterid"],
                 "ts": tg["slot"],
                 "is_dynamic": True
             }
