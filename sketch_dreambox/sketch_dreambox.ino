@@ -1,5 +1,5 @@
 //  --
-char SoftwareVersion[21] = "SM7ECA-210307-3C";
+char SoftwareVersion[21] = "SM7ECA-210307-3B";
 #include <Arduino.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
@@ -79,18 +79,18 @@ uint8_t   lastNXtrans = 0;              // NX comm error debbugging aid
 boolean   WIFIcallfound = false;
 uint8_t   NXmaxrxTalkgroups = 32;       // Max no of talkgroup buttons on page 11
 // page 4
-uint8_t  p4_numRows = 6;       // number of rows of channels on page 4
+uint8_t  p4_numRows = 10;       // number of rows of channels on page 4
 uint8_t  p4_curPage = 0;        // current page of scroll list
 uint8_t  p4_startRecord = 0;     // index of first record on a page
 uint8_t  p4_selectedRow = 0;
 boolean  p4_eof = false;
 // page 5
 uint8_t p5_startRecord = 0;    // index to start searching
-uint8_t p5_numRows = 6;       // number of rows of channels on page 5
+uint8_t p5_numRows = 10;       // number of rows of channels on page 5
 uint8_t p5_lastRecord = -1;    // last record read on last page
 boolean p5_eof = false;
 // page 6
-uint8_t p6_numRows = 6;       // number of rows of channels on page 6
+uint8_t p6_numRows = 10;       // number of rows of channels on page 6
 uint8_t p6_curPage = 0;        // current page of scroll list
 uint8_t p6_startRecord = 0;     // index of first record on a page
 boolean p6_eof = false;
@@ -276,7 +276,8 @@ void WiFisetTime();
 void  EIMreadStatus();
 void  EIMreadRepeaters();
 void  EIMreadHotspots();
-boolean EIMreadRepeaterDMRid(char* DMRid);
+boolean EIMreadRepeaterDMRid(char* DMRid, int k);
+void  EIMeraseRepHotspot(int k);
 void  NXhandler();
 void  wifiGetDMRID();
 
@@ -339,7 +340,6 @@ void setup()
   if (initiated)
   {
     settingsRead(&dmrSettings);                            // Collect saved parameter data from EEPROM
-    Serial.println(dmrSettings.localID);
     UnitState = SYSTEM_STARTING;
   }
   else
@@ -359,35 +359,25 @@ void setup()
     }
     settingsWrite(&dmrSettings);
   }
-//  for (int k = 0; k < 50; k++)
+//  for (int k = 0; k < 50; k++)              // if you want to zero the repeater list
 //  {
 //    dmrSettings.repeater[k].zone  = 0;
 //    dmrSettings.repeater[k].dmrId = 0;
 //  }
-//    settingsWrite(&dmrSettings);
-//
-    initiated = settingsInitiated();                    // Check if memory initiate by the app
-
-  //  Serial.print(dmrSettings.wifisettings[0].ssid);
-  //  Serial.println(dmrSettings.wifisettings[0].passwd);
-  //  Serial.print(dmrSettings.wifisettings[1].ssid);
-  //  Serial.println(dmrSettings.wifisettings[1].passwd);
-  //  Serial.print(dmrSettings.wifisettings[2].ssid);
-  //  Serial.println(dmrSettings.wifisettings[2].passwd);
-  //  EIMreadStatus();
-  //  EIMreadRepeatersMaster(2401, 10, 0);
-  //  char city[15]="Falkenberg";
-  //  char  country[15]="Sweden";
-  //  EIMreadRepeatersDistance(city, country,30, 10, 20);
-  //  EIMreadHotspots(dmrSettings.callSign);
-
+//  settingsWrite(&dmrSettings);
+  if (sizeof(dmrSettings)>4096)
+  {
+    Serial.print("exceeded EEPROM capacity (4096): ");
+    Serial.println(sizeof(dmrSettings));
+  }
   DMRDebug = false;                            //  on Serial monitor
-  NXDebug = true;                             //  display communication
+  NXDebug = false;                              //  display communication
   //  UnitState=INITIAL_INPUT;
   if (UnitState == INITIAL_INPUT)              //  app strt - need to init EEPROM parameter data
   {
     NXinitialSetup();                          //  for initial init -test
   }
+  NX_P14_updateRepHotspotDB();                 // Move rephotspots from EEPROM to memory
 }
 //************************************************************************** start main loop
 //******************************************************************************************
@@ -401,7 +391,6 @@ void loop()
   {
     IN_NormalStartup();
   }
-
 
   //------------------------------- 0x3D start message found when reading from DMR
   if (bRecVoicemessageStart)
