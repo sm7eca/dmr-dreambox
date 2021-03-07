@@ -50,16 +50,16 @@ void wifiGetDMRID()
 {
   if (BwifiOn)
   {
-    String tempS = String(rxContactChar);
-    tempS = tempS.substring(0, 3);
-    if (tempS == "240")
-    {
-      wifiGetDMRIDswe();
-    }
-    else
-    {
+//    String tempS = String(rxContactChar);
+//    tempS = tempS.substring(0, 3);
+//    if (tempS == "240")
+//    {
+//      wifiGetDMRIDswe();
+//    }
+//    else
+//    {
       wifiGetDMRIDint();
-    }
+//    }
   }
 }
 void wifiGetDMRIDswe()

@@ -31,9 +31,9 @@ typedef struct _RepeaterS {
 #define SETTINGS_MAX_WIFI_AP 4
 
 
-typedef struct _RepeaterConfigS {
-  RepeaterS   repeater[30];
-} RepeaterConfigS;
+//typedef struct _RepeaterConfigS {
+//  RepeaterS   repeater[30];
+//} RepeaterConfigS;
 
 
 typedef struct _DmrSettingsS {
@@ -48,7 +48,7 @@ typedef struct _DmrSettingsS {
   bool          ts_scan;          //
   uint8_t       rxTGStatus[33];   //
   uint32_t      rxTalkGroup[33];
-  RepeaterS     repeater[30];
+  RepeaterS     repeater[28];
 } DmrSettingsS;
 
 

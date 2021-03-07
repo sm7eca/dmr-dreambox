@@ -7,8 +7,6 @@ typedef struct  {
   uint32_t DMRid;           //DMRid för repeater eller Hotspot
   uint32_t tx;              // tx freq
   uint32_t rx;              // rx freq
-//  uint16_t IARUchannel;      //freq.channel according to IARU like RUxxx and Uxxx, but saved without prefix.
-//  uint8_t  power;           //0:low power  1：high power
   uint8_t  cc;              //color code0~15
   uint8_t  TimeSlot;        //0:slot 1 1:slot 2  TS numbering like the 22 command states (Current time slot when active)
   uint8_t  TimeSlotNo;       //number of time slots 1 or 2.
@@ -183,10 +181,10 @@ callType CTlist[3] =
   {99, "the end"}
 };
 //========================================================== Display variables
-digCh NXp4Ch[6];
-repTG NXp5repTG[6];
-TG    NXp5TG[6];
-TG    NXp6TG[6];
+digCh NXp4Ch[10];
+repTG NXp5repTG[10];
+TG    NXp5TG[10];
+TG    NXp6TG[10];
 //----------------------------------------------------------- DMRid of received messages
 // this is a list of last heard DMRids. Maintained mainly to avoid doing excess Internet calls
 // to the Webservices Radioid and the swedish local list that I set up myself for this project

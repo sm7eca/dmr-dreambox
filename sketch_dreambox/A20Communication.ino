@@ -636,12 +636,10 @@ boolean DMRcheckSMSRec()
       Serial.print(" ");
     }
   }
-  //    rxContact =  (uint32_t)SMbuff[11]<<24|(uint32_t)buff[10]<<16|
+  //    rxContact =  (uint32_t)buff[11]<<24|(uint32_t)buff[10]<<16|
   //                        (uint32_t)buff[9]<<8|(uint32_t)buff[8];
   rxContact =  (uint32_t)buff[11] << 16 |
                (uint32_t)buff[10] << 8 | (uint32_t)buff[9];
-  Serial.print(rxContact);
-  Serial.print(" - ");
   ltoa(rxContact, rxContactChar, 10);
   //    Serial.print(rxContactChar);
   readradioid(rxContact);

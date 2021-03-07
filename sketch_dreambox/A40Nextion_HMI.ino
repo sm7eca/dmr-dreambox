@@ -691,11 +691,21 @@ void NX_P10_rxLastHeard()
 }
 //========================================================================= page 14
 void NX_P14_getRepeaterDMRid()
-//------------------------------------------------------NX_P9_getDMRid
+//-----------------------------------------------------P14_getRepeaterDMRid()
 {
   int k = 0;
   char repeaterIDChar[10];
-  uint32_t repeaterID =  (uint32_t)NXbuff[5] << 16 | (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
+  uint32_t repeaterID;
+  if (NXbuff[6] == 0x0)
+  {
+    repeaterID =  (uint32_t)NXbuff[5] << 16 | (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
+  }
+  else
+  {
+    repeaterID = (uint32_t)NXbuff[6] << 24 | (uint32_t)NXbuff[5] << 16 |
+                 (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
+  }
+  Serial.println(repeaterID);
   ltoa(repeaterID, repeaterIDChar, 10);
   switch (NXbuff[2])
   {
@@ -721,14 +731,20 @@ void NX_P14_getRepeaterDMRid()
       k = 6;
       break;
   }
-  strcat(NXrepeaterName,"");
-  if (repeaterID > 0)
+  if (repeaterID != 0)
   {
-    EIMreadStatus();
+    //    EIMreadStatus();
     EIMreadRepeaterDMRid(repeaterIDChar, k);
     NXrepeaterName[29] = 0x0;
-    settingsWrite(&dmrSettings);
   }
+  else
+  {
+    EIMeraseRepHotspot(k);
+    NXrepeaterName[0] = 0x0;
+  }
+  settingsWrite(&dmrSettings);
+
+
   Serial1.print("n");
   Serial1.print(k);
   Serial1.print(".val=");
@@ -745,29 +761,81 @@ void NX_P14_getRepeaterDMRid()
 }
 
 void  NX_P14_fillRepeaterlist()
+//---------------------------------------------------------------------P14_fillRepeaterlist
 {
   for (int k = 0; k < 7; k++)
   {
-    if (dmrSettings.repeater[k + 4].dmrId != 0)
+    Serial1.print("n");
+    Serial1.print(k);
+    Serial1.print(".val=");
+    Serial1.print(dmrSettings.repeater[k].dmrId);
+    NXend(141);
+    char charTmp[40] = "";
+    if (dmrSettings.repeater[k].dmrId != 0)
     {
-      Serial1.print("n");
-      Serial1.print(k);
-      Serial1.print(".val=");
-      Serial1.print(dmrSettings.repeater[k + 4].dmrId);
-      NXend(141);
-
-      sprintf(NXrepeaterName, "%s,%s", dmrSettings.repeater[k + 4].repeaterName, dmrSettings.repeater[k + 4].repeaterLoc);
-      Serial1.print("t");
-      Serial1.print(k);
-      Serial1.print(".txt=");
-      Serial1.print("\"");
-      Serial1.print(NXrepeaterName);
-      Serial1.print("\"");
-      NXend(142);
+      sprintf(charTmp, "%s,%s", dmrSettings.repeater[k].repeaterName, dmrSettings.repeater[k].repeaterLoc);
+      charTmp[29] = 0x0;
     }
+    Serial1.print("t");
+    Serial1.print(k);
+    Serial1.print(".txt=");
+    Serial1.print("\"");
+    Serial1.print(charTmp);
+    Serial1.print("\"");
+    NXend(142);
   }
 }
-
+void NX_P14_updateRepHotspotDB()
+{
+  int i = 0;
+  int j = 0;
+  int j_start = 0;
+  int n = 0;
+  for (int k; k < 7; k++)
+  {
+    if (dmrSettings.repeater[k].dmrId != 0)
+    {
+      digChlist[i].zone = dmrSettings.repeater[k].zone;                       //zone no = collection of repeaters or hotspots, not used yet
+      digChlist[i].chnr = i;                                                  //internal channel for sorting and scrolling
+      digChlist[i].DMRid = dmrSettings.repeater[k].dmrId;                     //DMRid för repeater eller Hotspot
+      digChlist[i].tx = dmrSettings.repeater[k].tx;                           // tx freq
+      digChlist[i].rx = dmrSettings.repeater[k].rx;                           // rx freq
+      digChlist[i].cc = dmrSettings.repeater[k].cc;                           //color code0~15
+      digChlist[i].TimeSlot = dmrSettings.repeater[k].timeSlot;               //0:slot 1 1:slot 2  TS numbering like the 22 command states (Current time slot when active)
+      digChlist[i].TimeSlotNo = dmrSettings.repeater[k].timeSlotNo;           //number of time slots 1 or 2.
+      digChlist[i].ChannelMode = 0;                                           //0:direct connection mode 4: true dual slot (DMR tier 2)
+      strcpy(digChlist[i].Name, dmrSettings.repeater[k].repeaterName);    //name of the channel, 14 chars
+      strcpy(digChlist[i].Location, dmrSettings.repeater[k].repeaterLoc); //location of device Hotspot or repeater, 14 chars
+      i++;
+      for (j = 0; j < 10; j++)
+      {
+        if (dmrSettings.repeater[k].groups[j].tg_id != 0)
+        {
+          repTGlist[n].DMRid = dmrSettings.repeater[k].dmrId;
+          repTGlist[n].TG = dmrSettings.repeater[k].groups[j].tg_id;
+          repTGlist[n].TS = dmrSettings.repeater[k].groups[j].ts;
+          n++;
+        }
+      }
+    }
+  }
+  digChlist[i].zone = 0;
+  digChlist[i].chnr = 255;
+  digChlist[i].DMRid = 0;
+  digChlist[i].tx = 0;
+  digChlist[i].rx = 0;
+  digChlist[i].cc = 0;
+  digChlist[i].TimeSlot = 0;
+  digChlist[i].TimeSlotNo = 0;
+  digChlist[i].ChannelMode = 0;
+  strcpy(digChlist[i].Name, "");
+  strcpy(digChlist[i].Location, "");
+  repTGlist[n].DMRid = 9999999;
+  repTGlist[n].TG = 0;
+  repTGlist[n].TS = 0;
+  maxdigChlist = i-1;
+  maxrepTGlist = n-1;
+}
 
 //========================================================================== field or button touch
 void NX_txtfield_touched()
@@ -1061,6 +1129,13 @@ void NX_button_pressed()
           break;
       }
       break;
+    case  0xE:               //---------------------rxGroup update
+      if (NXbuff[2] == 0x0)
+      {
+        NX_P14_updateRepHotspotDB();
+      }
+      break;
+
     case  0x11:               //---------------------rxGroup update
       if (NXbuff[2] < 32)
       {
@@ -1294,7 +1369,6 @@ boolean NXlisten()
   }
   if (Serial1.available() > 0)                                       // we have a message
   {
-    //     Serial.print("rec data found");
     while (Serial1.available() > 0 and i < 39)                              // read rest of message
     {
       NXbuff[i++] = Serial1.read(); //these are received response
