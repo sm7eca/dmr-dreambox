@@ -3,13 +3,15 @@ import pytest
 import requests
 from typing import Dict
 
+BASE_URL = "http://localhost"
+
 
 def test_sysinfo():
-	response = requests.get(url="http://localhost/system/info")
+	response = requests.get(url=f"{BASE_URL}/system/info")
 	assert response.status_code == 200
 
 def test_docs():
-	response = requests.get(url="http://localhost/docs")
+	response = requests.get(url=f"{BASE_URL}/docs")
 	assert response.status_code == 200
 
 
@@ -25,7 +27,7 @@ def test_docs():
 	]
 )
 def test_repeater_master(master_id: int, expected_status: int, expected_len: int):
-	response = requests.get(url=f"http://localhost/repeater/master/{master_id}?limit=5&skip=0")
+	response = requests.get(url=f"{BASE_URL}/repeater/master/{master_id}?limit=5&skip=0")
 	assert response.status_code == expected_status
 	if response.status_code == 200:
 		assert len(response.json()) == expected_len
@@ -43,14 +45,14 @@ def test_repeater_master(master_id: int, expected_status: int, expected_len: int
 	]
 )
 def test_repeater_callsign(call_sign: str, expected_status: int, expected_len: int):
-	response = requests.get(url=f"http://localhost/repeater/callsign/{call_sign}")
+	response = requests.get(url=f"{BASE_URL}/repeater/callsign/{call_sign}")
 	assert response.status_code == expected_status
 	if response.status_code == 200:
 		assert len(response.json()) == expected_len
 
 
 def test_no_repeater_dmr_id():
-	response = requests.get(url=f"http://localhost/repeater/dmr/240701")
+	response = requests.get(url=f"{BASE_URL}/repeater/dmr/240701")
 	assert response.status_code == 404
 
 
@@ -70,7 +72,7 @@ def test_no_repeater_dmr_id():
 	]
 )
 def test_repeater_dmrid(dmr_id: int, expected_status: int, expected_len: int):
-	response = requests.get(url=f"http://localhost/dmr/{dmr_id}")
+	response = requests.get(url=f"{BASE_URL}/dmr/{dmr_id}")
 	assert response.status_code == expected_status
 	if response.status_code == 200:
 		assert not isinstance(response.json(), list)
@@ -93,7 +95,7 @@ def test_repeater_dmrid(dmr_id: int, expected_status: int, expected_len: int):
 
 
 def test_repeater_location():
-	response = requests.get(url=f"http://localhost/repeater/location?city=Gothenburg&country=SE&distance=40")
+	response = requests.get(url=f"{BASE_URL}/repeater/location?city=Gothenburg&country=SE&distance=40")
 	assert response.status_code == 501
 
 
@@ -112,7 +114,7 @@ def test_hotspot(callsign: str, expected_status: int):
 	"""
 	Given a valid callsign, we expected that will receive a number of hotspots
 	"""
-	response = requests.get(url=f"http://localhost/hotspot/callsign/{callsign}")
+	response = requests.get(url=f"{BASE_URL}/hotspot/callsign/{callsign}")
 	assert response.status_code == expected_status
 
 
@@ -120,10 +122,23 @@ def test_redirect_root():
 	"""Given a GET request sent towards root, we expect to be redirected to /docs"""
 
 	# call the UUT
-	response = requests.get(url=f"http://localhost", allow_redirects=True)
+	response = requests.get(url=BASE_URL, allow_redirects=True)
 	
 	# assert results
 	assert response.status_code == 200
-	assert response.url == "http://localhost/docs"
+	assert response.url == f"{BASE_URL}/docs"
 	assert response.history[0].is_redirect
 	assert response.history[0].status_code == 307
+
+def test_repeater_location():
+
+	longitude = 12.4605814
+	latitude = 56.8984846
+	distance = 30	
+
+	req_url = f"{BASE_URL}/repeater/location?longitude={longitude}&latitude={latitude}&distance={distance}"
+
+	response = requests.get(url=req_url)
+
+	# assert results
+	assert response.status_code == 200
