@@ -1,6 +1,6 @@
 import os
 
-from pymongo import MongoClient, DESCENDING, InsertOne, UpdateOne, ReplaceOne, DeleteOne, GEOSPHERE
+from pymongo import MongoClient, DESCENDING, InsertOne, UpdateOne, ReplaceOne, DeleteOne, GEOSPHERE, TEXT
 from pymongo.errors import ConnectionFailure, BulkWriteError
 from pymongo.database import Database
 from pymongo.results import BulkWriteResult
@@ -67,7 +67,10 @@ class MongoDB:
 
         if "id_2dsphere" not in col.list_indexes():
             idx_location = ("loc", GEOSPHERE)
-            col.create_index([idx_location])
+            col.create_index(
+                [idx_location],
+                name="id_2dsphere"
+            )
             logger.debug("created index for GEOSPHERE")
 
         if "id_callsign_updated" not in col.list_indexes():
