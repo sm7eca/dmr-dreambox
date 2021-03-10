@@ -334,7 +334,7 @@ void setup()
     ; // wait for serial port to connect. Needed for native USB port only
   }
   Serial.println("Serial communication active");
-  NXinitDisplay("Serial);                                         // Show the DMR page
+  NXinitDisplay("Serial");                                         // Show the DMR page
   settingsInit();                                          // EEPROM initate
   bool initiated = settingsInitiated();                    // Check if memory initiate by the app
   if (initiated)
