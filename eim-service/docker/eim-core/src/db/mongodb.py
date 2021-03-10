@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 from urllib.parse import quote_plus
 
 from pymongo import MongoClient
@@ -122,12 +123,10 @@ class MongoDB:
     def get_repeater_by_callsign(self, call_sign) -> Optional[List[RepeaterItem]]:
 
         col = self._db.get_collection("repeater")
-        timestamp_24_hours_ago = int(datetime.now().timestamp()) - 86400
 
         query = {
             "status": "3",
-            "callsign": call_sign,
-            "last_updated_ts": {"$gt": timestamp_24_hours_ago}
+            "callsign": {"$regex": re.escape(call_sign)}
         }
 
         docs = col.find(filter=query, limit=0).sort("callsign")

@@ -37,11 +37,13 @@ def test_repeater_master(master_id: int, expected_status: int, expected_len: int
 	argnames="call_sign,expected_status,expected_len",
 	argvalues=[
 		("PI1SPA", 200, 1),
-		("DL7MCK", 204, 0)
+		("DL7MCK", 204, 0),
+		("AVQ", 200, 2)
 	],
 	ids=[
-		"valid_callsign",
-		"invalid_callsign"
+		"callsign_valid",
+		"callsign_invalid",
+		"callsign_regex"
 	]
 )
 def test_repeater_callsign(call_sign: str, expected_status: int, expected_len: int):
@@ -142,3 +144,5 @@ def test_repeater_location():
 
 	# assert results
 	assert response.status_code == 200
+	data = response.json()
+	assert len(data) > 0, "we expect at least a single item returned"
