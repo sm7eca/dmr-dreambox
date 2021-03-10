@@ -105,13 +105,13 @@ class MongoDB:
         """
 
         col = self._db.get_collection("repeater")
-        timestamp_24_hours_ago = int(datetime.now().timestamp()) - 86400
+        timestamp_1week_ago = int(datetime.now().timestamp()) - 604800
 
         # try to find all repeater (status == 3) for a given master, updated 24 hours ago
         query = {
             "lastKnownMaster": str(master_id),
             "status": "3",
-            "last_updated_ts": {"$gt": timestamp_24_hours_ago}
+            "last_updated_ts": {"$gt": timestamp_1week_ago}
         }
 
         docs = col.find(filter=query, limit=0).sort("callsign")
@@ -123,10 +123,12 @@ class MongoDB:
     def get_repeater_by_callsign(self, call_sign) -> Optional[List[RepeaterItem]]:
 
         col = self._db.get_collection("repeater")
+        timestamp_1week_ago = int(datetime.now().timestamp()) - 604800
 
         query = {
             "status": "3",
-            "callsign": {"$regex": re.escape(call_sign)}
+            "callsign": {"$regex": re.escape(call_sign)},
+            "last_updated_ts": {"$gt": timestamp_1week_ago}
         }
 
         docs = col.find(filter=query, limit=0).sort("callsign")
@@ -145,7 +147,6 @@ class MongoDB:
         """
 
         col = self._db.get_collection("repeater")
-        timestamp_24_hours_ago = int(datetime.now().timestamp()) - 86400
 
         # we are looking for both repeater ("3") and hotspots ("4")
         query = {
