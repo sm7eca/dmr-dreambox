@@ -142,3 +142,5 @@ def test_repeater_location():
 
 	# assert results
 	assert response.status_code == 200
+	data = response.json()
+	assert len(data) > 0, "we expect at least a single item returned"
