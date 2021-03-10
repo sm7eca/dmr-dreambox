@@ -4,16 +4,22 @@ char radioIdUrl[] = "https://database.radioid.net/api/dmr/user/?id=";
 char sweIdUrl[] = "https://fbg.johanneberg.com/services/radioid/?id=";
 long timezone = 1;
 byte daysavetime = 1;
+
 boolean  wifiConnect()
 //----------------------------------------------------------- wifiConnect
 //
 {
   uint32_t Connecttimer = 10000; // max time to wait för WLAN connect
   uint32_t starttime;
-  wifiMulti.addAP(dmrSettings.wifisettings[0].ssid, dmrSettings.wifisettings[0].passwd);   // add Wi-Fi networks you want to connect to
-//  wifiMulti.addAP(dmrSettings.wifisettings[1].ssid, dmrSettings.wifisettings[1].passwd);
-//  wifiMulti.addAP(dmrSettings.wifisettings[2].ssid, dmrSettings.wifisettings[2].passwd);
-
+  int y = 0;
+  for (int x = 0; x < 4; x++)
+  {
+    if (&dmrSettings.wifisettings[x].ssid[0]!=" ")
+    {
+      wifiMulti.addAP(dmrSettings.wifisettings[y].ssid, dmrSettings.wifisettings[x].passwd);
+      y++;
+    }
+  }
   Serial.println("Connecting ...");
   int i = 0;
   starttime = millis();
@@ -50,16 +56,16 @@ void wifiGetDMRID()
 {
   if (BwifiOn)
   {
-//    String tempS = String(rxContactChar);
-//    tempS = tempS.substring(0, 3);
-//    if (tempS == "240")
-//    {
-//      wifiGetDMRIDswe();
-//    }
-//    else
-//    {
+    String tempS = String(rxContactChar);
+    tempS = tempS.substring(0, 3);
+    if (tempS == "240")
+    {
+      wifiGetDMRIDswe();
+    }
+    else
+    {
       wifiGetDMRIDint();
-//    }
+    }
   }
 }
 void wifiGetDMRIDswe()

@@ -334,7 +334,7 @@ void setup()
     ; // wait for serial port to connect. Needed for native USB port only
   }
   Serial.println("Serial communication active");
-  NXinitDisplay();                                         // Show the DMR page
+  NXinitDisplay("Serial);                                         // Show the DMR page
   settingsInit();                                          // EEPROM initate
   bool initiated = settingsInitiated();                    // Check if memory initiate by the app
   if (initiated)
@@ -346,7 +346,7 @@ void setup()
   {
     UnitState = INITIAL_INPUT;                              // firsta app strt - need to init EEPROM parameter data
     dmrSettings.version = 0x1;
-    for (int k = 0; k < 30; k++)
+    for (int k = 0; k < 29; k++)
     {
       dmrSettings.repeater[k].zone  = 0;
       dmrSettings.repeater[k].dmrId = 0;
@@ -359,7 +359,7 @@ void setup()
     }
     settingsWrite(&dmrSettings);
   }
-//  for (int k = 0; k < 50; k++)              // if you want to zero the repeater list
+//  for (int k = 0; k < 29; k++)              // if you want to zero the repeater list
 //  {
 //    dmrSettings.repeater[k].zone  = 0;
 //    dmrSettings.repeater[k].dmrId = 0;

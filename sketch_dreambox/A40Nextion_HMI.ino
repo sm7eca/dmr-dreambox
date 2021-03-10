@@ -1,12 +1,22 @@
 //========================================================================== startup
 void NXend(int nr);
 
-void NXinitDisplay()
+void NX_P3_statusDisplay(const String msg)
+{
+  Serial1.print("DMRlogga.t0");
+  Serial1.print(".txt=");
+  Serial1.print("\"");
+  Serial1.print(msg);
+  Serial1.print("\"");
+  NXend(300);
+}
+void NXinitDisplay(const String msg)
 //----------------------------------------------------- NXinitDisplay
 //    start Nextion Screen
 {
   Serial1.print("page 3");   //page 3
   NXend(2);
+  NX_P3_statusDisplay(msg);
 }
 void NXinitialSetup()
 //----------------------------------------------------------- Initial setup screen (
