@@ -1,6 +1,6 @@
 import os
 
-from pymongo import MongoClient, DESCENDING, InsertOne, UpdateOne, ReplaceOne, DeleteOne
+from pymongo import MongoClient, DESCENDING, InsertOne, UpdateOne, ReplaceOne, DeleteOne, GEOSPHERE
 from pymongo.errors import ConnectionFailure, BulkWriteError
 from pymongo.database import Database
 from pymongo.results import BulkWriteResult
@@ -14,6 +14,7 @@ from typing import List, Optional
 
 
 logger = harvester_logger("mongodb")
+
 
 class MongoDbError(BaseException):
 
@@ -63,6 +64,11 @@ class MongoDB:
     def _create_indexes(col: Collection):
 
         logger.debug(f"list_indexes: {col.list_indexes()}")
+
+        if "id_2dsphere" not in col.list_indexes():
+            idx_location = ("loc", GEOSPHERE)
+            col.create_index([idx_location])
+            logger.debug("created index for GEOSPHERE")
 
         if "id_callsign_updated" not in col.list_indexes():
             idx_callsign = ("callsign", DESCENDING)

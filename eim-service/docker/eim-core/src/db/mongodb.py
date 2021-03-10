@@ -69,7 +69,7 @@ class MongoDB:
             "cc": int(db_entry["colorcode"]),
             "max_ts": 0,
             "name": db_entry["callsign"],
-            "location": f"{db_entry['lat']},{db_entry['lng']}",
+            "location": f"{db_entry['lng']},{db_entry['lat']}",
             "city": db_entry["city"]
         }
         r = Repeater(**r_object)
@@ -89,7 +89,7 @@ class MongoDB:
             "rx": float(db_entry["rx"]) * 1e6,
             "cc": int(db_entry["colorcode"]),
             "name": db_entry["callsign"],
-            "location": f"{db_entry['lat']},{db_entry['lng']}",
+            "location": f"{db_entry['lng']},{db_entry['lat']}",
             "city": db_entry["city"]
         }
         ri = RepeaterItem(**ri_object)
@@ -200,3 +200,25 @@ class MongoDB:
         num_docs = col.count_documents(filter={})
         return num_docs
 
+    def get_repeater_by_location(self, long: float, lat: float, distance_km: int) -> Optional[List[RepeaterItem]]:
+        """
+        Based on valid location data received from BM, query for 2d near-maxDistance
+        """
+
+        col: Collection = self._db.get_collection("repeater")
+
+        query = {
+            "status": "3",
+            "loc_valid": True,
+            "loc": {"$near": {"$geometry": {"type": "Point", "coordinates": [long, lat]},
+                              "$maxDistance": distance_km * 1000}}
+        }
+
+        docs = col.find(filter=query, limit=0)
+        logger.debug(f"received {docs.count()} repeater for {[long, lat]}, distance: {distance_km} km")
+
+        list_repeater = []
+        for record in docs:
+            list_repeater.append(self._translate_db_2_repeater_item(record))
+
+        return list_repeater
