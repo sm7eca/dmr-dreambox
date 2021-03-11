@@ -133,10 +133,8 @@ boards: .built-boards
 eim-release: .built-pushed-docker
 
 .PHONY = .built-pushed-docker
-.built-pushed-docker: Makefile
-	@echo "==> Build and push Docker container"
-	@docker build -t eim-core-base:latest eim-service/docker/eim-core-base/.
-	@docker-compose -f eim-service/docker-compose.yml build
+.built-pushed-docker: Makefile docker-images
+	@echo "==> Push Docker container"
 	@docker tag eim-core:latest smangelsen/eim-core:${RELEASE_NAME}
 	@docker tag eim-mongodb:latest smangelsen/eim-mongodb:${RELEASE_NAME}
 	@docker tag eim-harvester:latest smangelsen/eim-harvester:${RELEASE_NAME}
@@ -158,15 +156,17 @@ ${SOURCEDIR}/.tags: .ctags-files
 
 eim-deploy: .built-eim-deploy
 
-PHONY = eim-deploy-local
-eim-deploy-local: ${SOURCES_EIM_SERVICE}
-	@echo "==> deploy EIM service locally"
+docker-images:
+	@docker build -t eim-core-base eim-service/docker/eim-core-base/.
 	@docker-compose -f eim-service/docker-compose.yml build
+
+PHONY = eim-deploy-local
+eim-deploy-local: ${SOURCES_EIM_SERVICE} docker-images
+	@echo "==> deploy EIM service locally"
 	@( \
 		cd eim-service/deployment ; \
 		ansible-playbook -i inventory.yml --extra-vars "dmr_release_name=${RELEASE_NAME}" --limit local site.yml; \
 	)
-	pwd
 
 .built-eim-deploy: Makefile ${SOURCES_EIM_SERVICE}
 	@echo "==> deploy EIM service to production"
@@ -174,7 +174,6 @@ eim-deploy-local: ${SOURCES_EIM_SERVICE}
 		cd eim-service/deployment ; \
 		ansible-playbook -i inventory.yml --extra-vars "dmr_release_name=${RELEASE_NAME}" --limit production site.yml -K; \
 	)
-	pwd
 	@touch $@
 
 release-tag:
