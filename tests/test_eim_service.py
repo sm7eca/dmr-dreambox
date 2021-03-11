@@ -133,6 +133,11 @@ def test_redirect_root():
 	assert response.history[0].status_code == 307
 
 def test_repeater_location():
+	"""
+	Given a location in Falkenberg, there is no DMR enabled
+	repeater in that area
+	"""
+
 
 	longitude = 12.4605814
 	latitude = 56.8984846
@@ -143,6 +148,4 @@ def test_repeater_location():
 	response = requests.get(url=req_url)
 
 	# assert results
-	assert response.status_code == 200
-	data = response.json()
-	assert len(data) > 0, "we expect at least a single item returned"
+	assert response.status_code == 204
