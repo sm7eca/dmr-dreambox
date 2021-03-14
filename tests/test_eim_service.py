@@ -1,9 +1,10 @@
 
 import pytest
 import requests
+from time import sleep
 from typing import Dict
 
-BASE_URL = "http://localhost"
+BASE_URL = "http://localhost/api/v1"
 
 
 def test_sysinfo():
@@ -52,11 +53,13 @@ def test_repeater_callsign(call_sign: str, expected_status: int, expected_len: i
 	if response.status_code == 200:
 		assert len(response.json()) == expected_len
 
-
-def test_no_repeater_dmr_id():
-	response = requests.get(url=f"{BASE_URL}/repeater/dmr/240701")
+def test_invalid_api_endpoint_exception_covered():
+	response = requests.get(url=f"{BASE_URL}/repeater/dmr/A87987d9a8s7d9?lim=12")
 	assert response.status_code == 404
 
+def test_no_repeater_dmr_id():
+	response = requests.get(url=f"{BASE_URL}/repeater/dmr/2407099")
+	assert response.status_code == 404
 
 @pytest.mark.parametrize(
 	argnames="dmr_id,expected_status,expected_len",
@@ -79,14 +82,14 @@ def test_repeater_dmrid(dmr_id: int, expected_status: int, expected_len: int):
 	if response.status_code == 200:
 		assert not isinstance(response.json(), list)
 		assert isinstance(response.json(), dict)
-		
+
 		# check talk groups
 		repeater = response.json()
 		assert isinstance(repeater['tg'], list)
 
 		# check max_ts
 		assert repeater['max_ts'] == len(set([tg['ts'] for tg in repeater['tg']]))
-		
+
 		# ensure that we have removed "ts" from Repeater response model
 		assert "ts" not in repeater.keys()
 
@@ -125,12 +128,12 @@ def test_redirect_root():
 
 	# call the UUT
 	response = requests.get(url=BASE_URL, allow_redirects=True)
-	
+
 	# assert results
 	assert response.status_code == 200
 	assert response.url == f"{BASE_URL}/docs"
 	assert response.history[0].is_redirect
-	assert response.history[0].status_code == 307
+	assert response.history[0].status_code == 301
 
 def test_repeater_location():
 	"""
@@ -141,7 +144,7 @@ def test_repeater_location():
 
 	longitude = 12.4605814
 	latitude = 56.8984846
-	distance = 30	
+	distance = 30
 
 	req_url = f"{BASE_URL}/repeater/location?longitude={longitude}&latitude={latitude}&distance={distance}"
 
@@ -149,3 +152,21 @@ def test_repeater_location():
 
 	# assert results
 	assert response.status_code == 204
+
+def test_request_limiter():
+	"""
+	Given that we have configured the NGINX proxy with request limiting
+	we should never receive 503, instead requests are delayed before served
+	"""
+	sleep(4)
+	counter = 20
+	url = f"{BASE_URL}/system/info"
+	while counter > 0:
+		counter -= 1
+		response = requests.get(url=url)
+		if response.status_code != 200:
+			break
+
+		continue
+
+	assert counter <= 11, "we expect 9 request/s to be handled before receiving 503"

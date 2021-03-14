@@ -1,0 +1,14 @@
+
+# EIM API
+
+server {
+
+	listen 80 http;
+
+	default_type application/json;		# if not content type, assume JSON
+	
+	location /api/v1/ {
+		proxy_pass htttp://eim-core:8000/docs;
+	}
+
+}

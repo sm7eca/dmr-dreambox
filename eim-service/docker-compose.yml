@@ -2,16 +2,30 @@ version: "3.7"
 
 services:
 
+  eim-proxy:
+    build:
+      context: ./docker/eim-proxy/.
+    image: eim-proxy
+    container_name: eim-proxy
+    hostname: eim-proxy
+    ports:
+      - "80:80"
+    networks:
+      - eim-service
+      - eim-core
+    environment:
+      - EIM_NGINX_HOST
+      - TZ
+
   eim-core:
     build:
       context: ./docker/eim-core/.
     image: eim-core
     container_name: eim-core
     hostname: eim-core
-    ports:
-      - "80:80"
     depends_on:
       - eim-mongodb
+      - eim-proxy
     networks:
       - backend
       - eim-core
@@ -56,6 +70,7 @@ services:
       - "EIM_HARVESTER_PERIODICITY_SEC=10"
 
 networks:
+  eim-service:
   eim-core:
   backend:
     internal: true

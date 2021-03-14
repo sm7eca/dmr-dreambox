@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 
 from routers import repeater
@@ -22,15 +22,21 @@ app = FastAPI(
     description=f'External Information Management for DMR dreambox<br>'
                 f'DMR version: <a target="_blank" href={github_ref}/releases>{dmr_release}</a><br>'
                 f'Commit at Github: <a target="_blank" href="{github_ref}/commit/{eim_git_hash}">{eim_git_hash[:6]}</a>',
-    version=f"0.1.{eim_git_hash[:6]}"
+    version=f"0.1.{eim_git_hash[:6]}",
+    root_path="/api/v1"
 )
 
 
 @app.get("/", include_in_schema=False)
-def redirect_docs():
+def redirect_docs(request: Request):
     """Redirect ROOT to docs, so that a user by default end up reading something."""
-    response = RedirectResponse(url="/docs")
+    response = RedirectResponse(url=f"{request.scope.get('root_path')}/docs")
     return response
+
+
+@app.get("/app", include_in_schema=False)
+def read_main(request: Request):
+    return {"message": "Hello world", "root_path": request.scope.get("root_path")}
 
 
 app.include_router(repeater.router)
