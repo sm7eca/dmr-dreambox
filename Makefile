@@ -132,15 +132,13 @@ boards: .built-boards
 
 eim-release: .built-pushed-docker
 
-.PHONY = .built-pushed-docker
+.PHONY: .built-pushed-docker
 .built-pushed-docker: Makefile docker-images
 	@echo "==> Push Docker container"
-	@docker tag eim-core:latest smangelsen/eim-core:${RELEASE_NAME}
-	@docker tag eim-mongodb:latest smangelsen/eim-mongodb:${RELEASE_NAME}
-	@docker tag eim-harvester:latest smangelsen/eim-harvester:${RELEASE_NAME}
-	@docker push smangelsen/eim-core:${RELEASE_NAME}
-	@docker push smangelsen/eim-mongodb:${RELEASE_NAME}
-	@docker push smangelsen/eim-harvester:${RELEASE_NAME}
+	$(call docker-tag-push, smangelsen,eim-core,latest,${RELEASE_NAME})
+	$(call docker-tag-push, smangelsen,eim-mongodb,latest,${RELEASE_NAME})
+	$(call docker-tag-push, smangelsen,eim-harvester,latest,${RELEASE_NAME})
+	$(call docker-tag-push, smangelsen,eim-proxy,latest,${RELEASE_NAME})
 	@touch $@
 
 ctags: .built-ctags
@@ -208,4 +206,17 @@ venv-test: .built-venv-test
 #
 define git-create-tag
    @git tag -a -m "this_is_a_tag" $(1) HEAD
+endef
+
+# tag docker image to docker hub
+#	$1: user
+#  $2: image_name
+#	$3: old tag
+#  $4: new tag
+#
+define docker-tag-push
+	@echo "==> Docker, tag $(2):$(3) => $(1)/$(2):$(4)"
+	docker tag $(2):$(3) $(1)/$(2):$(4)
+	@echo "==> Docker, push $(1)/$(2):$(4)"
+	docker push $(1)/$(2):$(4)
 endef
