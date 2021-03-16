@@ -1,4 +1,5 @@
 
+import os
 from fastapi import APIRouter, Path, status, Response
 from common.definitions import Repeater
 from common.logger import get_logger
@@ -6,7 +7,7 @@ from common.brandmeister import Brandmeister
 from db.mongodb import MongoDB
 from typing import Optional
 
-logger = get_logger("routers.dmr")
+logger = get_logger("routers.dmr", log_level=os.getenv("EIM_LOG_LEVEL", "INFO"))
 
 router = APIRouter(
     prefix="/dmr",
@@ -45,12 +46,12 @@ async def repeater_dmrid(
 
         # fetch talk groups
         tgs = bm.get_talk_groups(dmr_id=dmr_id)
-        logger.debug(f"received {len(tgs)} talk groups for DMR: {dmr_id}")
 
         list_repeater[0].tg = tgs
         list_repeater[0].max_ts = len(set([tg.ts for tg in tgs]))
 
         return_data = list_repeater[0]
+        logger.info(f"received {len(tgs)} talk groups for DMR: {dmr_id}")
     else:
         response.status_code = status.HTTP_204_NO_CONTENT
         return_data = None

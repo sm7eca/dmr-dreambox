@@ -14,7 +14,7 @@ from typing import List, Optional, Dict
 
 from datetime import datetime
 
-logger = get_logger("mongodb")
+logger = get_logger("mongodb", log_level=os.getenv("EIM_LOG_LEVEL", "INFO"))
 
 
 class MongoDbError(BaseException):

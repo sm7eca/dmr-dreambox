@@ -1,4 +1,5 @@
 
+import os
 from fastapi import APIRouter, Path, status, Response, Query
 from common.definitions import RepeaterItem
 from common.logger import get_logger
@@ -6,7 +7,7 @@ from common.tools import compute_end_index
 from db.mongodb import MongoDB
 from typing import List
 
-logger = get_logger("routers.hotspot")
+logger = get_logger("routers.hotspot", log_level=os.getenv("EIM_LOG_LEVEL", "INFO"))
 
 router = APIRouter(
     prefix="/hotspot",
@@ -40,10 +41,10 @@ async def hotspot(
     hotspots = db.get_hotspot(call_sign=call_sign)
 
     if hotspots:
-        logger.debug(f"Received {len(hotspots)} hotspots for callsign {call_sign} from DB")
         num_hotspots = len(hotspots)
         start, end = compute_end_index(num_hotspots, 0, 0)
     else:
         response.status_code = status.HTTP_204_NO_CONTENT
 
+    logger.info(f"Received {len(hotspots)} hotspots for callsign {call_sign} from DB")
     return hotspots[:10]
