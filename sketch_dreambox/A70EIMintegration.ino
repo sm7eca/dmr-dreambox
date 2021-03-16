@@ -1,9 +1,9 @@
 
-char  EIMrepeaterUrl[] = "http://api.dmrdream.com/repeater/callsign/";
-char  EIMrepeaterLocationUrl[] = "http://api.dmrdream.com/repeater/location";
-char  EIMDMRUrl[] = "http://api.dmrdream.com/dmr/";
-char  EIMhotspotUrl[] = "http://api.dmrdream.com/hotspot/callsign/";
-char  EIMstatusUrl[] = "http://api.dmrdream.com/system/info";
+char  EIMrepeaterUrl[] = "http://api.dmrdream.com/api/v1/repeater/callsign/";
+char  EIMrepeaterLocationUrl[] = "http://api.dmrdream.com/api/v1/repeater/location";
+char  EIMDMRUrl[] = "http://api.dmrdream.com/api/v1/dmr/";
+char  EIMhotspotUrl[] = "http://api.dmrdream.com/api/v1/hotspot/callsign/";
+char  EIMstatusUrl[] = "http://api.dmrdream.com/api/v1/system/info";
 
 void  EIMeraseRepHotspot(int k)
 //-----------------------------------------------------------------------------------

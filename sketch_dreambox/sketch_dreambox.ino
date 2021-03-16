@@ -96,9 +96,9 @@ uint8_t p6_startRecord = 0;     // index of first record on a page
 boolean p6_eof = false;
 // page 15
 uint8_t p15_numRows = 14;
-uint32_t   p15_long;
-uint32_t   p15_lat;
-uint8_t    p15_dist;
+char    p15_long[11];
+char    p15_lat[11];
+uint8_t p15_dist;
 char NXrepeaterName[40];
 //------------------------------------------------------------ State Machine
 int     UnitState = IDLE_STATE;

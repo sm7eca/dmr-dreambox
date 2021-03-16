@@ -852,19 +852,39 @@ void NX_P15_getInput()
 {
   switch (NXbuff[2])
   {
-    case 0x14:
-      p15_long = (uint32_t)NXbuff[6] << 24 | (uint32_t)NXbuff[5] << 16 |
-                 (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
+    case 0x16:
+      for (int x = 0; x < 10; x++)
+      {
+        if (NXbuff[x + 3] == 0xFF)
+        {
+          p15_long[x] = 0x00;
+          break;
+        }
+        if (NXbuff[x + 3] != 0x20)
+        {
+          p15_long[x] = NXbuff[x + 3];
+        }
+      }
       Serial.print("p15_long ");
       Serial.println(p15_long);
       break;
-    case 0x15:
-      p15_lat = (uint32_t)NXbuff[6] << 24 | (uint32_t)NXbuff[5] << 16 |
-                (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
+    case 0x17:
+      for (int x = 0; x < 10; x++)
+      {
+        if (NXbuff[x + 3] == 0xFF)
+        {
+          p15_lat[x] = 0x00;
+          break;
+        }
+        if (NXbuff[x + 3] != 0x20)
+        {
+          p15_lat[x] = NXbuff[x + 3];
+        }
+      }
       Serial.println("p15_lat ");
       Serial.println(p15_lat);
       break;
-    case 0x16:
+    case 0x14:
       p15_dist = (uint32_t)NXbuff[6] << 24 | (uint32_t)NXbuff[5] << 16 |
                  (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
       Serial.println("p15_dist ");
@@ -881,57 +901,9 @@ void NX_P15_initPage()
 
 void  NX_P15_fillRepeaterlist()
 {
-  char longitude[8] = "";
-  char latitude[8] = "";
-  int   distance = 0;
-  char  tmparray[9];
-  ltoa(p15_long, tmparray, 10);
-  Serial.print("efter atol ");
-  Serial.println(tmparray);
-  for (int i = 0; i <= strlen(tmparray); i++)
+  if (!EIMreadRepeatersLocation(p15_long, p15_lat, p15_dist))
   {
-    if (i < 2)
-    {
-      longitude[i] = tmparray[i];
-    }
-    if (i == 2)
-    {
-      longitude[i] = '.';
-    }
-    if (i > 2)
-    {
-      longitude[i] = tmparray[i - 1];
-    }
-    Serial.println();
-    Serial.println(longitude);
-  }
-  Serial.println("p15_long ");
-  Serial.print(p15_long);
-  Serial.print(" ");
-  Serial.println(longitude);
-  ltoa(p15_lat, tmparray, 10);
-  for (int i = 0; i < strlen(tmparray); i++)
-  {
-    if (i < 2)
-    {
-      latitude[i] = tmparray[i];
-    }
-    if (i == 2)
-    {
-      latitude[i] = '.';
-    }
-    if (i > 2)
-    {
-      latitude[i] = tmparray[i - 1];
-    }
-  }
-  Serial.print("p15_lat ");
-  Serial.print(p15_lat);
-  Serial.print(" ");
-  Serial.println(latitude);
-  if (!EIMreadRepeatersLocation(longitude, latitude, p15_dist))
-  {
-    reptemplistCurLen=0;
+    reptemplistCurLen = 0;
   }
   for (int i = 0; i < p15_numRows; i++)
   {
@@ -1062,6 +1034,9 @@ void NX_txtfield_touched()
           break;
       }
       break;
+    case 0x0F:
+      NX_P15_getInput();
+      break;
   }
 }
 //========================================================================== field or button touch
@@ -1082,9 +1057,6 @@ void NX_numfield_touched()
       break;
     case 0x0E:
       NX_P14_getRepeaterDMRid();
-      break;
-    case 0x0F:
-      NX_P15_getInput();
       break;
   }
 }
