@@ -11,7 +11,7 @@ void  EIMeraseRepHotspot(int k)
   dmrSettings.repeater[k].zone  = 0;
   dmrSettings.repeater[k].dmrId = 0;
 }
-void  EIMreadStatus()
+boolean  EIMreadStatus()
 {
   if ((wifiMulti.run() == WL_CONNECTED))
   {
@@ -32,19 +32,21 @@ void  EIMreadStatus()
         {
           Serial.print(F("deserializeJson() failed: "));
           Serial.println(error.f_str());
-          return;
+          return false;
         }
         const char* uptime = doc["uptime"]; // "134882s"
         const char* version = doc["version"]; // "0.1.1"
         const char* maintainer = doc["maintainer"]; // "Arne Nilsson"
         long repeater = doc["repeater"]; // 15431        switch (err.code())
-        Serial.println(uptime);
-        Serial.println(version);
-        Serial.println(maintainer);
-        Serial.println(repeater);
+//        Serial.println(uptime);
+//        Serial.println(version);
+//        Serial.println(maintainer);
+//        Serial.println(repeater);
+        return true;
       }
     }
   }
+  return false;
 }
 boolean EIMdeserializeRepHot(String payload)
 //-----------------------------------------------------------------------------------
@@ -65,13 +67,13 @@ boolean EIMdeserializeRepHot(String payload)
   int max_ts = doc["max_ts"];
   const char *name = doc["name"];
   const char *location = doc["location"];
-  Serial.println(dmr_id);
-  Serial.println(tx);
-  Serial.println(rx);
-  Serial.println(cc);
-  Serial.println(max_ts);
-  Serial.println(name);
-  Serial.println(location);
+//  Serial.println(dmr_id);
+//  Serial.println(tx);
+//  Serial.println(rx);
+//  Serial.println(cc);
+//  Serial.println(max_ts);
+//  Serial.println(name);
+//  Serial.println(location);
 }
 boolean EIMreadRepeatersMaster(int master, int limit, int skip)
 //-----------------------------------------------------------------------------------
@@ -127,10 +129,10 @@ boolean EIMdeserializeRepHotList(String payload)
     const char* name = elem["name"];
     const char* location = elem["location"];
     const char* city = elem["city"];
-    if (tx > 432000000 and tx < 439000000 and dmr_id <9999999 
+    if (tx > 432000000 and tx < 439000000 and dmr_id < 9999999
         and reptemplistCurLen <= reptemplistMaxLen)
     {
-      k = reptemplistCurLen;
+      
       reptemplistCurLen++;
       reptemplist[k].dmrId = dmr_id;
       reptemplist[k].tx = tx;
@@ -143,6 +145,8 @@ boolean EIMdeserializeRepHotList(String payload)
       strcpy(reptemplist[k].repeaterLoc, city);
       Serial.println(reptemplist[k].dmrId);
       Serial.print(reptemplist[k].repeaterName);
+      reptemplistCurLen=k;
+      k++;
     }
   }
   return true;
@@ -155,7 +159,7 @@ boolean EIMreadRepeatersLocation(char* longitude, char* latitude, int distance)
   {
     HTTPClient http;
     char combinedArray[sizeof(EIMrepeaterLocationUrl)  + 100];
-    sprintf(combinedArray, "%s?longitude=%s&latitude=%s&distance=%u", EIMrepeaterLocationUrl, longitude, latitude, distance); // with word space
+    sprintf(combinedArray, "%s?longitude=%s&latitude=%s&distance=%u&limit=14&skip=0", EIMrepeaterLocationUrl, longitude, latitude, distance); // with word space
     Serial.println("EIMreadRepeatersLocation");
     Serial.println(combinedArray);
     http.begin(combinedArray);
@@ -226,7 +230,6 @@ boolean EIMdeserializeSingleRepeater(String input, int k)
     Serial.println(error.f_str());
     return false;
   }
-
   dmrSettings.repeater[k].dmrId = doc["dmr_id"]; // 240701
   dmrSettings.repeater[k].tx = doc["tx"]; // 434587500
   dmrSettings.repeater[k].rx = doc["rx"]; // 432587500
@@ -288,4 +291,35 @@ boolean EIMreadRepeaterDMRid(char* DMRid, int k)
       }
     }
   }
+}
+void  EIMprintDMRsettingsitem(int k)
+{
+  Serial.println(k);
+  Serial.print(dmrSettings.repeater[k].dmrId); // 240701
+  Serial.print(" ");
+  Serial.print(dmrSettings.repeater[k].tx); // 434587500
+  Serial.print(" ");
+  Serial.print(dmrSettings.repeater[k].rx); // 432587500
+  Serial.print(" ");
+  Serial.print(dmrSettings.repeater[k].cc); // 7
+  Serial.print(" ");
+  Serial.print(dmrSettings.repeater[k].timeSlot);
+  Serial.print(" ");
+  Serial.print(dmrSettings.repeater[k].timeSlotNo); // 0
+  Serial.print(" ");
+  Serial.print(dmrSettings.repeater[k].repeaterName); // "SK7RJL"
+  Serial.print(" ");
+  Serial.print(dmrSettings.repeater[k].repeaterLoc); // "Lund"
+  Serial.println();
+  for (int x = 0; x < 11; x++)
+  {
+    if (dmrSettings.repeater[k].groups[x].tg_id != 0)
+    {
+      Serial.print(dmrSettings.repeater[k].groups[x].tg_id);
+      Serial.print(" ");
+      Serial.print(dmrSettings.repeater[k].groups[x].ts);
+      Serial.print(" ");
+    }
+  }
+  Serial.println();
 }

@@ -30,7 +30,8 @@ typedef struct _RepeaterS {
 } RepeaterS;
 
 #define SETTINGS_MAX_WIFI_AP 4
-
+#define SETTINGS_MAX_NUM_MANUAL_REPEATERS 4
+#define SETTINGS_MAX_NUM_REPEATERS 28
 
 //typedef struct _RepeaterConfigS {
 //  RepeaterS   repeater[30];

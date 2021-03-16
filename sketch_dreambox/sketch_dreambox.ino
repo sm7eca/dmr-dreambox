@@ -1,5 +1,5 @@
 //  --
-char SoftwareVersion[21] = "SM7ECA-210315-3H";
+char SoftwareVersion[21] = "SM7ECA-210310-3E";
 #include <Arduino.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
@@ -33,7 +33,7 @@ char SoftwareVersion[21] = "SM7ECA-210315-3H";
 #define FUNC_DISABLE                   0x02
 
 // ---------------------------------------------------- Pin definitions
-#define  beepPin    14  //beepPin; OUTPUT, this is is actually A0 but we are to use it
+#define  beepPin    14  //beepPin; OUTPUT, this is is actually A0 but we are to use it 
 //for the beeper as pin 13 was used by SPI in this case
 
 //-------------------------------------------------------------- Main state machine states
@@ -272,6 +272,8 @@ typedef struct {        //all our data of each channel in EEPROM
 ChanItem curChanItem;
 
 DmrSettingsS dmrSettings;
+uint8_t numManualRep = SETTINGS_MAX_NUM_MANUAL_REPEATERS;
+uint8_t maxRepeaters = SETTINGS_MAX_NUM_REPEATERS;
 RepeaterS  reptemplist[21];       // temporary list of repeaters near given coordinate
 uint8_t   reptemplistMaxLen = 20;
 uint8_t   reptemplistCurLen;
@@ -282,12 +284,13 @@ void   NXinitDisplay();
 void NXinitialSetup();
 boolean  wifiConnect();
 void WiFisetTime();
-void  EIMreadStatus();
+boolean  EIMreadStatus();
 void  EIMreadRepeaters();
 void  EIMreadHotspots();
 boolean EIMreadRepeaterDMRid(char* DMRid, int k);
 boolean EIMreadRepeatersLocation(char* longitude, char* latitude, int distance);
 void  EIMeraseRepHotspot(int k);
+void  EIMprintDMRsettingsitem(int k);
 void  NXhandler();
 void  wifiGetDMRID();
 
@@ -356,26 +359,26 @@ void setup()
   {
     UnitState = INITIAL_INPUT;                              // firsta app strt - need to init EEPROM parameter data
     dmrSettings.version = 0x1;
-    for (int k = 0; k < 29; k++)
+    for (int k = 0; k <maxRepeaters ; k++)
     {
       dmrSettings.repeater[k].zone  = 0;
       dmrSettings.repeater[k].dmrId = 0;
     }
     dmrSettings.ts_scan = false;        //
-    for (int x = 0; x < 33; x++)
+    for (int x = 0; x <= maxRepeaters; x++)
     {
       dmrSettings.rxTGStatus[x] = rxTGStatus[x] ;
       dmrSettings.rxTalkGroup[x] = rxTalkGroup[x];
     }
     settingsWrite(&dmrSettings);
   }
-//  for (int k = 0; k < 29; k++)              // if you want to zero the repeater list
-//  {
-//    dmrSettings.repeater[k].zone  = 0;
-//    dmrSettings.repeater[k].dmrId = 0;
-//  }
-//  settingsWrite(&dmrSettings);
-  if (sizeof(dmrSettings)>4096)
+//    for (int k = 0; k <= maxRepeaters; k++)              // if you want to zero the repeater list
+//    {
+//      dmrSettings.repeater[k].zone  = 0;
+//      dmrSettings.repeater[k].dmrId = 0;
+//    }
+//    settingsWrite(&dmrSettings);
+  if (sizeof(dmrSettings) > 4096)
   {
     Serial.print("exceeded EEPROM capacity (4096): ");
     Serial.println(sizeof(dmrSettings));
@@ -387,7 +390,11 @@ void setup()
   {
     NXinitialSetup();                          //  for initial init -test
   }
-  NX_P14_updateRepHotspotDB();                 // Move rephotspots from EEPROM to memory
+//  for (int i=0;i<=maxRepeaters;i++)
+//  {
+//   EIMprintDMRsettingsitem(i);
+//  }
+  NX_P14_updateRepHotspotDB(0, maxRepeaters);                // Move rephotspots from EEPROM to memory
 }
 //************************************************************************** start main loop
 //******************************************************************************************

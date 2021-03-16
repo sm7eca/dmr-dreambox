@@ -715,7 +715,7 @@ void NX_P14_getRepeaterDMRid()
     repeaterID = (uint32_t)NXbuff[6] << 24 | (uint32_t)NXbuff[5] << 16 |
                  (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
   }
-  Serial.println(repeaterID);
+//  Serial.println(repeaterID);
   ltoa(repeaterID, repeaterIDChar, 10);
   switch (NXbuff[2])
   {
@@ -731,15 +731,15 @@ void NX_P14_getRepeaterDMRid()
     case 0x08:
       k = 3;
       break;
-    case 0x0A:
-      k = 4;
-      break;
-    case 0x0C:
-      k = 5;
-      break;
-    case 0x0E:
-      k = 6;
-      break;
+//    case 0x0A:
+//      k = 4;
+//      break;
+//    case 0x0C:
+//      k = 5;
+//      break;
+//    case 0x0E:
+//      k = 6;
+//      break;
   }
   if (repeaterID != 0)
   {
@@ -773,7 +773,7 @@ void NX_P14_getRepeaterDMRid()
 void  NX_P14_fillRepeaterlist()
 //---------------------------------------------------------------------P14_fillRepeaterlist
 {
-  for (int k = 0; k < 7; k++)
+  for (int k = 0; k < numManualRep; k++)
   {
     Serial1.print("n");
     Serial1.print(k);
@@ -795,14 +795,14 @@ void  NX_P14_fillRepeaterlist()
     NXend(142);
   }
 }
-void NX_P14_updateRepHotspotDB()
+void NX_P14_updateRepHotspotDB(int first, int last)
 //---------------------------------------------------------------------
 {
   int i = 0;
   int j = 0;
   int j_start = 0;
   int n = 0;
-  for (int k; k < 7; k++)
+  for (int k=first; k < last; k++)
   {
     if (dmrSettings.repeater[k].dmrId != 0)
     {
@@ -900,6 +900,7 @@ void NX_P15_initPage()
 }
 
 void  NX_P15_fillRepeaterlist()
+//---------------------------------------------------------------------
 {
   if (!EIMreadRepeatersLocation(p15_long, p15_lat, p15_dist))
   {
@@ -908,7 +909,7 @@ void  NX_P15_fillRepeaterlist()
   for (int i = 0; i < p15_numRows; i++)
   {
     strcpy(NXrepeaterName, "");
-    if (i < reptemplistCurLen)
+    if (i <= reptemplistCurLen)
     {
       //       sprintf(NXrepeaterName, "%d-%s,%s", reptemplist[i].dmrId, reptemplist[i].repeaterName, reptemplist[i].repeaterLoc);
       sprintf(NXrepeaterName, "%s,%s", reptemplist[i].repeaterName, reptemplist[i].repeaterLoc);
@@ -926,8 +927,58 @@ void  NX_P15_fillRepeaterlist()
 }
 void  NX_P15_saveRepeaterlist()
 //---------------------------------------------------------------------
+//  the repeaters that are dynamically assigned reside i slot 4-18 of the setting.repeater-list.
+//  Slot 0-4 are reserved for manually entered hotspots or repeaters.
+//  If a repeater is saved manually it will not be include in the dynamic list.
+//  For each repeater in the templist a call to EIM is made in order to find the associated Talkgroups.
+//  If the temporary repeaterlist is empty nothing is changed.
 {
-
+  char repeaterIDChar[10];
+  int t=reptemplistCurLen;
+  if (reptemplistCurLen = 0)
+  {
+    return;
+  }
+  if (!EIMreadStatus())
+  {
+    return;
+  }
+  
+  int j = numManualRep;
+  int k;
+  boolean manualfound = false;
+  for (int i = 0; i <= t; i++)
+  {
+//    Serial.println(i);
+//    Serial.println(reptemplist[i].dmrId);
+//    Serial.println(t);
+    manualfound = false;
+    for (k = 0; k < numManualRep; k++)
+    {
+      if (dmrSettings.repeater[k].dmrId == reptemplist[i].dmrId)
+      {
+        manualfound = true;
+      }
+    }
+    if (!manualfound)
+    {
+      ltoa(reptemplist[i].dmrId, repeaterIDChar, 10);
+      EIMreadRepeaterDMRid(repeaterIDChar, j);
+      j++;
+    }
+  }
+  for (int i=t+t; i < maxRepeaters; i++)              // if you want to zero the repeater list
+  {
+    dmrSettings.repeater[i].zone  = 0;
+    dmrSettings.repeater[i].dmrId = 0;
+  }
+//  for (int i=0;i<=maxRepeaters;i++)
+//  {
+//   EIMprintDMRsettingsitem(i);
+//  }
+  settingsWrite(&dmrSettings);
+  NX_P14_updateRepHotspotDB(0,maxRepeaters);
+//  DBprintChannels();
 }
 //========================================================================== field or button touch
 void NX_txtfield_touched()
@@ -1227,7 +1278,7 @@ void NX_button_pressed()
     case  0xE:               //---------------------rxGroup update
       if (NXbuff[2] == 0x0)
       {
-        NX_P14_updateRepHotspotDB();
+        NX_P14_updateRepHotspotDB(0,maxRepeaters);
       }
       break;
 
