@@ -106,6 +106,7 @@ int     lastUnitState;
 //------------------------------------------------------------ Timer variables
 unsigned long loopstart, loopstartNext, looptime, looptimelast;       // counting main loop time
 static unsigned long lastInterruptTime = 0, lastInterruptRSSITime = 0;
+unsigned long idletimer=0; 
 
 //------------------------------------------------------------ Button status
 boolean btnPTT = false;
@@ -337,18 +338,21 @@ void setup()
   Serial.begin(serial_speed);                   //Serial monitor
   Serial1.begin(57600, SERIAL_8N1, RXD1, TXD1);  //Nextion Display
 #ifdef INC_DMR_CALLS
+  NXinitDisplay("DMR init");  
   Serial2.begin(57600, SERIAL_8N1, RXD2, TXD2); //DMR module
   Serial2.setRxBufferSize(264);                 //We need at least 177 bytes for 0x24
 #endif
   pinMode(14, OUTPUT);                          //LED not used
   beep(true);                                   //set LED on
+  NXinitDisplay("Serial Mon init");
   while (!Serial)
   {
     ; // wait for serial port to connect. Needed for native USB port only
   }
   Serial.println("Serial communication active");
-  NXinitDisplay("Serial");                                         // Show the DMR page
-  settingsInit();                                          // EEPROM initate
+;                                         // Show the DMR page
+   NXinitDisplay("Init EEPROM");
+   settingsInit();                                          // EEPROM initate
   bool initiated = settingsInitiated();                    // Check if memory initiate by the app
   if (initiated)
   {
@@ -394,7 +398,10 @@ void setup()
 //  {
 //   EIMprintDMRsettingsitem(i);
 //  }
+  NXinitDisplay("Init ChannelDB");
   NX_P14_updateRepHotspotDB(0, maxRepeaters);                // Move rephotspots from EEPROM to memory
+  NXinitDisplay("Init Ready");
+
 }
 //************************************************************************** start main loop
 //******************************************************************************************
@@ -406,7 +413,9 @@ void loop()
 
   if (UnitState == SYSTEM_STARTING)
   {
+    NXdimdisplay(1);
     IN_NormalStartup();
+    NXdimdisplay(0);
   }
 
   //------------------------------- 0x3D start message found when reading from DMR
@@ -445,6 +454,11 @@ void loop()
   {
     case IDLE_STATE:            // 0
       do_idle();
+      if (millis()-idletimer>60000)
+      {
+        NXdimdisplay(1);
+        idletimer=millis();
+      }
       break;
     case TRANSMIT_STATE:        // 1
       do_transmit();

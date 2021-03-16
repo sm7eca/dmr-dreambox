@@ -1,15 +1,18 @@
 //******************************************************* Normal start aequence
 void IN_NormalStartup()
 {
+  NXinitDisplay("WIFI connect");
   if (wifiConnect())   //Connect to WiFi
   {
     BwifiOn = true;
   }
+    NXinitDisplay("Set time");
   WiFisetTime();
   audioVolume = dmrSettings.audioLevel;
   micVolume = dmrSettings.micLevel;
   curChanItem.chnr = dmrSettings.chnr;
   curChanItem.TG = dmrSettings.TG;
+  NXinitDisplay("Connect to DMR-mod");
 #ifdef INC_DMR_CALLS
   while (not DMRTransmit(FUNC_ENABLE, QUERY_INIT_FINISHED)) // Check - DMR Module running?
   {
@@ -17,8 +20,10 @@ void IN_NormalStartup()
   }
   //NXdisplayVersion();
 #endif
+  NXinitDisplay("Set DMR Channel");
   DMRinitChannel(curChanItem.chnr, curChanItem.TG);        // Setup initial DMR digital channel
   DMRTransmit(FUNC_ENABLE, GET_DIGITAL_CHANNEL);           // Verify digital channel set
+  NXinitDisplay("Display main page");
   NX_P9_set_callsign_id();
   NX_P0_DisplayMainPage();
   NX_P0_updateRSSI(0);                                     // reset S meter on page 0

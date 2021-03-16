@@ -45,6 +45,7 @@ void  do_transmit()
     DMRTransmit(FUNC_DISABLE, SET_TRANSMIT_INFORMATION);
     NX_P0_DisplayTransmit(false);
     UnitState = IDLE_STATE;
+    idletimer = millis();
   }
 }
 
@@ -60,6 +61,7 @@ void do_RecDMR()
       if (buff[8] == 0x00)                // We have lost connection = RSSI = 0, go back to idle
       {
         UnitState = IDLE_STATE;
+        idletimer = millis();
       }
 
       NX_P0_updateRSSI(buff[8]);

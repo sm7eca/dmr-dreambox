@@ -25,6 +25,24 @@ void NXinitialSetup()
   Serial1.print("page 13");
   NXend(201);
 }
+
+void NXdimdisplay(int func)
+//----------------------------------------------------------- Initial setup screen (
+//
+{
+  if (func == 1)
+  {
+    Serial1.print("dim=32");
+    NXend(202);
+  }
+  else
+  {
+    Serial1.print("dim=100");
+    NXend(203);
+  }
+
+}
+
 //========================================================================== page 0
 void NX_P0_DisplayMainPage()
 //----------------------------------------------------------- DisplayMainPage
@@ -1468,6 +1486,11 @@ void NXhandler()
 {
   if (Serial1.available() > 0)
   {
+    if (idletimer>0)
+    {
+      idletimer=millis();
+      NXdimdisplay(0);
+    }
     if (NXlisten())
     {
       switch (NXbuff[0])
