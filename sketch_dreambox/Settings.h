@@ -4,6 +4,7 @@
 
 #define SETTINGS_WIFI_SSID_LEN 32
 #define SETTINGS_WIFI_PASSWD_LEN 16
+#define REP_NEAR_OFFSET 5
 
 typedef struct _WifiSettingS {
   char ssid[SETTINGS_WIFI_SSID_LEN + 1];

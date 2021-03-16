@@ -94,7 +94,12 @@ uint8_t p6_numRows = 10;       // number of rows of channels on page 6
 uint8_t p6_curPage = 0;        // current page of scroll list
 uint8_t p6_startRecord = 0;     // index of first record on a page
 boolean p6_eof = false;
-char NXrepeaterName[35];
+// page 15
+uint8_t p15_numRows = 14;
+uint32_t   p15_long;
+uint32_t   p15_lat;
+uint8_t    p15_dist;
+char NXrepeaterName[40];
 //------------------------------------------------------------ State Machine
 int     UnitState = IDLE_STATE;
 int     lastUnitState;
@@ -267,6 +272,10 @@ typedef struct {        //all our data of each channel in EEPROM
 ChanItem curChanItem;
 
 DmrSettingsS dmrSettings;
+RepeaterS  reptemplist[21];       // temporary list of repeaters near given coordinate
+uint8_t   reptemplistMaxLen = 20;
+uint8_t   reptemplistCurLen;
+
 WifiSettingS  WifiAp;
 
 void   NXinitDisplay();
@@ -277,6 +286,7 @@ void  EIMreadStatus();
 void  EIMreadRepeaters();
 void  EIMreadHotspots();
 boolean EIMreadRepeaterDMRid(char* DMRid, int k);
+boolean EIMreadRepeatersLocation(char* longitude, char* latitude, int distance);
 void  EIMeraseRepHotspot(int k);
 void  NXhandler();
 void  wifiGetDMRID();
@@ -371,7 +381,7 @@ void setup()
     Serial.println(sizeof(dmrSettings));
   }
   DMRDebug = false;                            //  on Serial monitor
-  NXDebug = false;                              //  display communication
+  NXDebug = true;                              //  display communication
   //  UnitState=INITIAL_INPUT;
   if (UnitState == INITIAL_INPUT)              //  app strt - need to init EEPROM parameter data
   {
