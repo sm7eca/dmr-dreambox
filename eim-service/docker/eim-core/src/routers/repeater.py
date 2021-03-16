@@ -1,5 +1,6 @@
 """Implement Repeater routers"""
 
+import os
 from fastapi import APIRouter, Response, status, Query, Path
 from common.definitions import Repeater, RepeaterItem
 from common.logger import get_logger
@@ -8,7 +9,7 @@ from db.mongodb import MongoDB
 from typing import Optional, List
 
 
-logger = get_logger("routers.repeater")
+logger = get_logger("routers.repeater", log_level=os.getenv("EIM_LOG_LEVEL", "INFO"))
 
 router = APIRouter(
     prefix="/repeater",
@@ -43,12 +44,12 @@ async def repeater_master(
     length = len(repeaters)
 
     if repeaters:
-        logger.debug(f"received {length} repeater from DB")
         start, end = compute_end_index(length, skip, limit)
     else:
         response.status_code = status.HTTP_204_NO_CONTENT
         start = end = 0
 
+    logger.info(f"received {length} repeater from DB")
     return repeaters[start:end]
 
 
@@ -64,12 +65,12 @@ async def repeater_callsign(
     repeaters = db.get_repeater_by_callsign(call_sign)
     length = len(repeaters)
     if repeaters:
-        logger.debug(f"received {length} repeater from DB")
         start, end = compute_end_index(length, skip, limit)
     else:
         start = end = 0
         response.status_code = status.HTTP_204_NO_CONTENT
 
+    logger.info(f"received {length} repeater from DB")
     return repeaters[start:end]
 
 

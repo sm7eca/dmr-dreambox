@@ -31,10 +31,12 @@
 
 - name: Create Folder
   file:
-    dest: "{{ target_folder }}"
+    dest: "{{ item }}"
     state: directory
     owner: "{{ service_user }}"
     mode: 0740
+  loop:
+    - "{{ target_folder }}"
 
 - name: Generate required docker-compose files
   template:
@@ -82,10 +84,10 @@
     cmd: docker-compose -f /tmp/eim/docker-compose.yml up -d --build
   when: inventory_hostname in groups.local
 
-- name: "Validate connectivity to {{ uri_expected }}"
+- name: "Validate connectivity to {{ conn_check_url }}"
   delegate_to: localhost
   uri:
-    url: "{{ uri_expected }}"
+    url: "{{ conn_check_url }}"
     method: GET
   register: uri_data
   tags:

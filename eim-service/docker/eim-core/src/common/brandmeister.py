@@ -1,4 +1,5 @@
 
+import os
 import requests
 from requests import Response
 from requests.exceptions import ConnectionError, ConnectTimeout
@@ -7,7 +8,7 @@ from typing import List, Optional, Dict
 from common import logger
 
 
-logger = logger.get_logger("brandmeister")
+logger = logger.get_logger("brandmeister", log_level=os.getenv("EIM_LOG_LEVEL", "INFO"))
 
 
 class BrandmeisterE(BaseException):

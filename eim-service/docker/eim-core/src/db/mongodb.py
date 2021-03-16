@@ -14,7 +14,7 @@ from typing import List, Optional, Dict
 
 from datetime import datetime
 
-logger = get_logger("mongodb")
+logger = get_logger("mongodb", log_level=os.getenv("EIM_LOG_LEVEL", "INFO"))
 
 
 class MongoDbError(BaseException):
@@ -165,7 +165,8 @@ class MongoDB:
     def get_hotspot(self, call_sign: str) -> Optional[List[RepeaterItem]]:
         """
         Return a list of Repeater for a given callsign
-            - filter for status == 4, updated < 1 day and call sign
+            - filter for status == 4
+            - no filter for updated recently
         """
         logger.debug(f"==> Received hotspot request, callsign: {call_sign}")
         timestamp_24_hours_ago = int(datetime.now().timestamp()) - 86400
@@ -206,12 +207,14 @@ class MongoDB:
         """
 
         col: Collection = self._db.get_collection("repeater")
+        timestamp_1week_ago = int(datetime.now().timestamp()) - 604800
 
         query = {
             "status": "3",
             "loc_valid": True,
             "loc": {"$near": {"$geometry": {"type": "Point", "coordinates": [long, lat]},
-                              "$maxDistance": distance_km * 1000}}
+                              "$maxDistance": distance_km * 1000}},
+            "last_updated_ts": {"$gt": timestamp_1week_ago}
         }
 
         docs = col.find(filter=query, limit=0)

@@ -1,9 +1,13 @@
 ansible_become: false
 ansible_connection: local
 service_user: "{{ lookup('env', 'USER') }}"
-uri_expected: http://127.0.0.1/system/info
+
+eim_host: "127.0.0.1"
+conn_check_url: "{{ eim_proto }}://{{ eim_host }}{{ conn_check_uri }}"
+
+eim_docker_proxy: "eim-proxy:latest"
 eim_docker_core: "eim-core:latest"
 eim_docker_db : "eim-mongodb:latest"
 eim_docker_harvester: "eim-harvester:latest"
 eim_log_level: DEBUG
-eim_harvester_periodicity: 600
+eim_harvester_periodicity: 1800

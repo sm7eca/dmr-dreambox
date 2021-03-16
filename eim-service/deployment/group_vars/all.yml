@@ -1,0 +1,8 @@
+
+eim_proto: "http"
+eim_port: 8000
+eim_worker_threads: 2
+eim_worker_max: 10
+eim_worker_per_core: 2
+
+conn_check_uri: "/api/v1/system/info"

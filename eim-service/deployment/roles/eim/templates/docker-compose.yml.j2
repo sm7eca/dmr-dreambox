@@ -2,12 +2,25 @@ version: "3.7"
 
 services:
 
+  eim-proxy:
+    image: {{ eim_docker_proxy }}
+    container_name: eim-proxy
+    hostname: eim-proxy
+    depends_on:
+      - eim-core
+    ports:
+      - "80:80"
+    networks:
+      - eim-service
+      - eim-core
+    environment:
+      - EIM_NGINX_HOST
+      - TZ
+
   eim-core:
     image: {{ eim_docker_core }}
     container_name: eim-core
     hostname: eim-core
-    ports:
-      - "80:80"
     depends_on:
       - eim-mongodb
     networks:
@@ -22,7 +35,7 @@ services:
       - EIM_GIT_HASH
       - DMR_RELEASE_NAME
       - EIM_LOG_LEVEL
-      - "TZ=Europe/Stockholm"
+      - TZ
 
   eim-mongodb:
     image: {{ eim_docker_db }}
@@ -36,7 +49,7 @@ services:
       - EIM_DB_USER
       - EIM_DB_PASSWORD
       - EIM_LOG_LEVEL
-      - TZ=Europe/Stockholm
+      - TZ
     networks:
       - backend
     volumes:
@@ -60,9 +73,11 @@ services:
       - EIM_DB_NAME
       - EIM_DB_USER
       - EIM_DB_PASSWORD
+      - TZ
 
 networks:
   eim-core:
+  eim-service:
   backend:
     internal: true
 
