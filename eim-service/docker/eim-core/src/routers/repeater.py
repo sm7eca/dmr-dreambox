@@ -21,11 +21,11 @@ router = APIRouter(
     }
 )
 
-query_limit = Query(5, lt=20, example=5, description="limit number of items returned")
+query_limit = Query(20, le=20, example=5, description="limit number of items returned")
 query_skip = Query(0, ge=0, example=0, description="skip N items")
 query_longitude = Query(..., ge=-180, le=180, example="12.4605814", description="longitude as float")
 query_latitude = Query(..., ge=-90, le=90, example="56.8984846", description="latitude as float")
-query_distance = Query(30, ge=1, example=30, description="distance in km")
+query_distance = Query(30, ge=1, le=200, example=30, description="distance in km")
 
 path_dmr_id = Path(..., gt=0, example=2401, description="DMR ID, > 0")
 path_callsign = Path(..., example="PI1SPA", description="international callsign", min_length=3)
@@ -79,6 +79,8 @@ async def repeater_location(
         longitude: float = query_longitude,
         latitude: float = query_latitude,
         distance: Optional[int] = query_distance,
+        limit: Optional[int] = query_limit,
+        skip: Optional[int] = query_skip,
         response: Response = Response()
 ):
 
@@ -87,8 +89,10 @@ async def repeater_location(
     length = len(repeaters)
 
     if repeaters:
+        start, end = compute_end_index(length, skip, limit)
         logger.debug(f"received {length} repeater from DB")
     else:
+        start = end = 0
         response.status_code = status.HTTP_204_NO_CONTENT
 
-    return repeaters
+    return repeaters[start:end]

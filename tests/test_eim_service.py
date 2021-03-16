@@ -135,23 +135,40 @@ def test_redirect_root():
 	assert response.history[0].is_redirect
 	assert response.history[0].status_code == 301
 
-def test_repeater_location():
+
+@pytest.mark.parametrize(
+	argnames="longitude,latitude,distance,limit,expected_status",
+	argvalues=[
+		(12.4605814, 56.8984846, 99, None, 200),
+		(12.4605814, 56.8984846, 99, 5, 200),
+		(12.4605814, 56.8984846, 300, 5, 422)
+	],
+	ids=[
+		"falkenberg+99,no-limit",
+		"falkenberg+99,limit:5",
+		"falkenberg+99,distance-invalid"
+	]
+)
+def test_repeater_location(longitude, latitude, distance, limit, expected_status):
 	"""
 	Given a location in Falkenberg, there is no DMR enabled
 	repeater in that area
 	"""
 
+	req_url = f"{BASE_URL}/repeater/location" + \
+				 f"?longitude={longitude}&latitude={latitude}&distance={distance}"
 
-	longitude = 12.4605814
-	latitude = 56.8984846
-	distance = 30
-
-	req_url = f"{BASE_URL}/repeater/location?longitude={longitude}&latitude={latitude}&distance={distance}"
+	if limit:
+		req_url += f"&limit={limit}"
 
 	response = requests.get(url=req_url)
 
 	# assert results
-	assert response.status_code == 204
+	assert response.status_code == expected_status
+
+	if limit and expected_status == 200:
+		assert response.json()
+		assert len(response.json()) == limit
 
 def test_request_limiter():
 	"""
