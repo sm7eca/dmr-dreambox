@@ -42,7 +42,7 @@ esp-upload: esp-binary
 	@echo "ready to upload file to board: ${ARDUINO_BOARD_FQDN}"
 	arduino-cli upload --input-dir ${BUILD_DIR} -p ${ARDUINO_PROGRAMMER_PORT} --fqbn ${ARDUINO_BOARD_FQDN}
 
-release: ${BUILD_DIR}/${RELEASE_NAME}.zip function-test eim-release release-tag
+release: ${BUILD_DIR}/${RELEASE_NAME}.zip unit-test function-test eim-release release-tag
 	@echo "==> Release DONE, push tags and upload binaries to Github https://github.com/sm7eca/dmr-dreambox/releases"
 
 ${RELEASE_DIR}:
@@ -198,6 +198,16 @@ venv-test: .built-venv-test
 		python3 -m venv .venv ; \
 		. .venv/bin/activate ; \
 		python3 -m pytest -xvs tests/ ; \
+	)
+	@touch $@
+
+unit-test: .built-unit-test
+
+.built-unit-test: venv-test Makefile ${SOURCES_EIM_SERVICE}
+	@( \
+		echo "==> running unit tests"; \
+		. .venv/bin/activate ; \
+		python3 -m pytest -xvs eim-service/docker ; \
 	)
 	@touch $@
 
