@@ -141,10 +141,12 @@ def test_redirect_root():
 	argvalues=[
 		(12.4605814, 56.8984846, 99, None, 200),
 		(12.4605814, 56.8984846, 99, 5, 200),
+		(12.4605814, 56.8984846, 300, 5, 422)
 	],
 	ids=[
 		"falkenberg+99,no-limit",
-		"falkenberg+99,limit:5"
+		"falkenberg+99,limit:5",
+		"falkenberg+99,distance-invalid"
 	]
 )
 def test_repeater_location(longitude, latitude, distance, limit, expected_status):
@@ -164,7 +166,7 @@ def test_repeater_location(longitude, latitude, distance, limit, expected_status
 	# assert results
 	assert response.status_code == expected_status
 
-	if limit:
+	if limit and expected_status == 200:
 		assert response.json()
 		assert len(response.json()) == limit
 
