@@ -1,6 +1,7 @@
 
 import pytest
 from common.tools import compute_end_index
+from common.tools import uptime_2_human_string
 
 
 @pytest.mark.parametrize(
@@ -37,3 +38,29 @@ def test_compute_end_index(length, skip, limit, expected):
     # print(f"{len}:{skip}:{limit} ==> {test_list[start:end]}")
 
     assert (start, end) == expected
+
+
+@pytest.mark.parametrize(
+    argnames="uptime, expected",
+    argvalues=[
+        (100, "0:01:40 (d, h:m:s)"),
+        (0, "0:00:00 (d, h:m:s)"),
+        (3600, "1:00:00 (d, h:m:s)"),
+        (86402, "1 day, 0:00:02 (d, h:m:s)"),
+        (172804, "2 days, 0:00:04 (d, h:m:s)")
+    ],
+    ids=[
+        "100s->1min",
+        "0s -> 0min",
+        "3600s -> 1h",
+        "86402 -> 1d, 2s",
+        "172804 -> 2d, 4s"
+    ]
+)
+def test_uptime_2_human_string(uptime, expected):
+
+    # call UUT
+    actual = uptime_2_human_string(uptime)
+
+    # asserts
+    assert expected == actual, "unexpected result"
