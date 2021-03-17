@@ -26,7 +26,7 @@ path_dmr_id = Path(..., gt=0, example=240701, description="unique DMR ID, > 0")
     "/{dmr_id}",
     response_model=Optional[Repeater],
     status_code=status.HTTP_200_OK,
-    summary="Returns detailed repeater information for given DMR ID."
+    description="Retrieve detailed DMR endpoint information for given DMR ID"
 )
 async def repeater_dmrid(
         dmr_id: int = path_dmr_id,

@@ -27,8 +27,7 @@ query_skip = Query(0, ge=0, example=0, description="skip N items")
     "/callsign/{call_sign}",
     response_model=List[RepeaterItem],
     description="Retrieve hotspots based on call sign",
-    status_code=status.HTTP_200_OK,
-    summary="Return all hotspots who's callsign is matching."
+    status_code=status.HTTP_200_OK
 )
 async def hotspot(
         call_sign: str = Path(..., min_length=3, max_length=10, example="PI1SPA", description="international call sign"),

@@ -31,12 +31,7 @@ path_dmr_id = Path(..., gt=0, example=2401, description="DMR ID, > 0")
 path_callsign = Path(..., example="PI1SPA", description="international callsign", min_length=3)
 
 
-@router.get(
-    "/master/{master_id}",
-    response_model=List[RepeaterItem],
-    status_code=status.HTTP_200_OK,
-    summary="Return all repeater connected to a certain BM master"
-)
+@router.get("/master/{master_id}", response_model=List[RepeaterItem], status_code=status.HTTP_200_OK)
 async def repeater_master(
         master_id: int = path_dmr_id,
         limit: Optional[int] = query_limit,
@@ -58,12 +53,7 @@ async def repeater_master(
     return repeaters[start:end]
 
 
-@router.get(
-    "/callsign/{call_sign}",
-    response_model=List[RepeaterItem],
-    status_code=status.HTTP_200_OK,
-    summary="Get all repeater who's callsign is matching"
-)
+@router.get("/callsign/{call_sign}", response_model=List[RepeaterItem], status_code=status.HTTP_200_OK)
 async def repeater_callsign(
         call_sign: str = path_callsign,
         limit: Optional[int] = query_limit,
@@ -84,12 +74,7 @@ async def repeater_callsign(
     return repeaters[start:end]
 
 
-@router.get(
-    "/location",
-    response_model=List[RepeaterItem],
-    status_code=status.HTTP_200_OK,
-    summary="Get all repeater near a certain location,sorted by distance"
-)
+@router.get("/location", response_model=List[RepeaterItem], status_code=status.HTTP_200_OK)
 async def repeater_location(
         longitude: float = query_longitude,
         latitude: float = query_latitude,
