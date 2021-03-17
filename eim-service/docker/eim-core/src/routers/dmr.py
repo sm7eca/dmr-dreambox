@@ -47,6 +47,8 @@ async def repeater_dmrid(
         # fetch talk groups
         tgs = bm.get_talk_groups(dmr_id=dmr_id)
 
+        list_repeater[0].num_tg = len(tgs)
+
         list_repeater[0].tg = tgs
         list_repeater[0].max_ts = len(set([tg.ts for tg in tgs]))
 
