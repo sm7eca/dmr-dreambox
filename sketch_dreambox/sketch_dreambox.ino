@@ -1,5 +1,5 @@
 //  --
-char SoftwareVersion[21] = "SM7ECA-210310-3F";
+char SoftwareVersion[21] = "SM7ECA-210310-3G";
 #include <Arduino.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
@@ -106,7 +106,7 @@ int     lastUnitState;
 //------------------------------------------------------------ Timer variables
 unsigned long loopstart, loopstartNext, looptime, looptimelast;       // counting main loop time
 static unsigned long lastInterruptTime = 0, lastInterruptRSSITime = 0;
-unsigned long idletimer=0; 
+unsigned long idletimer = 0;
 
 //------------------------------------------------------------ Button status
 boolean btnPTT = false;
@@ -281,10 +281,20 @@ uint8_t   reptemplistCurLen;
 
 WifiSettingS  WifiAp;
 
-void   NXinitDisplay();
-void NXinitialSetup();
+void  NXinitDisplay();
+void  NXinitialSetup();
+void  NX_P0_showState();  
+void  NX_P0_DisplayMainPage();
+void  NX_P0_DisplayReceive(boolean rec_on, byte calltype, uint32_t TGId);
+void  NX_P0_DisplayTransmit(boolean on);
+void  NX_P0_DisplayCurrentTS();
+void  NX_P8_viewSMS(String rxContactChar, String SMStext);
+void  NX_P9_set_callsign_id();
+void  NX_P0_updateRSSI(uint8_t rssi);
+void  NX_P0_showVol();
+void  NX_P14_updateRepHotspotDB(int first, int last);
 boolean  wifiConnect();
-void WiFisetTime();
+void  WiFisetTime();
 boolean  EIMreadStatus();
 void  EIMreadRepeaters();
 void  EIMreadHotspots();
@@ -338,7 +348,7 @@ void setup()
   Serial.begin(serial_speed);                   //Serial monitor
   Serial1.begin(57600, SERIAL_8N1, RXD1, TXD1);  //Nextion Display
 #ifdef INC_DMR_CALLS
-  NXinitDisplay("DMR init");  
+  NXinitDisplay("DMR init");
   Serial2.begin(57600, SERIAL_8N1, RXD2, TXD2); //DMR module
   Serial2.setRxBufferSize(264);                 //We need at least 177 bytes for 0x24
 #endif
@@ -350,9 +360,9 @@ void setup()
     ; // wait for serial port to connect. Needed for native USB port only
   }
   Serial.println("Serial communication active");
-;                                         // Show the DMR page
-   NXinitDisplay("Init EEPROM");
-   settingsInit();                                          // EEPROM initate
+  ;                                         // Show the DMR page
+  NXinitDisplay("Init EEPROM");
+  settingsInit();                                          // EEPROM initate
   bool initiated = settingsInitiated();                    // Check if memory initiate by the app
   if (initiated)
   {
@@ -363,7 +373,7 @@ void setup()
   {
     UnitState = INITIAL_INPUT;                              // firsta app strt - need to init EEPROM parameter data
     dmrSettings.version = 0x1;
-    for (int k = 0; k <maxRepeaters ; k++)
+    for (int k = 0; k < maxRepeaters ; k++)
     {
       dmrSettings.repeater[k].zone  = 0;
       dmrSettings.repeater[k].dmrId = 0;
@@ -376,12 +386,12 @@ void setup()
     }
     settingsWrite(&dmrSettings);
   }
-//    for (int k = 0; k <= maxRepeaters; k++)              // if you want to zero the repeater list
-//    {
-//      dmrSettings.repeater[k].zone  = 0;
-//      dmrSettings.repeater[k].dmrId = 0;
-//    }
-//    settingsWrite(&dmrSettings);
+  //    for (int k = 0; k <= maxRepeaters; k++)              // if you want to zero the repeater list
+  //    {
+  //      dmrSettings.repeater[k].zone  = 0;
+  //      dmrSettings.repeater[k].dmrId = 0;
+  //    }
+  //    settingsWrite(&dmrSettings);
   if (sizeof(dmrSettings) > 4096)
   {
     Serial.print("exceeded EEPROM capacity (4096): ");
@@ -394,10 +404,10 @@ void setup()
   {
     NXinitialSetup();                          //  for initial init -test
   }
-//  for (int i=0;i<=maxRepeaters;i++)
-//  {
-//   EIMprintDMRsettingsitem(i);
-//  }
+  //  for (int i=0;i<=maxRepeaters;i++)
+  //  {
+  //   EIMprintDMRsettingsitem(i);
+  //  }
   NXinitDisplay("Init ChannelDB");
   NX_P14_updateRepHotspotDB(0, maxRepeaters);                // Move rephotspots from EEPROM to memory
   NXinitDisplay("Init Ready");
@@ -454,26 +464,26 @@ void loop()
   {
     case IDLE_STATE:            // 0
       do_idle();
-      if (millis()-idletimer>60000)
+      if (millis() - idletimer > 60000)
       {
         NXdimdisplay(1);
-        idletimer=millis();
+        idletimer = millis();
       }
       break;
     case TRANSMIT_STATE:        // 1
-      if (millis()-idletimer>0)
+      if (millis() - idletimer > 0)
       {
         NXdimdisplay(0);
-        idletimer=millis();
+        idletimer = millis();
       }
 
       do_transmit();
       break;
     case REC_DMR_STATE:         // 4
-      if (millis()-idletimer>0)
+      if (millis() - idletimer > 0)
       {
         NXdimdisplay(0);
-        idletimer=millis();
+        idletimer = millis();
       }
 
       do_RecDMR();

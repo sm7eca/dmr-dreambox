@@ -1,9 +1,10 @@
 
-char  EIMrepeaterUrl[] = "http://api.dmrdream.com/api/v1/repeater/callsign/";
-char  EIMrepeaterLocationUrl[] = "http://api.dmrdream.com/api/v1/repeater/location";
-char  EIMDMRUrl[] = "http://api.dmrdream.com/api/v1/dmr/";
-char  EIMhotspotUrl[] = "http://api.dmrdream.com/api/v1/hotspot/callsign/";
-char  EIMstatusUrl[] = "http://api.dmrdream.com/api/v1/system/info";
+char  EIMrepeaterUrl[] = "http://dmrdream.com/api/v1/repeater/callsign/";
+char  EIMrepeaterLocationUrl[] = "http://dmrdream.com/api/v1/repeater/location";
+char  EIMDMRUrl[] = "http://dmrdream.com/api/v1/dmr/";
+
+char  EIMhotspotUrl[] = "http://dmrdream.com/api/v1/hotspot/callsign/";
+char  EIMstatusUrl[] = "http://dmrdream.com/api/v1/system/info";
 
 void  EIMeraseRepHotspot(int k)
 //-----------------------------------------------------------------------------------
@@ -38,10 +39,10 @@ boolean  EIMreadStatus()
         const char* version = doc["version"]; // "0.1.1"
         const char* maintainer = doc["maintainer"]; // "Arne Nilsson"
         long repeater = doc["repeater"]; // 15431        switch (err.code())
-//        Serial.println(uptime);
-//        Serial.println(version);
-//        Serial.println(maintainer);
-//        Serial.println(repeater);
+        //        Serial.println(uptime);
+        //        Serial.println(version);
+        //        Serial.println(maintainer);
+        //        Serial.println(repeater);
         return true;
       }
     }
@@ -67,13 +68,7 @@ boolean EIMdeserializeRepHot(String payload)
   int max_ts = doc["max_ts"];
   const char *name = doc["name"];
   const char *location = doc["location"];
-//  Serial.println(dmr_id);
-//  Serial.println(tx);
-//  Serial.println(rx);
-//  Serial.println(cc);
-//  Serial.println(max_ts);
-//  Serial.println(name);
-//  Serial.println(location);
+  return true;
 }
 boolean EIMreadRepeatersMaster(int master, int limit, int skip)
 //-----------------------------------------------------------------------------------
@@ -99,13 +94,10 @@ boolean EIMreadRepeatersMaster(int master, int limit, int skip)
         {
           return true;
         }
-        else
-        {
-          return false;
-        }
       }
     }
   }
+  return false;
 }
 
 boolean EIMdeserializeRepHotList(String payload)
@@ -132,7 +124,7 @@ boolean EIMdeserializeRepHotList(String payload)
     if (tx > 432000000 and tx < 439000000 and dmr_id < 9999999
         and reptemplistCurLen <= reptemplistMaxLen)
     {
-      
+
       reptemplistCurLen++;
       reptemplist[k].dmrId = dmr_id;
       reptemplist[k].tx = tx;
@@ -145,7 +137,7 @@ boolean EIMdeserializeRepHotList(String payload)
       strcpy(reptemplist[k].repeaterLoc, city);
       Serial.println(reptemplist[k].dmrId);
       Serial.print(reptemplist[k].repeaterName);
-      reptemplistCurLen=k;
+      reptemplistCurLen = k;
       k++;
     }
   }
@@ -180,9 +172,9 @@ boolean EIMreadRepeatersLocation(char* longitude, char* latitude, int distance)
           return false;
         }
       }
-      return true;
     }
   }
+  return false;
 }
 
 boolean EIMreadHotspots(char* callsign)
@@ -208,19 +200,15 @@ boolean EIMreadHotspots(char* callsign)
         {
           return true;
         }
-        else
-        {
-          return false;
-        }
       }
     }
   }
+  return false;
 }
 boolean EIMdeserializeSingleRepeater(String input, int k)
 //-----------------------------------------------------------------------------------
 {
   // String input;
-
   StaticJsonDocument<1536> doc;
 
   DeserializationError error = deserializeJson(doc, input);
@@ -239,26 +227,32 @@ boolean EIMdeserializeSingleRepeater(String input, int k)
   strcpy(dmrSettings.repeater[k].repeaterName, doc["name"]); // "SK7RJL"
   const char* location = doc["location"]; // "55.720459,13.222694"
   strcpy(dmrSettings.repeater[k].repeaterLoc, doc["city"]); // "Lund"
+  int num_tg = doc["num_tg"];
   int x = 0;
-  for (JsonObject elem : doc["tg"].as<JsonArray>())
+  for (int i = 0; i < 10; i++)
   {
-    if (x < 10)
+    dmrSettings.repeater[k].groups[i].tg_id = 0;
+    dmrSettings.repeater[k].groups[i].ts = 0;
+  }
+  if (num_tg > 0)
+  {
+    if (num_tg > 10)
     {
-      if (elem["tg_id"] != 0)
+      num_tg = 10;
+    }
+    for (JsonObject elem : doc["tg"].as<JsonArray>())
+    {
+      if (x < num_tg)
       {
         dmrSettings.repeater[k].groups[x].tg_id = elem["tg_id"];
         dmrSettings.repeater[k].groups[x].ts = elem["ts"];
         //    bool is_dynamic = elem["is_dynamic"];
       }
-      else
-      {
-        dmrSettings.repeater[k].groups[x].tg_id = 0;
-        dmrSettings.repeater[k].groups[x].ts = 0;
-      }
+      x++;
     }
-    x++;
   }
   sprintf(NXrepeaterName, "%s. %s", dmrSettings.repeater[k].repeaterName, dmrSettings.repeater[k].repeaterLoc);
+  //EIMprintDMRsettingsitem(k);
   return true;
 }
 boolean EIMreadRepeaterDMRid(char* DMRid, int k)
@@ -284,13 +278,10 @@ boolean EIMreadRepeaterDMRid(char* DMRid, int k)
         {
           return true;
         }
-        else
-        {
-          return false;
-        }
       }
     }
   }
+  return false;
 }
 void  EIMprintDMRsettingsitem(int k)
 {
@@ -311,15 +302,12 @@ void  EIMprintDMRsettingsitem(int k)
   Serial.print(" ");
   Serial.print(dmrSettings.repeater[k].repeaterLoc); // "Lund"
   Serial.println();
-  for (int x = 0; x < 11; x++)
+  for (int x = 0; x < 10; x++)
   {
-    if (dmrSettings.repeater[k].groups[x].tg_id != 0)
-    {
-      Serial.print(dmrSettings.repeater[k].groups[x].tg_id);
-      Serial.print(" ");
-      Serial.print(dmrSettings.repeater[k].groups[x].ts);
-      Serial.print(" ");
-    }
+    Serial.print(dmrSettings.repeater[k].groups[x].tg_id);
+    Serial.print(" ");
+    Serial.print(dmrSettings.repeater[k].groups[x].ts);
+    Serial.print(" ");
   }
   Serial.println();
 }

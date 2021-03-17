@@ -352,8 +352,12 @@ boolean DBgetTG(uint32_t TG)
 void  DBprintChannels()
 {
   for (int k = 0; k < maxRepeaters; k++)
-{
-  if (digChlist[k].chnr == 255)
+  {
+    EIMprintDMRsettingsitem(k);
+  }
+  for (int k = 0; k < maxRepeaters; k++)
+  {
+    if (digChlist[k].chnr == 255)
     {
       break;
     }
@@ -377,6 +381,23 @@ void  DBprintChannels()
     Serial.print(digChlist[k].Name); // "SK7RJL"
     Serial.print(" ");
     Serial.print(digChlist[k].Location); // "Lund"
+    Serial.println();
+  }
+}
+void  DBprintTalkgroups()
+{
+  for (int k = 0; k <  maxrepTGlist; k++)
+  {
+    if (repTGlist[k].DMRid == 9999999)
+    {
+      break;
+    }
+    Serial.println(k);
+    Serial.print(repTGlist[k].DMRid); // 240701
+    Serial.print(" ");
+    Serial.print(repTGlist[k].TG); // 240701
+    Serial.print(" ");
+    Serial.print(repTGlist[k].TS); // 240701
     Serial.println();
   }
 }

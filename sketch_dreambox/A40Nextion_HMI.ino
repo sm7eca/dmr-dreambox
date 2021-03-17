@@ -42,7 +42,69 @@ void NXdimdisplay(int func)
   }
 
 }
+boolean NX_isvalidnum(char* charval)
+//-----------------------------------------------------------
+//
+{
+  Serial.println("check if num ");
+  boolean num = true;
+  int m = 99;
+  int p = 0;
+  if (strlen(charval) < 3)
+  {
+    return false;
+  }
+  for (int i = 0; i < strlen(charval); i++)
+  {
+    if (charval[i] == '-')
+    {
+      m = i;
+    }
+    else if (charval[i] == '.')
+    {
+      p = i;
+    }
+    else if (!(charval[i] >= '0' and charval[i] <= '9'))
+    {
+      num = false;
+    }
+    Serial.println(i);
+    Serial.println(charval[i]);
+    Serial.println(m);
+    Serial.println(p);
+  }
+  Serial.println();
+  if (num)
+  {
+    if (!(m == 0 or m == 99))
+    {
+      num = false;
+      Serial.println("!(m == 0 or m == 99)");
+    }
+    if (p == 0)
+    {
+      num = false;
+      Serial.println("p == 0");
+    }
+    if (m == 0 and p > 4)
+    {
+      num = false;
+      Serial.println("m == 0 and p > 4");
 
+    }
+    if (num)
+    {
+      if (!(m == 0 and p == 2 or m == 0 and p == 3 or m == 0 and p == 4 and charval[1] == '1' or
+            m == 99 and p == 1 or m == 99 and p == 2 or m == 99 and p == 3 and charval[0] == '1'))
+      {
+        num = false;
+        Serial.println("num but wrong . placement");
+      }
+    }
+  }
+  Serial.print(num);
+  return num;
+}
 //========================================================================== page 0
 void NX_P0_DisplayMainPage()
 //----------------------------------------------------------- DisplayMainPage
@@ -733,7 +795,7 @@ void NX_P14_getRepeaterDMRid()
     repeaterID = (uint32_t)NXbuff[6] << 24 | (uint32_t)NXbuff[5] << 16 |
                  (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
   }
-//  Serial.println(repeaterID);
+  //  Serial.println(repeaterID);
   ltoa(repeaterID, repeaterIDChar, 10);
   switch (NXbuff[2])
   {
@@ -749,21 +811,19 @@ void NX_P14_getRepeaterDMRid()
     case 0x08:
       k = 3;
       break;
-//    case 0x0A:
-//      k = 4;
-//      break;
-//    case 0x0C:
-//      k = 5;
-//      break;
-//    case 0x0E:
-//      k = 6;
-//      break;
   }
   if (repeaterID != 0)
   {
-    //    EIMreadStatus();
-    EIMreadRepeaterDMRid(repeaterIDChar, k);
-    NXrepeaterName[29] = 0x0;
+    if (EIMreadRepeaterDMRid(repeaterIDChar, k))
+    {
+      NXrepeaterName[29] = 0x0;
+    }
+    else
+    {
+      EIMeraseRepHotspot(k);
+      NXrepeaterName[0] = 0x0;
+      repeaterID = 0;
+    }
   }
   else
   {
@@ -771,8 +831,6 @@ void NX_P14_getRepeaterDMRid()
     NXrepeaterName[0] = 0x0;
   }
   settingsWrite(&dmrSettings);
-
-
   Serial1.print("n");
   Serial1.print(k);
   Serial1.print(".val=");
@@ -820,7 +878,7 @@ void NX_P14_updateRepHotspotDB(int first, int last)
   int j = 0;
   int j_start = 0;
   int n = 0;
-  for (int k=first; k < last; k++)
+  for (int k = first; k < last; k++)
   {
     if (dmrSettings.repeater[k].dmrId != 0)
     {
@@ -864,6 +922,8 @@ void NX_P14_updateRepHotspotDB(int first, int last)
   repTGlist[n].TS = 0;
   maxdigChlist = i - 1;
   maxrepTGlist = n - 1;
+//  DBprintChannels();
+//  DBprintTalkgroups();
 }
 void NX_P15_getInput()
 //---------------------------------------------------------------------
@@ -914,12 +974,53 @@ void NX_P15_getInput()
 void NX_P15_initPage()
 //---------------------------------------------------------------------
 {
+  Serial1.print("t");
+  Serial1.print(33);
+  Serial1.print(".txt=");
+  Serial1.print("\"");
+  Serial1.print("");
+  Serial1.print("\"");
+  NXend(151);
 
+}
+boolean NX_P15_checkinputfields()
+//---------------------------------------------------------------------
+{
+  char p15_errortext[26] = "";
+  if (!NX_isvalidnum(p15_long))
+  {
+    strcat(p15_errortext, "err:long ");
+  }
+  if (!NX_isvalidnum(p15_lat))
+  {
+    strcat(p15_errortext, "err:lat ");
+  }
+  if (p15_dist == 0 or p15_dist > 300)
+  {
+    strcat(p15_errortext, "err:dist");
+  }
+  Serial1.print("t");
+  Serial1.print(33);
+  Serial1.print(".txt=");
+  Serial1.print("\"");
+  Serial1.print(p15_errortext);
+  Serial1.print("\"");
+  NXend(151);
+
+  if (strlen(p15_errortext) > 0)
+  {
+    return false;
+  }
+  return true;
 }
 
 void  NX_P15_fillRepeaterlist()
 //---------------------------------------------------------------------
 {
+  if (!NX_P15_checkinputfields())
+  {
+    return;
+  }
   if (!EIMreadRepeatersLocation(p15_long, p15_lat, p15_dist))
   {
     reptemplistCurLen = 0;
@@ -952,7 +1053,7 @@ void  NX_P15_saveRepeaterlist()
 //  If the temporary repeaterlist is empty nothing is changed.
 {
   char repeaterIDChar[10];
-  int t=reptemplistCurLen;
+  int t = reptemplistCurLen;
   if (reptemplistCurLen = 0)
   {
     return;
@@ -961,15 +1062,15 @@ void  NX_P15_saveRepeaterlist()
   {
     return;
   }
-  
+
   int j = numManualRep;
   int k;
   boolean manualfound = false;
   for (int i = 0; i <= t; i++)
   {
-//    Serial.println(i);
-//    Serial.println(reptemplist[i].dmrId);
-//    Serial.println(t);
+    //    Serial.println(i);
+    //    Serial.println(reptemplist[i].dmrId);
+    //    Serial.println(t);
     manualfound = false;
     for (k = 0; k < numManualRep; k++)
     {
@@ -985,18 +1086,18 @@ void  NX_P15_saveRepeaterlist()
       j++;
     }
   }
-  for (int i=t+t; i < maxRepeaters; i++)              // if you want to zero the repeater list
+  for (int i = t + 1; i < maxRepeaters; i++)          // if you want to zero the repeater list
   {
     dmrSettings.repeater[i].zone  = 0;
     dmrSettings.repeater[i].dmrId = 0;
   }
-//  for (int i=0;i<=maxRepeaters;i++)
-//  {
-//   EIMprintDMRsettingsitem(i);
-//  }
+  //  for (int i=0;i<=maxRepeaters;i++)
+  //  {
+  //   EIMprintDMRsettingsitem(i);
+  //  }
   settingsWrite(&dmrSettings);
-  NX_P14_updateRepHotspotDB(0,maxRepeaters);
-//  DBprintChannels();
+  NX_P14_updateRepHotspotDB(0, maxRepeaters);
+  //  DBprintChannels();
 }
 //========================================================================== field or button touch
 void NX_txtfield_touched()
@@ -1296,7 +1397,7 @@ void NX_button_pressed()
     case  0xE:               //---------------------rxGroup update
       if (NXbuff[2] == 0x0)
       {
-        NX_P14_updateRepHotspotDB(0,maxRepeaters);
+        NX_P14_updateRepHotspotDB(0, maxRepeaters);
       }
       break;
 
@@ -1486,9 +1587,9 @@ void NXhandler()
 {
   if (Serial1.available() > 0)
   {
-    if (idletimer>0)
+    if (idletimer > 0)
     {
-      idletimer=millis();
+      idletimer = millis();
       NXdimdisplay(0);
     }
     if (NXlisten())
