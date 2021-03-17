@@ -1,5 +1,5 @@
 //  --
-char SoftwareVersion[21] = "SM7ECA-210310-3E";
+char SoftwareVersion[21] = "SM7ECA-210310-3F";
 #include <Arduino.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
@@ -461,9 +461,21 @@ void loop()
       }
       break;
     case TRANSMIT_STATE:        // 1
+      if (millis()-idletimer>0)
+      {
+        NXdimdisplay(0);
+        idletimer=millis();
+      }
+
       do_transmit();
       break;
     case REC_DMR_STATE:         // 4
+      if (millis()-idletimer>0)
+      {
+        NXdimdisplay(0);
+        idletimer=millis();
+      }
+
       do_RecDMR();
       break;
   }

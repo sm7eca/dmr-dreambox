@@ -32,7 +32,7 @@ void NXdimdisplay(int func)
 {
   if (func == 1)
   {
-    Serial1.print("dim=32");
+    Serial1.print("dim=25");
     NXend(202);
   }
   else
