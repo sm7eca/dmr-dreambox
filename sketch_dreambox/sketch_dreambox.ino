@@ -5,7 +5,7 @@ char SoftwareVersion[21] = "SM7ECA-210317-3N";
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include "Settings.h"
-#define INC_DMR_CALLS
+// #define INC_DMR_CALLS
 
 //----------------------------------------- DMR MODULE COMMANDS
 //
