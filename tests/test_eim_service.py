@@ -85,7 +85,13 @@ def test_repeater_dmrid(dmr_id: int, expected_status: int, expected_len: int):
 
 		# check talk groups
 		repeater = response.json()
+		assert isinstance(repeater, dict)
+
+		assert "num_tg" in repeater.keys()
+		assert "tg" in repeater.keys()
+
 		assert isinstance(repeater['tg'], list)
+		assert len(repeater['tg']) == repeater['num_tg']
 
 		# check max_ts
 		assert repeater['max_ts'] == len(set([tg['ts'] for tg in repeater['tg']]))

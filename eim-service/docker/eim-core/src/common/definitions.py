@@ -18,6 +18,7 @@ field_release_name = Field(..., example="dmr_dreambox_SM7ECA-210302-2S", descrip
 field_uptime = Field(..., example="800s", description="uptime in seconds")
 field_tg_id = Field(..., example=2401, description="DMR talk group ID")
 field_is_dynamic = Field(..., example=True, description="whether this TG is dynamic")
+field_num_tg = Field(..., example=3, description="number of TGs in list of talk groups")
 
 
 class TalkGroup(BaseModel):
@@ -38,6 +39,7 @@ class Repeater(BaseModel):
     name: str = field_callsign
     location: str = field_location
     city: str = field_city
+    num_tg: int = field_num_tg
     tg: Optional[List[TalkGroup]]
 
 

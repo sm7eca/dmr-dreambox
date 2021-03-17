@@ -71,7 +71,8 @@ class MongoDB:
             "max_ts": 0,
             "name": db_entry["callsign"],
             "location": f"{db_entry['lng']},{db_entry['lat']}",
-            "city": db_entry["city"]
+            "city": db_entry["city"],
+            "num_tg": 0
         }
         r = Repeater(**r_object)
         logger.debug(f"item translated: {repr(r)}")
