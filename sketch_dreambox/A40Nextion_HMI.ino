@@ -510,6 +510,10 @@ void NX_P5_buttonHandler()
       digData.tx_contact = NXp5repTG[NXbuff[2]].TG;
       digData.ContactType = NXp5TG[NXbuff[2]].calltype;
       DMRinitChannel(curChanItem.chnr, curChanItem.TG);
+      dmrSettings.chnr = NXp4Ch[p4_selectedRow].chnr;
+      dmrSettings.TG = NXp5repTG[NXbuff[2]].TG;
+      settingsWrite(&dmrSettings);
+
       Serial1.print("page 0");
     }
     else
