@@ -24,9 +24,9 @@ def harvester_config_root_logger():
         logging.info(f"Set root log level to {log_level}")
 
 
-def harvester_logger(name: str) -> logging.Logger:
+def harvester_logger(name: str, level: str = "INFO") -> logging.Logger:
 
     logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(os.getenv("EIM_LOG_LEVEL", level))
 
     return logger
