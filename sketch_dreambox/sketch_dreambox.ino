@@ -1,11 +1,11 @@
-//  --
+//  
 char SoftwareVersion[21] = "SM7ECA-210310-3H";
 #include <Arduino.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include "Settings.h"
-#define INC_DMR_CALLS
+// #define INC_DMR_CALLS
 
 //----------------------------------------- DMR MODULE COMMANDS
 //
@@ -33,7 +33,7 @@ char SoftwareVersion[21] = "SM7ECA-210310-3H";
 #define FUNC_DISABLE                   0x02
 
 // ---------------------------------------------------- Pin definitions
-#define  beepPin    14  //beepPin; OUTPUT, this is is actually A0 but we are to use it 
+#define  beepPin    14  //beepPin; OUTPUT, this is is actually A0 but we are to use it
 //for the beeper as pin 13 was used by SPI in this case
 
 //-------------------------------------------------------------- Main state machine states

@@ -3,20 +3,28 @@ from typing import Optional, List
 
 
 field_dmr = Field(..., example=204342, description="DMR ID for a given repeater/hotspot")
-field_tx = Field(..., example=436800000, description="repeater/hotspot TX frequency in MHz")
-field_rx = Field(..., example=430700000, description="repeater/hotspot RX frequency in MHz")
-field_ts = Field(..., example=1, description="time slot")
-field_cc = Field(..., example=4, description="color code")
+field_tx = Field(..., example=436800000, description="repeater/hotspot TX frequency in Hz")
+field_rx = Field(..., example=430700000, description="repeater/hotspot RX frequency in Hz")
+field_ts = Field(..., example=1, description="DMR time slot")
+field_cc = Field(..., example=4, description="DMR color code")
 field_callsign = Field(..., example="PI1SPA", description="repeater callsign/owners callsign when hotspot")
 field_location = Field(..., example="59.426891,24.819180", description="lat, long if provided")
 field_city = Field(..., example="Varberg, SE", description="city, country string provided by owner")
 field_max_ts = Field(..., example="2", description="number of time slots used by the repeater/hotspot")
+field_maintainer = Field(..., example="Max Mustermann", description="Maintainer of this service")
+field_git_commit = Field(..., example="5cebad", description="short GIT hash")
+field_num_repeater = Field(..., example=66440, description="number of receiver items stored in DB")
+field_release_name = Field(..., example="dmr_dreambox_SM7ECA-210302-2S", description="EIM release name")
+field_uptime = Field(..., example="800s", description="uptime in seconds")
+field_tg_id = Field(..., example=2401, description="DMR talk group ID")
+field_is_dynamic = Field(..., example=True, description="whether this TG is dynamic")
+field_num_tg = Field(..., example=3, description="number of TGs in list of talk groups")
 
 
 class TalkGroup(BaseModel):
-    tg_id: int = Field(..., example=2401, description="talk group ID")
+    tg_id: int = field_tg_id
     ts: int = field_ts
-    is_dynamic: bool = Field(..., example=True, description="whether this TG is dynamic")
+    is_dynamic: bool = field_is_dynamic
 
 
 class Repeater(BaseModel):
@@ -31,6 +39,7 @@ class Repeater(BaseModel):
     name: str = field_callsign
     location: str = field_location
     city: str = field_city
+    num_tg: int = field_num_tg
     tg: Optional[List[TalkGroup]]
 
 
@@ -52,8 +61,8 @@ class SysInfo(BaseModel):
     """
     SysInfo describing the installation
     """
-    uptime: str = Field(..., example="800s", description="uptime in seconds")
-    release: str = Field(..., example="dmr_dreambox_SM7ECA-210302-2S", description="DMR release name")
-    git_commit: str = Field(..., example="5cebad", description="short GIT hash")
-    maintainer: str = Field(..., example="Max Mustermann", description="Maintainer of this service")
-    repeater: int = Field(..., example=66440, description="number of receiver items stored in DB")
+    uptime: str = field_uptime
+    release: str = field_release_name
+    git_commit: str = field_git_commit
+    maintainer: str = field_maintainer
+    repeater: int = field_num_repeater

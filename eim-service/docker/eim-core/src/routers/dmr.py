@@ -26,7 +26,7 @@ path_dmr_id = Path(..., gt=0, example=240701, description="unique DMR ID, > 0")
     "/{dmr_id}",
     response_model=Optional[Repeater],
     status_code=status.HTTP_200_OK,
-    description="Retrieve detailed DMR endpoint information for given DMR ID"
+    summary="Returns detailed repeater information for given DMR ID."
 )
 async def repeater_dmrid(
         dmr_id: int = path_dmr_id,
@@ -46,6 +46,8 @@ async def repeater_dmrid(
 
         # fetch talk groups
         tgs = bm.get_talk_groups(dmr_id=dmr_id)
+
+        list_repeater[0].num_tg = len(tgs)
 
         list_repeater[0].tg = tgs
         list_repeater[0].max_ts = len(set([tg.ts for tg in tgs]))
