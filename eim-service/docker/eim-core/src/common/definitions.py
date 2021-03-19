@@ -15,6 +15,7 @@ field_city = Field(..., example="Varberg, SE", description="city, country string
 field_max_ts = Field(..., example="2", description="number of time slots used by the repeater/hotspot")
 field_maintainer = Field(..., example="Max Mustermann", description="Maintainer of this service")
 field_git_commit = Field(..., example="5cebad", description="short GIT hash")
+field_num_user = Field(..., example=202000, description="number of DMR users stored in DB")
 field_num_repeater = Field(..., example=66440, description="number of receiver items stored in DB")
 field_release_name = Field(..., example="dmr_dreambox_SM7ECA-210302-2S", description="EIM release name")
 field_uptime = Field(..., example="800s", description="uptime in seconds")
@@ -70,6 +71,7 @@ class SysInfo(BaseModel):
     release: str = field_release_name
     git_commit: str = field_git_commit
     maintainer: str = field_maintainer
+    user: int = field_num_user
     repeater: int = field_num_repeater
 
 

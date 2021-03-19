@@ -206,7 +206,7 @@ venv-test: .built-venv-test
 		echo "==> run function tests"; \
 		python3 -m venv .venv ; \
 		. .venv/bin/activate ; \
-		python3 -m pytest -xvs tests/ ; \
+		python3 -m pytest -xvs --host localhost tests/ ; \
 	)
 	@touch $@
 

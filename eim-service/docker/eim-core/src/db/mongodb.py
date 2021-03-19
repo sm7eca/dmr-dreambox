@@ -205,10 +205,10 @@ class MongoDB:
         - throw an exception if collection doesn't exist
 
         """
-        col: Collection = self._db.get_collection("repeater")
-        if "repeater" not in self._db.list_collection_names():
-            raise MongoDbError(f"no collection {col} found in DB")
+        if collection not in self._db.list_collection_names():
+            return 0
 
+        col: Collection = self._db.get_collection(collection)
         num_docs = col.count_documents(filter={})
         return num_docs
 

@@ -1,5 +1,5 @@
 //  --
-char SoftwareVersion[21] = "SM7ECA-210319-3O";
+char SoftwareVersion[21] = "SM7ECA-210319-3P";
 #include <Arduino.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
@@ -283,7 +283,7 @@ WifiSettingS  WifiAp;
 
 void  NXinitDisplay();
 void  NXinitialSetup();
-void  NX_P0_showState();  
+void  NX_P0_showState();
 void  NX_P0_DisplayMainPage();
 void  NX_P0_DisplayReceive(boolean rec_on, byte calltype, uint32_t TGId);
 void  NX_P0_DisplayTransmit(boolean on);
