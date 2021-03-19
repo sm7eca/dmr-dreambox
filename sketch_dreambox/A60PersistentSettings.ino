@@ -6,7 +6,7 @@
 EepromSettings eepromContainer;
 
 const int ADDR_SETTINGS = 0;
-const int ADDR_REPEATER = ADDR_SETTINGS + sizeof(EepromSettings) + 32;
+const int ADDR_REPEATER = ADDR_SETTINGS + sizeof(EepromSettings) + 31;
 const String debugStr = "PS: ";
 
 void settingsPrintMsg(const String msg)

@@ -1,132 +1,44 @@
 //============================================================ Main table area
 //----------------------------------------------------------- Channel base struct
-typedef struct  {
-  //Digital hotspot and repeater data
-  uint8_t  zone;            //zone no = collection of repeaters or hotspots, not used yet
-  uint8_t  chnr;            //internal channel for sorting and scrolling
-  uint32_t DMRid;           //DMRid för repeater eller Hotspot
-  uint32_t tx;              // tx freq
-  uint32_t rx;              // rx freq
-  uint8_t  cc;              //color code0~15
-  uint8_t  TimeSlot;        //0:slot 1 1:slot 2  TS numbering like the 22 command states (Current time slot when active)
-  uint8_t  TimeSlotNo;       //number of time slots 1 or 2.
-  uint8_t  ChannelMode;     //0:direct connection mode 4: true dual slot (DMR tier 2)
-  char     Name[15];        //name of the channel, 14 chars
-  char     Location[15];    //location of device Hotspot or repeater, 14 chars
-} digCh;
-uint16_t maxdigChlist = 100; //current highest index of records in CHlist (number of records - 1)
-uint16_t startrow = 0;    //only c channels will show on  the display at a time. Will be incremented
-// or decremented with p4_numRows when scrolling on page 4
-digCh digChlist[100];
-//= {
-//  {0,   0, 240048102, 433262500,433262500,    1, 2, 1 ,0, "Min Hotspot",   "At home"},
-//  {0,   1, 240618,    434587500,432587500,    6, 1, 2, 0, "SK6JX",         "Falkenberg"},
-//  {0,   2, 240701,    434587500,432587500,    7, 1, 2, 0, "SK7RJL",        "Lund"},
-//  {0,   3, 240711,    434775000,432775000,    7, 1, 2, 0, "SK7RJL",        "Malmö"},
-//  {0,   4, 240048103, 433262500,433262500,    1, 1, 1, 0, "BMin Hotspot",  "At home"},
-//  {0,   5, 240619,    434587500,432587500,    6, 1, 2, 0, "BSK6JX",        "Falkenberg"},
-//  {0,   6, 240702,    434587500,432587500,    7, 1, 2, 0, "BSK7RJL",       "Lund"},
-//  {0,   7, 240712,    434775000,432775000,    7, 1, 2, 0, "BSK7RJL",       "Malmö"},
-//  {0, 255, 0,         0,        0,            0, 0, 0, 0, " ",              " "}
-//};
+//typedef struct  {
+//  //Digital hotspot and repeater data
+//  uint8_t  zone;            //zone no = collection of repeaters or hotspots, not used yet
+//  uint8_t  chnr;            //internal channel for sorting and scrolling
+//  uint32_t DMRid;           //DMRid för repeater eller Hotspot
+//  uint32_t tx;              // tx freq
+//  uint32_t rx;              // rx freq
+//  uint8_t  cc;              //color code0~15
+//  uint8_t  TimeSlot;        //0:slot 1 1:slot 2  TS numbering like the 22 command states (Current time slot when active)
+//  uint8_t  TimeSlotNo;       //number of time slots 1 or 2.
+//  uint8_t  ChannelMode;     //0:direct connection mode 4: true dual slot (DMR tier 2)
+//  char     Name[15];        //name of the channel, 14 chars
+//  char     Location[15];    //location of device Hotspot or repeater, 14 chars
+//} digCh;
+//
+//--------------------------------- new version digChS 
+//typedef struct digChS{
+//  int  chnr;
+//  RepeaterS digRep;
+//}digChS;
 
-digCh curdigCh;
+RepeaterS  curdigCh;
+//--------------------------------- temporay Channel while scrolling on page 4 and 5
+RepeaterS tmpdigCh;
 
 //----------------------------------------------------------- Repeater static TG
-typedef struct  {
-  uint32_t  DMRid;
-  uint32_t  TG;
-  uint8_t  TS;
-} repTG;
+//typedef struct  {
+//  uint32_t  DMRid;
+//  uint32_t  TG;
+//  uint8_t  TS;
+//} repTG;
 
-uint16_t maxrepTGlist = 200;      //current highest index of records in repTGlist (number of records - 1)
+//uint16_t maxrepTGlist = 200;      //current highest index of records in repTGlist (number of records - 1)
+//
+//repTG currepTG;
+//repTG repTGlist[200];
+//----------------------------------------------------------- replace by tmpdigCh.groups
+TalkGroupS currepTG;
 
-repTG currepTG;
-repTG repTGlist[200];
-//=
-//{
-//  {240618, 240, 2},
-//  {240618, 2406, 1},
-//  {240618, 2407, 2},
-//  {240618, 9990, 1},
-//  {240701, 240, 2},
-//  {240701, 2401, 1},
-//  {240701, 2402, 1},
-//  {240701, 2403, 1},
-//  {240701, 2404, 1},
-//  {240701, 2405, 1},
-//  {240701, 2406, 1},
-//  {240701, 2407, 1},
-//  {240701, 2407, 2},
-//  {240701, 9990, 1},
-//  {240701, 240240, 1},
-//  {240711, 8, 2},
-//  {240711, 2401, 1},
-//  {240711, 2402, 1},
-//  {240711, 2403, 1},
-//  {240711, 2404, 1},
-//  {240711, 2405, 1},
-//  {240711, 2406, 1},
-//  {240711, 2407, 1},
-//  {240711, 9990, 1},
-//  {240711, 240711, 2},
-//  {240048102, 2401, 2},
-//  {240048102, 2402, 2},
-//  {240048102, 2403, 2},
-//  {240048102, 2404, 2},
-//  {240048102, 2405, 2},
-//  {240048102, 2406, 2},
-//  {240048102, 2407, 2},
-//  {240048102, 2410, 2},
-//  {240048102, 2412, 2},
-//  {240048102, 9990, 2},
-//  {240048102, 24061, 2},
-//  {240048102, 24062, 2},
-//  {240048102, 24077, 2},
-//  {240048102, 240850, 2},
-//  {240048102, 240240, 2},
-//  {240619, 240, 2},
-//  {240619, 2406, 1},
-//  {240619, 2407, 2},
-//  {240619, 9990, 1},
-//  {240702, 240, 2},
-//  {240702, 2401, 1},
-//  {240702, 2402, 1},
-//  {240702, 2403, 1},
-//  {240702, 2404, 1},
-//  {240702, 2405, 1},
-//  {240702, 2406, 1},
-//  {240702, 2407, 1},
-//  {240702, 2407, 2},
-//  {240702, 9990, 1},
-//  {240702, 240240, 1},
-//  {240712, 8, 2},
-//  {240712, 2401, 1},
-//  {240712, 2402, 1},
-//  {240712, 2403, 1},
-//  {240712, 2404, 1},
-//  {240712, 2405, 1},
-//  {240712, 2406, 1},
-//  {240712, 2407, 1},
-//  {240712, 9990, 1},
-//  {240712, 240711, 2},
-//  {240048103, 2401, 2},
-//  {240048103, 2402, 2},
-//  {240048103, 2403, 2},
-//  {240048103, 2404, 2},
-//  {240048103, 2405, 2},
-//  {240048103, 2406, 2},
-//  {240048103, 2407, 2},
-//  {240048103, 2410, 2},
-//  {240048103, 2412, 2},
-//  {240048103, 9990, 2},
-//  {240048103, 24061, 2},
-//  {240048103, 24062, 2},
-//  {240048103, 24077, 2},
-//  {240048103, 240850, 2},
-//  {240048103, 240240, 2},
-//  {9999999,   0,      0}
-//};
 //----------------------------------------------------------- Talk Groups
 typedef struct {              // Talk Group list
   uint32_t  TG;
@@ -183,8 +95,11 @@ callType CTlist[3] =
   {99, "the end"}
 };
 //========================================================== Display variables
-digCh NXp4Ch[10];
-repTG NXp5repTG[10];
+//digCh NXp4Ch[10];
+//repTG NXp5repTG[10];
+RepeaterS NXp4Ch[10];
+TalkGroupS NXp5repTG[10];
+
 TG    NXp5TG[10];
 TG    NXp6TG[10];
 //----------------------------------------------------------- DMRid of received messages
@@ -291,45 +206,45 @@ void insertradioid()
     numradioid = maxradioid;
   }
 }
-boolean DBgetChannel(uint8_t rowno)
+//boolean DBgetChannel(uint8_t rowno)
 //------------------------------------------------------ DBgetChannel
-{
-  for (int i = 0; i <= maxdigChlist; i++)
-  {
-    if (digChlist[i].chnr == 255)
-    {
-      return false;
-    }
-    if (digChlist[i].chnr == rowno)
-    {
-      curdigCh = digChlist[rowno];
-      return true;
-    }
-  }
-  return false;
-}
-boolean DBgetrepTG(uint32_t DMRid, uint32_t TG)
-//------------------------------------------------------ DBgetrepTG
-{
-  for (int i = 0; i <= maxrepTGlist; i++)
-  {
-    if (repTGlist[i].DMRid == 9999999)
-    {
-      return false;
-    }
-    if (repTGlist[i].DMRid == DMRid and repTGlist[i].TG == TG)
-    {
-      currepTG = repTGlist[i];
-      if (!DBgetTG(repTGlist[i].TG))
-      {
-        Serial.print("TG not found ");
-        Serial.print(repTGlist[i].TG);
-      }
-      return true;
-    }
-  }
-  return false;
-}
+//{
+//  for (int i = 0; i <= maxdigChlist; i++)
+//  {
+//    if (digChlist[i].chnr == 255)
+//    {
+//      return false;
+//    }
+//    if (digChlist[i].chnr == rowno)
+//    {
+//      curdigCh = digChlist[rowno];
+//      return true;
+//    }
+//  }
+//  return false;
+//}
+//boolean DBgetrepTG(uint32_t DMRid, uint32_t TG)
+////------------------------------------------------------ DBgetrepTG
+//{
+//  for (int i = 0; i <= maxrepTGlist; i++)
+//  {
+//    if (repTGlist[i].DMRid == 9999999)
+//    {
+//      return false;
+//    }
+//    if (repTGlist[i].DMRid == DMRid and repTGlist[i].TG == TG)
+//    {
+//      currepTG = repTGlist[i];
+//      if (!DBgetTG(repTGlist[i].TG))
+//      {
+//        Serial.print("TG not found ");
+//        Serial.print(repTGlist[i].TG);
+//      }
+//      return true;
+//    }
+//  }
+//  return false;
+//}
 
 boolean DBgetTG(uint32_t TG)
 //------------------------------------------------------ DBgetrepTG
@@ -348,56 +263,53 @@ boolean DBgetTG(uint32_t TG)
   }
   return false;
 }
-
-void  DBprintChannels()
+boolean DBgetsingleChannel(int rowno)
+//------------------------------------------------------ 
 {
-  for (int k = 0; k < maxRepeaters; k++)
+  if (rowno>=maxRepeaters or rowno<0)
   {
-    EIMprintDMRsettingsitem(k);
+    return false;
   }
-  for (int k = 0; k < maxRepeaters; k++)
+  if (dmrSettings.repeater[rowno].dmrId==0)
   {
-    if (digChlist[k].chnr == 255)
-    {
-      break;
-    }
-    Serial.println(k);
-    Serial.print(digChlist[k].zone); // 240701
-    Serial.print(" ");
-    Serial.print(digChlist[k].chnr); // 240701
-    Serial.print(" ");
-    Serial.print(digChlist[k].DMRid); // 240701
-    Serial.print(" ");
-    Serial.print(digChlist[k].tx); // 434587500
-    Serial.print(" ");
-    Serial.print(digChlist[k].rx); // 432587500
-    Serial.print(" ");
-    Serial.print(digChlist[k].cc); // 7
-    Serial.print(" ");
-    Serial.print(digChlist[k].TimeSlot);
-    Serial.print(" ");
-    Serial.print(digChlist[k].TimeSlotNo); // 0
-    Serial.print(" ");
-    Serial.print(digChlist[k].Name); // "SK7RJL"
-    Serial.print(" ");
-    Serial.print(digChlist[k].Location); // "Lund"
-    Serial.println();
+    return false;
   }
+  tmpdigCh.chnr=rowno;
+  tmpdigCh =dmrSettings.repeater[rowno];
+  return true;
 }
-void  DBprintTalkgroups()
+
+boolean DBgetnextChannel(int rowno)
+//------------------------------------------------------ 
 {
-  for (int k = 0; k <  maxrepTGlist; k++)
+  if (rowno+1>=maxRepeaters)
   {
-    if (repTGlist[k].DMRid == 9999999)
-    {
-      break;
-    }
-    Serial.println(k);
-    Serial.print(repTGlist[k].DMRid); // 240701
-    Serial.print(" ");
-    Serial.print(repTGlist[k].TG); // 240701
-    Serial.print(" ");
-    Serial.print(repTGlist[k].TS); // 240701
-    Serial.println();
+    return false;
   }
+  rowno++;
+  for (int k=rowno;rowno<numManualRep and dmrSettings.repeater[rowno].dmrId==0;k++)
+  {
+      rowno++;
+  }
+  if (dmrSettings.repeater[rowno].dmrId==0)
+  {
+    return false;
+  }
+  tmpdigCh =dmrSettings.repeater[rowno];
+  return true;
+}
+boolean DBgetsinglerepTG(int rowno)
+//------------------------------------------------------ DBgetrepTG
+{
+  if (rowno>=maxRepTG)
+  {
+    return false;
+  }
+  if (NXp4Ch[p4_selectedRow].groups[rowno].tg_id==0)
+  {
+    return false;
+  }
+//  tmpdigCh.chnr=rowno;
+  currepTG = NXp4Ch[p4_selectedRow].groups[rowno];
+  return true;
 }

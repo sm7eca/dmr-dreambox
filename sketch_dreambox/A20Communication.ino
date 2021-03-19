@@ -688,9 +688,9 @@ boolean  DMRqueryReceived(boolean receiving)
 void DMRinitChannel(uint8_t chnr, uint32_t TG)
 //----------------------------------------------------------- DMRinitChannel
 {
-  if (DBgetChannel(chnr))
+  if (DBgetsingleChannel(chnr))
   {
-    if (!DBgetrepTG(curdigCh.DMRid, TG))
+    if (!DBgetrepTG(curdigCh.dmrId, TG))
     {
       // dynamic TG!!
       DBgetTG(TG);
@@ -702,8 +702,8 @@ void DMRinitChannel(uint8_t chnr, uint32_t TG)
     return;
   }
   //calculateFreq(curdigCh.IARUchannel);
-  DMRsetDigChannel(curdigCh.rx, curdigCh.tx, currepTG.TG,
-                   curTG.calltype, curdigCh.cc, currepTG.TS, 0, 2);
+  DMRsetDigChannel(curdigCh.rx, curdigCh.tx, currepTG.tg_id,
+                   curTG.calltype, curdigCh.cc, currepTG.ts, 0, 2);
 }
 
 boolean DMRgetVersion()

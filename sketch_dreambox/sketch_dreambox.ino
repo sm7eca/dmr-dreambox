@@ -73,32 +73,33 @@ boolean bSMSmessageReceived = false;
 //                                                           didn´t compile correctly when
 //                                                           in A40Nextion_HMI module!!!!!
 //------------------------------------------------------------- Nextion meny key items
-uint8_t   NXselectRep;                  // selected row in replist screen
+int   NXselectRep;                  // selected row in replist screen
 uint32_t  NXselectTG;        // TG list
-uint8_t   lastNXtrans = 0;              // NX comm error debbugging aid
+int   lastNXtrans = 0;              // NX comm error debbugging aid
 boolean   WIFIcallfound = false;
-uint8_t   NXmaxrxTalkgroups = 32;       // Max no of talkgroup buttons on page 11
+int   NXmaxrxTalkgroups = 32;       // Max no of talkgroup buttons on page 11
 // page 4
-uint8_t  p4_numRows = 10;       // number of rows of channels on page 4
-uint8_t  p4_curPage = 0;        // current page of scroll list
-uint8_t  p4_startRecord = 0;     // index of first record on a page
-uint8_t  p4_selectedRow = 0;
+int  p4_numRows = 10;       // number of rows of channels on page 4
+int  p4_curPage = 0;        // current page of scroll list
+int  p4_startRecord = 0;     // index of first record on a page
+int  p4_selectedRow = 0;
+int      p4_repeaterChnr = 0;   
 boolean  p4_eof = false;
 // page 5
-uint8_t p5_startRecord = 0;    // index to start searching
-uint8_t p5_numRows = 10;       // number of rows of channels on page 5
-uint8_t p5_lastRecord = -1;    // last record read on last page
+int p5_startRecord = 0;    // index to start searching
+int p5_numRows = 10;       // number of rows of channels on page 5
+int p5_lastRecord = -1;    // last record read on last page
 boolean p5_eof = false;
 // page 6
-uint8_t p6_numRows = 10;       // number of rows of channels on page 6
-uint8_t p6_curPage = 0;        // current page of scroll list
-uint8_t p6_startRecord = 0;     // index of first record on a page
+int p6_numRows = 10;       // number of rows of channels on page 6
+int p6_curPage = 0;        // current page of scroll list
+int p6_startRecord = 0;     // index of first record on a page
 boolean p6_eof = false;
 // page 15
-uint8_t p15_numRows = 14;
+int p15_numRows = 14;
 char    p15_long[11];
 char    p15_lat[11];
-uint8_t p15_dist;
+long int p15_dist;
 char NXrepeaterName[40];
 //------------------------------------------------------------ State Machine
 int     UnitState = IDLE_STATE;
@@ -158,7 +159,7 @@ byte  maxMicVolume = 15;
 byte  audioVolume = 4;
 byte  micVolume = 15;
 
-uint8_t   rxTGStatus[33] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+int   rxTGStatus[33] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                             1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                             1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0
                            };
@@ -273,11 +274,12 @@ typedef struct {        //all our data of each channel in EEPROM
 ChanItem curChanItem;
 
 DmrSettingsS dmrSettings;
-uint8_t numManualRep = SETTINGS_MAX_NUM_MANUAL_REPEATERS;
-uint8_t maxRepeaters = SETTINGS_MAX_NUM_REPEATERS;
+int numManualRep = SETTINGS_MAX_NUM_MANUAL_REPEATERS;
+int maxRepeaters = SETTINGS_MAX_NUM_REPEATERS;
+int maxRepTG  =10;
 RepeaterS  reptemplist[21];       // temporary list of repeaters near given coordinate
-uint8_t   reptemplistMaxLen = 20;
-uint8_t   reptemplistCurLen;
+int   reptemplistMaxLen = 20;
+int   reptemplistCurLen;
 
 WifiSettingS  WifiAp;
 
@@ -377,6 +379,7 @@ void setup()
     {
       dmrSettings.repeater[k].zone  = 0;
       dmrSettings.repeater[k].dmrId = 0;
+      dmrSettings.repeater[k].chnr = 0;
     }
     dmrSettings.ts_scan = false;        //
     for (int x = 0; x <= maxRepeaters; x++)
@@ -386,12 +389,13 @@ void setup()
     }
     settingsWrite(&dmrSettings);
   }
-  //    for (int k = 0; k <= maxRepeaters; k++)              // if you want to zero the repeater list
-  //    {
-  //      dmrSettings.repeater[k].zone  = 0;
-  //      dmrSettings.repeater[k].dmrId = 0;
-  //    }
-  //    settingsWrite(&dmrSettings);
+//      for (int k = 0; k <= maxRepeaters; k++)              // if you want to zero the repeater list
+//      {
+//        dmrSettings.repeater[k].chnr  = k;
+//        dmrSettings.repeater[k].zone  = 0;
+//        dmrSettings.repeater[k].dmrId = 0;
+//      }
+//      settingsWrite(&dmrSettings);
   if (sizeof(dmrSettings) > 4096)
   {
     Serial.print("exceeded EEPROM capacity (4096): ");
@@ -409,7 +413,7 @@ void setup()
   //   EIMprintDMRsettingsitem(i);
   //  }
   NXinitDisplay("Init ChannelDB");
-  NX_P14_updateRepHotspotDB(0, maxRepeaters);                // Move rephotspots from EEPROM to memory
+//  NX_P14_updateRepHotspotDB(0, maxRepeaters);                // Move rephotspots from EEPROM to memory
   NXinitDisplay("Init Ready");
 
 }

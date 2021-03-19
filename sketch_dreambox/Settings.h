@@ -27,11 +27,12 @@ typedef struct _RepeaterS {
   char        repeaterName[16];   // repeater call sign
   char        repeaterLoc[16];    // human readable location
   TalkGroupS  groups[10];
+  int         chnr;
 } RepeaterS;
 
 #define SETTINGS_MAX_WIFI_AP 4
 #define SETTINGS_MAX_NUM_MANUAL_REPEATERS 4
-#define SETTINGS_MAX_NUM_REPEATERS 28
+#define SETTINGS_MAX_NUM_REPEATERS 25
 
 //typedef struct _RepeaterConfigS {
 //  RepeaterS   repeater[30];
@@ -50,7 +51,7 @@ typedef struct _DmrSettingsS {
   bool          ts_scan;          //
   uint8_t       rxTGStatus[33];   //
   uint32_t      rxTalkGroup[33];
-  RepeaterS     repeater[28];
+  RepeaterS     repeater[SETTINGS_MAX_NUM_REPEATERS];
 } DmrSettingsS;
 
 
