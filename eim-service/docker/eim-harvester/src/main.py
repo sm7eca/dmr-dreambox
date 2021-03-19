@@ -81,7 +81,7 @@ def main():
 
 	while True:
 		counter += 1
-		logger.debug(f"==> sleep for {periodicity}s")
+		logger.info(f"==> sleep for {periodicity}s")
 		sleep(periodicity)
 
 		harvest_repeater(db)
