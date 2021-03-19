@@ -67,3 +67,18 @@ class Repeater:
 
     def dict(self):
         return self.__dict__
+
+
+class DmrUser:
+    dmr_id: int
+    call_sign: str
+    name: str
+    city: str
+    state: str
+    country: str
+
+    def __init__(self, _dict: Dict):
+        self.__dict__.update(_dict)
+
+    def dict(self):
+        return self.__dict__

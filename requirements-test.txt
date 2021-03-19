@@ -1,2 +1,6 @@
+six
 pytest
+pytest-cov
+pytest-clarity
+pytest-mock
 requests

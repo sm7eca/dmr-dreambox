@@ -176,6 +176,32 @@ def test_repeater_location(longitude, latitude, distance, limit, expected_status
 		assert response.json()
 		assert len(response.json()) == limit
 
+@pytest.mark.parametrize(
+	argnames="dmr_id, expected_status",
+	argvalues=[
+		(2400011, 200),
+		(0, 422)
+	],
+	ids=[
+		"valid => 200",
+		"invalid => 422"
+	]
+)
+def test_user_dmrid(dmr_id, expected_status):
+	"""
+	Given a valid user DMR ID, I expect the UUT to return a User response
+	"""
+	sleep(2)
+	req_url = f"{BASE_URL}/user/{dmr_id}"
+
+	response = requests.get(url=req_url)
+
+	assert response.status_code == expected_status
+	if expected_status == 200:
+		assert response.json()
+		data = response.json()
+		assert data['call_sign'] == "SM0TSC"
+
 def test_request_limiter():
 	"""
 	Given that we have configured the NGINX proxy with request limiting

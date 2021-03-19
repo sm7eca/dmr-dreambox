@@ -9,8 +9,10 @@ from pymongo.errors import ConnectionFailure
 from pymongo.collection import Collection
 
 from common.logger import get_logger
-from common.definitions import Repeater, RepeaterItem
+from common.definitions import Repeater, RepeaterItem, DmrUser
 from typing import List, Optional, Dict
+
+from pydantic import BaseModel
 
 from datetime import datetime
 
@@ -97,6 +99,14 @@ class MongoDB:
         ri = RepeaterItem(**ri_object)
         logger.debug(f"RepeaterItem translated: {repr(ri)}")
         return ri
+
+    @staticmethod
+    def _translate_user_2_dmr_user(user_entry: Dict) -> DmrUser:
+        """
+        Translate a user object received from DB into DmrUser
+        """
+        user = DmrUser(**user_entry)
+        return user
 
     def get_repeater_by_master(self, master_id: int) -> Optional[List[RepeaterItem]]:
         """
@@ -226,3 +236,24 @@ class MongoDB:
             list_repeater.append(self._translate_db_2_repeater_item(record))
 
         return list_repeater
+
+    def get_user_by_dmrid(self, dmr_id: int) -> Optional[DmrUser]:
+
+        logger.debug(f"find user for ID: {dmr_id}")
+
+        col: Collection = self._db.get_collection("dmr_user")
+
+        num_users: int = col.count_documents(filter={})
+
+        logger.debug(f"found {num_users} in collection {col.name}")
+
+        query = {
+            "dmr_id": dmr_id
+        }
+
+        doc = col.find_one(filter=query)
+        if not doc:
+            logger.debug(f"no doc found for {dmr_id}")
+            return None
+        else:
+            return self._translate_user_2_dmr_user(doc)
