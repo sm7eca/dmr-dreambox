@@ -127,8 +127,8 @@ boolean EIMdeserializeRepHotList(String payload)
     {
 
       reptemplist[k].dmrId = dmr_id;
-      reptemplist[k].tx = tx;
-      reptemplist[k].rx = rx;
+      reptemplist[k].tx = rx;
+      reptemplist[k].rx = tx;
       reptemplist[k].cc = cc;
       reptemplist[k].timeSlot = 1;
       //     reptemplist[k].timeSlotNo = max_ts;
@@ -218,8 +218,8 @@ boolean EIMdeserializeSingleRepeater(String input, uint8_t k)
     return false;
   }
   dmrSettings.repeater[k].dmrId = doc["dmr_id"]; // 240701
-  dmrSettings.repeater[k].tx = doc["tx"]; // 434587500
-  dmrSettings.repeater[k].rx = doc["rx"]; // 432587500
+  dmrSettings.repeater[k].rx = doc["tx"]; // 434587500
+  dmrSettings.repeater[k].tx = doc["rx"]; // 432587500
   dmrSettings.repeater[k].cc = doc["cc"]; // 7
   dmrSettings.repeater[k].timeSlot = 1;
   dmrSettings.repeater[k].timeSlotNo = doc["max_ts"]; // 0
@@ -290,9 +290,9 @@ void  EIMprintDMRsettingsitem(uint8_t k)
   Serial.print(" ");
   Serial.print(dmrSettings.repeater[k].dmrId); // 240701
   Serial.print(" ");
-  Serial.print(dmrSettings.repeater[k].tx); // 434587500
+  Serial.print(dmrSettings.repeater[k].rx); // 434587500
   Serial.print(" ");
-  Serial.print(dmrSettings.repeater[k].rx); // 432587500
+  Serial.print(dmrSettings.repeater[k].tx); // 432587500
   Serial.print(" ");
   Serial.print(dmrSettings.repeater[k].cc); // 7
   Serial.print(" ");

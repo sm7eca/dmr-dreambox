@@ -304,11 +304,8 @@ boolean DMRlisten()
     return false;
   }
 }
-// tillfällig fix pga BM visar fel i gränssnittet 20201-03-20
-void DMRsetDigChannel(uint32_t tx_freq, uint32_t rx_freq, uint32_t tx_contact,
-                      uint8_t ContactType, uint8_t cc, uint8_t ts, uint8_t ChannelMode, uint8_t relay)
-//void DMRsetDigChannel(uint32_t rx_freq, uint32_t tx_freq, uint32_t tx_contact,
-//                      uint8_t ContactType, uint8_t cc, uint8_t ts, uint8_t ChannelMode, uint8_t relay)
+  void DMRsetDigChannel(uint32_t rx_freq, uint32_t tx_freq, uint32_t tx_contact,
+                        uint8_t ContactType, uint8_t cc, uint8_t ts, uint8_t ChannelMode, uint8_t relay)
 
 {
   //------------------------------------------------------------------ DMRsetDigChannel

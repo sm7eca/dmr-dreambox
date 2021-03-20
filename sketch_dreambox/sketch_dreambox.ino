@@ -357,7 +357,7 @@ void setup()
       }
     }
     dmrSettings.ts_scan = false;        //
-    for (uint8_t x = 0; x <= maxRepeaters; x++)
+    for (uint8_t x = 0; x <= 31; x++)
     {
       dmrSettings.rxTGStatus[x] = rxTGStatus[x] ;
       dmrSettings.rxTalkGroup[x] = rxTalkGroup[x];
