@@ -56,23 +56,14 @@ void WiFisetTime()
 void wifiGetDMRID()
 //----------------------------------------------------------- wifiGetDMRID
 {
-//  if (BwifiOn)
-//  {
-    //    String tempS = String(rxContactChar);
-    //    tempS = tempS.substring(0, 3);
-    //    if (tempS == "240")
-    //    {
+  if (BwifiOn)
+  {
     wifiGetDMRIDswe();
-    //    }
-    //    else
-    //    {
-    //wifiGetDMRIDint();
-    //    }
-//  }
+  }
 }
 void wifiGetDMRIDswe()
 //----------------------------------------------------------- wifiGetDMRID
-//  Tomas swedish app returns a json structure.
+//  dmrdream.com EIM user
 {
 
   if ((wifiMulti.run() == WL_CONNECTED))
@@ -81,7 +72,7 @@ void wifiGetDMRIDswe()
     WIFIcallfound = false;
     char combinedArray[sizeof(dmrdreamUrl) + sizeof(rxContactChar) + 1];
     sprintf(combinedArray, "%s%s", dmrdreamUrl, rxContactChar); // with word space
-    Serial.println(combinedArray);
+//    Serial.println(combinedArray);
     http.begin(combinedArray);
     // start connection and send HTTP header
     int httpCode = http.GET();
@@ -92,8 +83,8 @@ void wifiGetDMRIDswe()
       {
         WIFIcallfound = true;
         String payload = http.getString();
-        Serial.println("wifiGetDMRIDswe: ");
-        Serial.println(payload);
+//        Serial.println("wifiGetDMRIDswe: ");
+//        Serial.println(payload);
         StaticJsonDocument<300> doc;
         DeserializationError error = deserializeJson(doc, payload);
         if (error) {
@@ -108,7 +99,7 @@ void wifiGetDMRIDswe()
         const char* city = doc["city"]; // "MalmÃ¶"
         const char* state = doc["state"]; // ""
         const char* country = doc["country"]; // "Sweden"
-        Serial.println(call_sign);
+//        Serial.println(call_sign);
 
         ri_callsign = String(call_sign);
         ri_city = String(city);
@@ -149,93 +140,92 @@ void wifiGetDMRIDswe()
   }
 }
 
-void wifiGetDMRIDint()
-//----------------------------------------------------------- wifiGetDMRID
+////----------------------------------------------------------- wifiGetDMRID
 //  the radioid app returns a json structure. Problem is that it is not consistent.
 //  Some ids miss surname and state info
 //  de deserialize function is not putting valid info in those fields if missing
 //  in the json struct.
-{
-  if ((wifiMulti.run() == WL_CONNECTED))
-  {
-    HTTPClient http;
-    WIFIcallfound = false;
-    char combinedArray[sizeof(radioIdUrl) + sizeof(rxContactChar) + 1];
-    sprintf(combinedArray, "%s%s", radioIdUrl, rxContactChar); // with word space
-    Serial.println(combinedArray);
-    http.begin(combinedArray);
-    // start connection and send HTTP header
-    int httpCode = http.GET();
-    // httpCode will be negative on error
-    if (httpCode > 0)
-    {
-      // HTTP header has been send and Server response header has been handled
-      //           Serial.printf("[HTTP] GET... code: %d\n", httpCode);
-      // file found at server
-      if (httpCode == HTTP_CODE_OK)
-      {
-        WIFIcallfound = true;
-        String payload = http.getString();
-        Serial.println(payload);
-        size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(8) + 200;
-        DynamicJsonDocument doc(capacity);
-        DeserializationError err = deserializeJson(doc, payload);
-        switch (err.code())
-        {
-          //  case DeserializationError::Ok:
-          //    Serial.print(F("Deserialization succeeded"));
-          //    break;
-          case DeserializationError::InvalidInput:
-            Serial.print(F("Invalid input!"));
-            break;
-          case DeserializationError::NoMemory:
-            Serial.print(F("Not enough memory"));
-            break;
-          default:
-            //                 Serial.print(F("Deserialization failed"));
-            break;
-        }
-        int count = doc["count"]; // 1
-        JsonObject results_0 = doc["results"][0];
-        String results_0_callsign = results_0["callsign"]; // "WA0CNG"
-        String results_0_city = results_0["city"]; // "Florissant"
-        String results_0_country = results_0["country"]; // "United States"
-        String results_0_fname = results_0["fname"]; // "Dan F"
-        long results_0_id = results_0["id"]; // 3165777
-        String results_0_remarks = results_0["remarks"]; // "DMR"
-        String results_0_state = results_0["state"]; // "Missouri"
-        String results_0_surname = results_0["surname"]; // "Zanitsch"
-
-        ri_callsign = results_0_callsign;
-        ri_city = results_0_city;
-        ri_country = results_0_country;
-        ri_fname = results_0_fname;
-        ri_surname = results_0_surname;
-        ri_state = results_0_state;
-        ri_id = results_0_id;
-        insertradioid();
-        Serial.print(ri_callsign);
-        Serial.print(" ");
-        Serial.print(ri_fname);
-        Serial.print(" ");
-        Serial.print(ri_surname);
-        Serial.print(" ");
-        Serial.print(ri_city);
-        Serial.print(" ");
-        Serial.print(ri_state);
-        Serial.print(" ");
-        Serial.print(ri_country);
-        Serial.print(" ");
-        Serial.print("(US-DB) ");
-      }
-    }
-    else
-    {
-      Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
-    }
-    http.end();
-  }
-  else {
-    Serial.print("wifi not connected");
-  }
-}
+//{
+//  if ((wifiMulti.run() == WL_CONNECTED))
+//  {
+//    HTTPClient http;
+//    WIFIcallfound = false;
+//    char combinedArray[sizeof(radioIdUrl) + sizeof(rxContactChar) + 1];
+//    sprintf(combinedArray, "%s%s", radioIdUrl, rxContactChar); // with word space
+//    Serial.println(combinedArray);
+//    http.begin(combinedArray);
+//    // start connection and send HTTP header
+//    int httpCode = http.GET();
+//    // httpCode will be negative on error
+//    if (httpCode > 0)
+//    {
+//      // HTTP header has been send and Server response header has been handled
+//      //           Serial.printf("[HTTP] GET... code: %d\n", httpCode);
+//      // file found at server
+//      if (httpCode == HTTP_CODE_OK)
+//      {
+//        WIFIcallfound = true;
+//        String payload = http.getString();
+//        Serial.println(payload);
+//        size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(8) + 200;
+//        DynamicJsonDocument doc(capacity);
+//        DeserializationError err = deserializeJson(doc, payload);
+//        switch (err.code())
+//        {
+//          //  case DeserializationError::Ok:
+//          //    Serial.print(F("Deserialization succeeded"));
+//          //    break;
+//          case DeserializationError::InvalidInput:
+//            Serial.print(F("Invalid input!"));
+//            break;
+//          case DeserializationError::NoMemory:
+//            Serial.print(F("Not enough memory"));
+//            break;
+//          default:
+//            //                 Serial.print(F("Deserialization failed"));
+//            break;
+//        }
+//        int count = doc["count"]; // 1
+//        JsonObject results_0 = doc["results"][0];
+//        String results_0_callsign = results_0["callsign"]; // "WA0CNG"
+//        String results_0_city = results_0["city"]; // "Florissant"
+//        String results_0_country = results_0["country"]; // "United States"
+//        String results_0_fname = results_0["fname"]; // "Dan F"
+//        long results_0_id = results_0["id"]; // 3165777
+//        String results_0_remarks = results_0["remarks"]; // "DMR"
+//        String results_0_state = results_0["state"]; // "Missouri"
+//        String results_0_surname = results_0["surname"]; // "Zanitsch"
+//
+//        ri_callsign = results_0_callsign;
+//        ri_city = results_0_city;
+//        ri_country = results_0_country;
+//        ri_fname = results_0_fname;
+//        ri_surname = results_0_surname;
+//        ri_state = results_0_state;
+//        ri_id = results_0_id;
+//        insertradioid();
+//        Serial.print(ri_callsign);
+//        Serial.print(" ");
+//        Serial.print(ri_fname);
+//        Serial.print(" ");
+//        Serial.print(ri_surname);
+//        Serial.print(" ");
+//        Serial.print(ri_city);
+//        Serial.print(" ");
+//        Serial.print(ri_state);
+//        Serial.print(" ");
+//        Serial.print(ri_country);
+//        Serial.print(" ");
+//        Serial.print("(US-DB) ");
+//      }
+//    }
+//    else
+//    {
+//      Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+//    }
+//    http.end();
+//  }
+//  else {
+//    Serial.print("wifi not connected");
+//  }
+//}

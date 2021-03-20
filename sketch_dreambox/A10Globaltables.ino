@@ -170,7 +170,7 @@ void readradioid(uint32_t rxContact)
       return;
     }
   }
-  Serial.println("Goto wifiGetDMRID(): ");
+//  Serial.println("Goto wifiGetDMRID(): ");
   wifiGetDMRID();
 }
 void insertradioid()
@@ -181,9 +181,9 @@ void insertradioid()
 {
   for (int8_t j = numradioid; j >= 0; j--)
   {
-    Serial.println("insertradioid()-1");
-    Serial.println(numradioid);
-    Serial.println(j);
+//    Serial.println("insertradioid()-1");
+//    Serial.println(numradioid);
+//    Serial.println(j);
     ri_list[j + 1].ri_callsign = ri_list[j].ri_callsign;
     ri_list[j + 1].ri_talkgroup = ri_list[j].ri_talkgroup;
     ri_list[j + 1].ri_fname = ri_list[j].ri_fname;
@@ -194,7 +194,7 @@ void insertradioid()
     ri_list[j + 1].ri_id = ri_list[j].ri_id;
     ri_list[j + 1].ri_count = ri_list[j].ri_count;
   }
-  Serial.println("insertradioid()-2");
+//  Serial.println("insertradioid()-2");
   ri_list[0].ri_callsign = ri_callsign;
   ri_list[0].ri_talkgroup = rxGroup;
   ri_list[0].ri_fname =   ri_fname;

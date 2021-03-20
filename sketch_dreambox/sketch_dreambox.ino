@@ -1,5 +1,5 @@
 //
-char SoftwareVersion[21] = "SM7ECA-210320-3H";
+char SoftwareVersion[21] = "SM7ECA-210320-4A";
 #include <Arduino.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
