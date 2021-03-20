@@ -1,7 +1,9 @@
 //----------------------------------------------------------- WiFi
+void wifiGetDMRIDint();
 WiFiMulti wifiMulti;
 char radioIdUrl[] = "https://database.radioid.net/api/dmr/user/?id=";
 char sweIdUrl[] = "https://fbg.johanneberg.com/services/radioid/?id=";
+char dmrdreamUrl[] = "http://dmrdream.com/api/v1/user/";
 long timezone = 1;
 byte daysavetime = 1;
 
@@ -11,17 +13,17 @@ boolean  wifiConnect()
 {
   uint32_t Connecttimer = 10000; // max time to wait för WLAN connect
   uint32_t starttime;
-  int y = 0;
-  for (int x = 0; x < 4; x++)
+  uint8_t y = 0;
+  for (uint8_t x = 0; x < 4; x++)
   {
-    if (&dmrSettings.wifisettings[x].ssid[0]!=" ")
+    if (&dmrSettings.wifisettings[x].ssid[0] != " ")
     {
       wifiMulti.addAP(dmrSettings.wifisettings[y].ssid, dmrSettings.wifisettings[x].passwd);
       y++;
     }
   }
   Serial.println("Connecting ...");
-  int i = 0;
+  uint8_t i = 0;
   starttime = millis();
   while (wifiMulti.run() != WL_CONNECTED and (millis() - starttime) < Connecttimer) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
     delay(1000);
@@ -54,19 +56,19 @@ void WiFisetTime()
 void wifiGetDMRID()
 //----------------------------------------------------------- wifiGetDMRID
 {
-  if (BwifiOn)
-  {
-    String tempS = String(rxContactChar);
-    tempS = tempS.substring(0, 3);
-    if (tempS == "240")
-    {
-      wifiGetDMRIDswe();
-    }
-    else
-    {
-      wifiGetDMRIDint();
-    }
-  }
+//  if (BwifiOn)
+//  {
+    //    String tempS = String(rxContactChar);
+    //    tempS = tempS.substring(0, 3);
+    //    if (tempS == "240")
+    //    {
+    wifiGetDMRIDswe();
+    //    }
+    //    else
+    //    {
+    //wifiGetDMRIDint();
+    //    }
+//  }
 }
 void wifiGetDMRIDswe()
 //----------------------------------------------------------- wifiGetDMRID
@@ -77,63 +79,48 @@ void wifiGetDMRIDswe()
   {
     HTTPClient http;
     WIFIcallfound = false;
-    char combinedArray[sizeof(sweIdUrl) + sizeof(rxContactChar) + 1];
-    sprintf(combinedArray, "%s%s", sweIdUrl, rxContactChar); // with word space
+    char combinedArray[sizeof(dmrdreamUrl) + sizeof(rxContactChar) + 1];
+    sprintf(combinedArray, "%s%s", dmrdreamUrl, rxContactChar); // with word space
+    Serial.println(combinedArray);
     http.begin(combinedArray);
     // start connection and send HTTP header
     int httpCode = http.GET();
     // httpCode will be negative on error
     if (httpCode > 0)
     {
-      // HTTP header has been send and Server response header has been handled
-      //           Serial.printf("[HTTP] GET... code: %d\n", httpCode);
-      // file found at server
       if (httpCode == HTTP_CODE_OK)
       {
         WIFIcallfound = true;
         String payload = http.getString();
-        size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(9) + 170;
-        DynamicJsonDocument doc(capacity);
-        DeserializationError err = deserializeJson(doc, payload);
-        switch (err.code())
-        {
-          //  case DeserializationError::Ok:
-          //    Serial.print(F("Deserialization succeeded"));
-          //    break;
-          case DeserializationError::InvalidInput:
-            Serial.print(F("Invalid input!"));
-            break;
-          case DeserializationError::NoMemory:
-            Serial.print(F("Not enough memory"));
-            break;
-          default:
-            //                 Serial.print(F("Deserialization failed"));
-            break;
+        Serial.println("wifiGetDMRIDswe: ");
+        Serial.println(payload);
+        StaticJsonDocument<300> doc;
+        DeserializationError error = deserializeJson(doc, payload);
+        if (error) {
+          Serial.print(F("deserializeJson() failed: "));
+          Serial.println(error.f_str());
+          return;
         }
-        int count = doc["count"]; // 1
-        JsonObject results_0 = doc["results"][0];
-        long results_0_id = results_0["id"]; // 2400481
-        String results_0_callsign = results_0["callsign"]; // "SM7ECA"
-        String results_0_name = results_0["name"]; // "Arne Nilsson"
-        String results_0_city = results_0["city"]; // ""
-        String results_0_state = results_0["state"]; // "Malmo"
-        String results_0_country = results_0["country"]; // "Sweden"
-        String results_0_remarks = results_0["remarks"]; // ""
-        String results_0_calltype = results_0["calltype"]; // "Private Call"
-        String results_0_callalert = results_0["callalert"]; // "None"
 
-        ri_callsign = results_0_callsign;
-        ri_city = results_0_city;
-        ri_country = results_0_country;
-        ri_fname = results_0_name;
+        long dmr_id = doc["dmr_id"]; // 2400530
+        const char* call_sign = doc["call_sign"]; // "SM7ECA"
+        const char* name = doc["name"]; // "Arne Nilsson"
+        const char* city = doc["city"]; // "MalmÃ¶"
+        const char* state = doc["state"]; // ""
+        const char* country = doc["country"]; // "Sweden"
+        Serial.println(call_sign);
+
+        ri_callsign = String(call_sign);
+        ri_city = String(city);
+        ri_country = String(country);
+        ri_fname = String(name);
         ri_surname = "";
-        ri_state = results_0_state;
-        ri_id = results_0_id;
-        //        if (ri_id == 0)
-        //        {
-        ri_id = rxContact;
-        //        }
-
+        ri_state = String(state);
+        ri_id = dmr_id;
+        if (ri_id == 0)
+        {
+          ri_id = rxContact;
+        }
         insertradioid();
         Serial.print(ri_callsign);
         Serial.print(" ");
@@ -147,7 +134,7 @@ void wifiGetDMRIDswe()
         Serial.print(" ");
         Serial.print(ri_country);
         Serial.print(" ");
-        Serial.print("(SE-DB) ");
+        Serial.print("(SE-DD) ");
       }
     }
     else
@@ -161,6 +148,7 @@ void wifiGetDMRIDswe()
     Serial.print("wifi not connected");
   }
 }
+
 void wifiGetDMRIDint()
 //----------------------------------------------------------- wifiGetDMRID
 //  the radioid app returns a json structure. Problem is that it is not consistent.
@@ -174,6 +162,7 @@ void wifiGetDMRIDint()
     WIFIcallfound = false;
     char combinedArray[sizeof(radioIdUrl) + sizeof(rxContactChar) + 1];
     sprintf(combinedArray, "%s%s", radioIdUrl, rxContactChar); // with word space
+    Serial.println(combinedArray);
     http.begin(combinedArray);
     // start connection and send HTTP header
     int httpCode = http.GET();
@@ -187,7 +176,8 @@ void wifiGetDMRIDint()
       {
         WIFIcallfound = true;
         String payload = http.getString();
-        size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(8) + 150;
+        Serial.println(payload);
+        size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(8) + 200;
         DynamicJsonDocument doc(capacity);
         DeserializationError err = deserializeJson(doc, payload);
         switch (err.code())

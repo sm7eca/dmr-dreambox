@@ -26,7 +26,7 @@ void NXinitialSetup()
   NXend(201);
 }
 
-void NXdimdisplay(int func)
+void NXdimdisplay(uint8_t func)
 //----------------------------------------------------------- Initial setup screen (
 //
 {
@@ -48,8 +48,8 @@ boolean NX_isvalidnum(char* charval)
 {
   Serial.println("check if num ");
   boolean num = true;
-  int m = 99;
-  int p = 0;
+  uint8_t m = 99;
+  uint8_t p = 0;
   if (strlen(charval) < 3)
   {
     return false;
@@ -119,12 +119,11 @@ void NX_P0_DisplayCurrent()
 {
   // ---- input to display on "channel screen"
   //prepare those strings
-  String tempS = String(digData.rx_freq);
+  String tempS = String(dmrSettings.repeater[dmrSettings.chnr].rx);
   String fR = tempS.substring(0, 3) + "." + tempS.substring(3, 8);
-  tempS = String(digData.tx_freq);
+  tempS = String(dmrSettings.repeater[dmrSettings.chnr].tx);
   String fT = tempS.substring(0, 3) + "." + tempS.substring(3, 8);
-  String fullName;
-  String fullName = String(curdigCh.Name) + " " + String(curdigCh.Location);
+  String fullName = String(dmrSettings.repeater[dmrSettings.chnr].repeaterName) + " " + String(dmrSettings.repeater[dmrSettings.chnr].repeaterLoc);
   fullName.trim();
   String firstBlock = String(dmrSettings.localID);
   Serial1.print("main.t0.txt=\"");
@@ -372,7 +371,7 @@ void  NX_P4_displayChannels()
 //
 // fill the channel screen
 {
-  int curRow = 0;
+  uint8_t curRow = 0;
   p4_eof = false;
   //  p4_startRecord = repeaterChnr;
   p4_repeaterChnr--;
@@ -423,9 +422,9 @@ void  NX_P5_displayTGlist()
   Serial1.print("\"");
   NXend(26);
   //--------------- display static TGs connected to channel - max p5_numRows on a page
-  int curRow = 0;
-  int i;
-  for (int i = 0; i < p5_numRows; i++)
+  uint8_t curRow = 0;
+  uint8_t i;
+  for (uint8_t i = 0; i < p5_numRows; i++)
   {
     curRow = i;
     if (DBgetsinglerepTG(i))
@@ -449,7 +448,7 @@ void  NX_P5_displayTGlist()
       NXend(23);
     }
   }
-  for (int i = curRow+1; i < p5_numRows; i++) // if page not filled blank out the rest
+  for (uint8_t i = curRow+1; i < p5_numRows; i++) // if page not filled blank out the rest
   {
     Serial1.print("b");
     Serial1.print(i);
@@ -463,7 +462,7 @@ void  NX_P5_displayTGlist()
     Serial.println("NXp5repTG ");
     Serial.print(NXselectRep);
     Serial.println("");
-    for (int i=0;i<10;i++)
+    for (uint8_t i=0;i<10;i++)
     {
       Serial.print(NXp5repTG[i].tg_id);
       Serial.print(" ");
@@ -500,30 +499,42 @@ void NX_P5_buttonHandler()
     p5_lastRecord = -1; // ----- reset scroll page
     if (NXbuff[3] == 1)
     {
-      curdigCh.chnr = NXselectRep;
       curdigCh =NXp4Ch[p4_selectedRow];
       currepTG = NXp5repTG[NXbuff[2]];
       digData.tx_contact = NXp5repTG[NXbuff[2]].tg_id;
       digData.ContactType = NXp5TG[NXbuff[2]].calltype;
-      Serial.println("");
+      Serial.println("Selected p5: ");
       Serial.println(curdigCh.chnr);
+      Serial.print(" ");
       Serial.print(curdigCh.dmrId);
-      Serial.println(curdigCh.repeaterName);
-      Serial.println(currepTG.tg_id);
-      DMRinitChannel(curdigCh.chnr,  currepTG.tg_id);
+      Serial.print(" ");
+      Serial.print(curdigCh.repeaterName);
+      Serial.print(" ");
+      Serial.print(currepTG.tg_id);
+      Serial.print(" ");
+      Serial.print(currepTG.ts);
+      Serial.print(" ");
+      Serial.print(curdigCh.rx);
+      Serial.print(" ");
+      Serial.println(curdigCh.tx);
+      DMRinitChannel();
       dmrSettings.chnr = curdigCh.chnr;
-      dmrSettings.TG =  currepTG.tg_id;
-//      settingsWrite(&dmrSettings);
+      dmrSettings.TG =  NXbuff[2];
+      settingsWrite(&dmrSettings);
 
       Serial1.print("page 0");
     }
     else
     {
       dmrSettings.chnr = curdigCh.chnr;
-      dmrSettings.TG =  currepTG.tg_id;
+      dmrSettings.TG =  NXbuff[2];
       settingsWrite(&dmrSettings);
       Serial1.print("page 9");
     }
+    Serial.println("cur Chan in settings: ");
+    Serial.print(dmrSettings.chnr);
+    Serial.print(" ");
+    Serial.println(dmrSettings.TG);
     NXend(55);
   }
 }
@@ -531,7 +542,7 @@ void NX_P5_buttonHandler()
 void NX_P6_displayTG()
 //----------------------------------------------------------------------------NX_P6_display
 {
-  int recnr = 0;
+  uint8_t recnr = 0;
   p6_eof = false;
   p6_startRecord = p6_curPage * p6_numRows;
   for (recnr = 0; recnr < p6_numRows; recnr++)
@@ -638,15 +649,14 @@ void NX_P9_set_callsign_id()
 void NX_P9_set_channelinfo()
 //---------------------------------------------------------- get channelinfo from dmrSettings
 {
-  String fullName;
-  String fullName = String(digChlist[dmrSettings.chnr].Name) + " " + String(digChlist[dmrSettings.chnr].Location);
+  String fullName = String(dmrSettings.repeater[dmrSettings.chnr].repeaterName) + " " + String(dmrSettings.repeater[dmrSettings.chnr].repeaterLoc);
   fullName.trim();
   Serial1.print("setup.t2.txt=\"");
   Serial1.print(fullName);
   Serial1.print("\"");
   NXend(92);
   Serial1.print("setup.n2.val=");
-  Serial1.print(dmrSettings.TG);
+  Serial1.print(dmrSettings.repeater[dmrSettings.chnr].groups[dmrSettings.TG].tg_id);
   NXend(93);
 
 }
@@ -665,7 +675,7 @@ void NX_P9_displayVersion()
   if (DMRgetVersion())
   {
     char ModuleVersion[19] = "                  ";
-    for (int x = 8; x < 26; x++)
+    for (uint8_t x = 8; x < 26; x++)
     {
       ModuleVersion[x - 8] = char(buff[x]);
     }
@@ -698,7 +708,7 @@ void NX_P9_showMicVol()
 void NX_P9_getCallsign()
 //------------------------------------------------------NX_P9_getCallsign
 {
-  for (int x = 0; x < 10; x++)
+  for (uint8_t x = 0; x < 10; x++)
   {
     if (NXbuff[x + 3] == 0xFF)
     {
@@ -718,11 +728,11 @@ void NX_P9_getDMRid()
   dmrSettings.localID =  (uint32_t)NXbuff[5] << 16 | (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
   settingsWrite(&dmrSettings);
 }
-void  NX_P9_saveSSID(int indx)
+void  NX_P9_saveSSID(uint8_t indx)
 //------------------------------------------------------NX_P9_saveSSID
 {
   char tmp[16];
-  for (int x = 0; x < 16; x++)
+  for (uint8_t x = 0; x < 16; x++)
   {
     if (NXbuff[x + 3] == 0xFF)
     {
@@ -737,11 +747,11 @@ void  NX_P9_saveSSID(int indx)
   settingsWrite(&dmrSettings);
 }
 
-void  NX_P9_savePasswd(int indx)
+void  NX_P9_savePasswd(uint8_t indx)
 //------------------------------------------------------NX_P9_savePasswd
 {
   char tmp[16];
-  for (int x = 0; x < 16; x++)
+  for (uint8_t x = 0; x < 16; x++)
   {
     if (NXbuff[x + 3] == 0xFF)
     {
@@ -758,8 +768,8 @@ void  NX_P9_savePasswd(int indx)
 //========================================================================== page 10
 void NX_P10_rxLastHeard()
 {
-  int k = 0;
-  for (int i = 0; i < numradioid; i++)
+  uint8_t k = 0;
+  for (uint8_t i = 0; i < numradioid; i++)
   {
     k++;
     Serial1.print("t");
@@ -789,7 +799,7 @@ void NX_P10_rxLastHeard()
 void NX_P14_getRepeaterDMRid()
 //-----------------------------------------------------P14_getRepeaterDMRid()
 {
-  int k = 0;
+  uint8_t k = 0;
   char repeaterIDChar[10];
   uint32_t repeaterID;
   if (NXbuff[6] == 0x0)
@@ -855,7 +865,7 @@ void NX_P14_getRepeaterDMRid()
 void  NX_P14_fillRepeaterlist()
 //---------------------------------------------------------------------P14_fillRepeaterlist
 {
-  for (int k = 0; k < numManualRep; k++)
+  for (uint8_t k = 0; k < numManualRep; k++)
   {
     Serial1.print("n");
     Serial1.print(k);
@@ -883,7 +893,7 @@ void NX_P15_getInput()
   switch (NXbuff[2])
   {
     case 0x16:
-      for (int x = 0; x < 10; x++)
+      for (uint8_t x = 0; x < 10; x++)
       {
         if (NXbuff[x + 3] == 0xFF)
         {
@@ -899,7 +909,7 @@ void NX_P15_getInput()
       Serial.println(p15_long);
       break;
     case 0x17:
-      for (int x = 0; x < 10; x++)
+      for (uint8_t x = 0; x < 10; x++)
       {
         if (NXbuff[x + 3] == 0xFF)
         {
@@ -923,6 +933,31 @@ void NX_P15_getInput()
   }
 }
 
+void NX_P15_initLongLat()
+//---------------------------------------------------------------------
+{
+  Serial1.print("EIMlocation.t");
+  Serial1.print(0);
+  Serial1.print(".txt=");
+  Serial1.print("\"");
+  Serial1.print(dmrSettings.longitude);
+  Serial1.print("\"");
+  NXend(152);
+  Serial1.print("EIMlocation.t");
+  Serial1.print(1);
+  Serial1.print(".txt=");
+  Serial1.print("\"");
+  Serial1.print(dmrSettings.latitude);
+  Serial1.print("\"");
+  NXend(153);
+  Serial1.print("EIMlocation.n");
+  Serial1.print(0);
+  Serial1.print(".val=");
+  Serial1.print(dmrSettings.distance);
+  NXend(154);
+}
+
+
 void NX_P15_initPage()
 //---------------------------------------------------------------------
 {
@@ -933,7 +968,6 @@ void NX_P15_initPage()
   Serial1.print("");
   Serial1.print("\"");
   NXend(151);
-
 }
 boolean NX_P15_checkinputfields()
 //---------------------------------------------------------------------
@@ -977,7 +1011,7 @@ void  NX_P15_fillRepeaterlist()
   {
     reptemplistCurLen = 0;
   }
-  for (int i = 0; i < p15_numRows; i++)
+  for (uint8_t i = 0; i < p15_numRows; i++)
   {
     strcpy(NXrepeaterName, "");
     if (i <= reptemplistCurLen)
@@ -1005,8 +1039,8 @@ void  NX_P15_saveRepeaterlist()
 //  If the temporary repeaterlist is empty nothing is changed.
 {
   char repeaterIDChar[10];
-  int t = reptemplistCurLen;
-  int rl=t;
+  uint8_t t = reptemplistCurLen;
+  uint8_t rl=t;
   if (reptemplistCurLen = 0)
   {
     return;
@@ -1015,13 +1049,13 @@ void  NX_P15_saveRepeaterlist()
   {
     return;
   }
-  int j = numManualRep;
+  uint8_t j = numManualRep;
  
   boolean manualfound = false;
-  for (int i = 0; i <= rl; i++)
+  for (uint8_t i = 0; i <= rl; i++)
   {
     manualfound = false;
-    for (int k = 0; (k < numManualRep)and !manualfound; k++)
+    for (uint8_t k = 0; (k < numManualRep)and !manualfound; k++)
     {
       if (dmrSettings.repeater[k].dmrId == reptemplist[i].dmrId)
       {
@@ -1036,13 +1070,20 @@ void  NX_P15_saveRepeaterlist()
       j++;
     }
   }
-  for (int i = t + numManualRep; i < maxRepeaters; i++)          // if you want to zero the repeater list
+  for (uint8_t i = t +1+ numManualRep; i < maxRepeaters; i++)          // if you want to zero the repeater list
   {
     dmrSettings.repeater[i].zone  = 0;
     dmrSettings.repeater[i].dmrId = 0;
   }
+  strcpy(dmrSettings.longitude,p15_long);
+  strcpy(dmrSettings.latitude,p15_lat);
+  dmrSettings.distance = p15_dist;
   settingsWrite(&dmrSettings);
-  //  NX_P14_updateRepHotspotDB(0, maxRepeaters);
+  for (uint8_t k=0;k< maxRepeaters;k++)
+  {
+     EIMprintDMRsettingsitem(k);
+  }
+
 }
 //========================================================================== field or button touch
 void NX_txtfield_touched()
@@ -1363,21 +1404,21 @@ void NX_button_pressed()
         case  0x00:
           if (NXbuff[3] == 1)
           {
-                       curdigCh.TimeSlot = 1;
+                       curdigCh.timeSlot = 1;
           }
           else
           {
-                       curdigCh.TimeSlot = 2;
+                       curdigCh.timeSlot = 2;
           }
           break;
         case  0x01:
           if (NXbuff[3] == 1)
           {
-                     curdigCh.TimeSlot = 2;
+                     curdigCh.timeSlot = 2;
           }
           else
           {
-                     curdigCh.TimeSlot = 1;
+                     curdigCh.timeSlot = 1;
           }
 
           break;
@@ -1461,7 +1502,7 @@ void  NX_page_init()
       NX_P10_rxLastHeard();
       break;
     case 0x11:                                      //select rx Talk Groups
-      for (int i = 0; i < NXmaxrxTalkgroups; i++)
+      for (uint8_t i = 0; i < NXmaxrxTalkgroups; i++)
       {
         if (dmrSettings.rxTalkGroup[i] > 0)
         {
@@ -1589,9 +1630,9 @@ void NXhandler()
 boolean NXlisten()
 //----------------------------------------------------------- NXreceiveFromDisplay
 {
-  int i = 0;
-  int j = 0;
-  int ffcount = 0;
+  uint8_t i = 0;
+  uint8_t j = 0;
+  uint8_t ffcount = 0;
   boolean rcode = false;
   uint32_t startmillis = millis();
   while (Serial1.available() == 0 and ((millis() - startmillis) < 500)) { // wait for first character

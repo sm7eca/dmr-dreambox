@@ -6,20 +6,21 @@ char  EIMDMRUrl[] = "http://dmrdream.com/api/v1/dmr/";
 char  EIMhotspotUrl[] = "http://dmrdream.com/api/v1/hotspot/callsign/";
 char  EIMstatusUrl[] = "http://dmrdream.com/api/v1/system/info";
 
-void  EIMeraseRepHotspot(int k)
+void  EIMeraseRepHotspot(uint8_t k)
 //-----------------------------------------------------------------------------------
 {
   dmrSettings.repeater[k].zone  = 0;
   dmrSettings.repeater[k].dmrId = 0;
 }
 boolean  EIMreadStatus()
+//-----------------------------------------------------------------------------------
 {
   if ((wifiMulti.run() == WL_CONNECTED))
   {
     HTTPClient http;
     WIFIcallfound = false;
     http.begin(EIMstatusUrl);
-    int httpCode = http.GET();
+    uint16_t httpCode = http.GET();
     if (httpCode > 0)
     {
       if (httpCode == HTTP_CODE_OK)
@@ -38,11 +39,11 @@ boolean  EIMreadStatus()
         const char* uptime = doc["uptime"]; // "134882s"
         const char* version = doc["version"]; // "0.1.1"
         const char* maintainer = doc["maintainer"]; // "Arne Nilsson"
-        long repeater = doc["repeater"]; // 15431        switch (err.code())
-        //        Serial.println(uptime);
-        //        Serial.println(version);
-        //        Serial.println(maintainer);
-        //        Serial.println(repeater);
+        uint32_t repeater = doc["repeater"]; // 15431        switch (err.code())
+                Serial.println(uptime);
+                Serial.println(version);
+                Serial.println(maintainer);
+                Serial.println(repeater);
         return true;
       }
     }
@@ -61,16 +62,16 @@ boolean EIMdeserializeRepHot(String payload)
     Serial.println(error.f_str());
     return false;
   }
-  long dmr_id = doc["dmr_id"];
-  long tx = doc["tx"];
-  long rx = doc["rx"];
-  int cc = doc["cc"];
-  int max_ts = doc["max_ts"];
+  uint32_t  dmr_id = doc["dmr_id"];
+  uint32_t  tx = doc["tx"];
+  uint32_t  rx = doc["rx"];
+  uint8_t cc = doc["cc"];
+  uint8_t max_ts = doc["max_ts"];
   const char *name = doc["name"];
   const char *location = doc["location"];
   return true;
 }
-boolean EIMreadRepeatersMaster(int master, int limit, int skip)
+boolean EIMreadRepeatersMaster(uint16_t master, uint8_t limit, uint8_t skip)
 //-----------------------------------------------------------------------------------
 {
   if ((wifiMulti.run() == WL_CONNECTED))
@@ -82,7 +83,7 @@ boolean EIMreadRepeatersMaster(int master, int limit, int skip)
     Serial.println("EIMreadRepeatersMaster");
     Serial.println(combinedArray);
     http.begin(combinedArray);
-    int httpCode = http.GET();
+    uint16_t httpCode = http.GET();
     if (httpCode > 0)
     {
       if (httpCode == HTTP_CODE_OK)
@@ -111,13 +112,13 @@ boolean EIMdeserializeRepHotList(String payload)
     return false;
   }
   reptemplistCurLen = 0;
-  int k = 0;
+  uint8_t k = 0;
   for (JsonObject elem : doc.as<JsonArray>())
   {
-    long dmr_id = elem["dmr_id"];
-    long tx = elem["tx"];
-    long rx = elem["rx"];
-    int cc = elem["cc"];
+    uint32_t  dmr_id = elem["dmr_id"];
+    uint32_t  tx = elem["tx"];
+    uint32_t  rx = elem["rx"];
+    uint8_t cc = elem["cc"];
     const char* name = elem["name"];
     const char* location = elem["location"];
     const char* city = elem["city"];
@@ -142,7 +143,7 @@ boolean EIMdeserializeRepHotList(String payload)
   return true;
 }
 
-boolean EIMreadRepeatersLocation(char* longitude, char* latitude, int distance)
+boolean EIMreadRepeatersLocation(char* longitude, char* latitude, uint16_t distance)
 //-----------------------------------------------------------------------------------
 {
   if ((wifiMulti.run() == WL_CONNECTED))
@@ -153,7 +154,7 @@ boolean EIMreadRepeatersLocation(char* longitude, char* latitude, int distance)
     Serial.println("EIMreadRepeatersLocation");
     Serial.println(combinedArray);
     http.begin(combinedArray);
-    int httpCode = http.GET();
+    uint16_t httpCode = http.GET();
     Serial.println(httpCode);
     if (httpCode > 0)
     {
@@ -186,7 +187,7 @@ boolean EIMreadHotspots(char* callsign)
     Serial.println("EIMreadHotspots");
     Serial.println(combinedArray);
     http.begin(combinedArray);
-    int httpCode = http.GET();
+    uint16_t httpCode = http.GET();
     if (httpCode > 0)
     {
       if (httpCode == HTTP_CODE_OK)
@@ -203,7 +204,7 @@ boolean EIMreadHotspots(char* callsign)
   }
   return false;
 }
-boolean EIMdeserializeSingleRepeater(String input, int k)
+boolean EIMdeserializeSingleRepeater(String input, uint8_t k)
 //-----------------------------------------------------------------------------------
 {
   // String input;
@@ -225,9 +226,9 @@ boolean EIMdeserializeSingleRepeater(String input, int k)
   strcpy(dmrSettings.repeater[k].repeaterName, doc["name"]); // "SK7RJL"
   const char* location = doc["location"]; // "55.720459,13.222694"
   strcpy(dmrSettings.repeater[k].repeaterLoc, doc["city"]); // "Lund"
-  int num_tg = doc["num_tg"];
-  int x = 0;
-  for (int i = 0; i < 10; i++)
+  uint8_t num_tg = doc["num_tg"];
+  uint8_t x = 0;
+  for (uint8_t i = 0; i < 10; i++)
   {
     dmrSettings.repeater[k].groups[i].tg_id = 0;
     dmrSettings.repeater[k].groups[i].ts = 0;
@@ -253,7 +254,7 @@ boolean EIMdeserializeSingleRepeater(String input, int k)
 //  EIMprintDMRsettingsitem(k);
   return true;
 }
-boolean EIMreadRepeaterDMRid(char* DMRid, int k)
+boolean EIMreadRepeaterDMRid(char* DMRid, uint8_t k)
 //-----------------------------------------------------------------------------------
 {
   if ((wifiMulti.run() == WL_CONNECTED))
@@ -264,7 +265,7 @@ boolean EIMreadRepeaterDMRid(char* DMRid, int k)
     Serial.println("EIMreadRepeaterDMRid");
     Serial.println(combinedArray);
     http.begin(combinedArray);
-    int httpCode = http.GET();
+    uint16_t httpCode = http.GET();
     if (httpCode > 0)
     {
       if (httpCode == HTTP_CODE_OK)
@@ -281,7 +282,7 @@ boolean EIMreadRepeaterDMRid(char* DMRid, int k)
   }
   return false;
 }
-void  EIMprintDMRsettingsitem(int k)
+void  EIMprintDMRsettingsitem(uint8_t k)
 {
   Serial.println("chnr: ");
   Serial.println(k);
@@ -303,7 +304,7 @@ void  EIMprintDMRsettingsitem(int k)
   Serial.print(" ");
   Serial.print(dmrSettings.repeater[k].repeaterLoc); // "Lund"
   Serial.println();
-  for (int x = 0; x < 10; x++)
+  for (uint8_t x = 0; x < 10; x++)
   {
     Serial.print(dmrSettings.repeater[k].groups[x].tg_id);
     Serial.print(" ");

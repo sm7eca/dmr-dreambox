@@ -1,11 +1,11 @@
-//  
-char SoftwareVersion[21] = "SM7ECA-210310-3H";
+//
+char SoftwareVersion[21] = "SM7ECA-210320-3H";
 #include <Arduino.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include "Settings.h"
-// #define INC_DMR_CALLS
+#define INC_DMR_CALLS
 
 //----------------------------------------- DMR MODULE COMMANDS
 //
@@ -73,41 +73,41 @@ boolean bSMSmessageReceived = false;
 //                                                           didn´t compile correctly when
 //                                                           in A40Nextion_HMI module!!!!!
 //------------------------------------------------------------- Nextion meny key items
-int   NXselectRep;                  // selected row in replist screen
+uint8_t  NXselectRep;                  // selected row in replist screen
 uint32_t  NXselectTG;        // TG list
-int   lastNXtrans = 0;              // NX comm error debbugging aid
+uint8_t  lastNXtrans = 0;              // NX comm error debbugging aid
 boolean   WIFIcallfound = false;
-int   NXmaxrxTalkgroups = 32;       // Max no of talkgroup buttons on page 11
+uint8_t  NXmaxrxTalkgroups = 32;       // Max no of talkgroup buttons on page 11
 // page 4
-int  p4_numRows = 10;       // number of rows of channels on page 4
-int  p4_curPage = 0;        // current page of scroll list
-int  p4_startRecord = 0;     // index of first record on a page
-int  p4_selectedRow = 0;
-int      p4_repeaterChnr = 0;   
+uint8_t p4_numRows = 10;       // number of rows of channels on page 4
+uint8_t p4_curPage = 0;        // current page of scroll list
+uint8_t p4_startRecord = 0;     // index of first record on a page
+uint8_t p4_selectedRow = 0;
+int8_t  p4_repeaterChnr = 0;
 boolean  p4_eof = false;
 // page 5
-int p5_startRecord = 0;    // index to start searching
-int p5_numRows = 10;       // number of rows of channels on page 5
-int p5_lastRecord = -1;    // last record read on last page
+uint8_t p5_startRecord = 0;    // index to start searching
+uint8_t p5_numRows = 10;       // number of rows of channels on page 5
+uint8_t p5_lastRecord = -1;    // last record read on last page
 boolean p5_eof = false;
 // page 6
-int p6_numRows = 10;       // number of rows of channels on page 6
-int p6_curPage = 0;        // current page of scroll list
-int p6_startRecord = 0;     // index of first record on a page
+uint8_t p6_numRows = 10;       // number of rows of channels on page 6
+uint8_t p6_curPage = 0;        // current page of scroll list
+uint8_t p6_startRecord = 0;     // index of first record on a page
 boolean p6_eof = false;
 // page 15
-int p15_numRows = 14;
+uint8_t p15_numRows = 14;
 char    p15_long[11];
 char    p15_lat[11];
-long int p15_dist;
+uint16_t p15_dist;
 char NXrepeaterName[40];
 //------------------------------------------------------------ State Machine
-int     UnitState = IDLE_STATE;
-int     lastUnitState;
+uint8_t    UnitState = IDLE_STATE;
+uint8_t    lastUnitState;
 //------------------------------------------------------------ Timer variables
-unsigned long loopstart, loopstartNext, looptime, looptimelast;       // counting main loop time
-static unsigned long lastInterruptTime = 0, lastInterruptRSSITime = 0;
-unsigned long idletimer = 0;
+uint32_t loopstart, loopstartNext, looptime, looptimelast;       // counting main loop time
+uint32_t lastInterruptTime = 0, lastInterruptRSSITime = 0;
+uint32_t idletimer = 0;
 
 //------------------------------------------------------------ Button status
 boolean btnPTT = false;
@@ -115,7 +115,7 @@ boolean btnChangeCh = false;
 //------------------------------------------------------------ WIFI status
 boolean BwifiOn = false;
 ////------------------------------------------------------------ Calculated freq from chan no
-//long int  tx_freq, rx_freq;
+//uin32_t  tx_freq, rx_freq;
 //
 // ----------------------------------------------------------- Scanning of time slots in IDLE_STATE
 boolean   ts_scan = true;
@@ -137,7 +137,7 @@ typedef struct
   String ri_state;
   String ri_city;
   String ri_country;
-  long  ri_count;
+  uint32_t  ri_count;
   uint32_t  ri_talkgroup;     //last heard on talkgroup ..
 } Radioid ;
 //------------------------------------------------------------- Current/Last rx contact
@@ -146,10 +146,10 @@ String ri_city;
 String ri_country;
 String ri_fname;
 String ri_surname;
-long ri_id;
+uint32_t ri_id;
 String ri_state;
 uint32_t ri_talkgroup;
-long  ri_count;
+uint32_t ri_count;
 
 // ------- Setup menu items
 
@@ -159,10 +159,10 @@ byte  maxMicVolume = 15;
 byte  audioVolume = 4;
 byte  micVolume = 15;
 
-int   rxTGStatus[33] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                            1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                            1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0
-                           };
+uint8_t  rxTGStatus[33] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                           1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                           1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0
+                          };
 uint32_t  rxTalkGroup[33] = {240, 2400, 2401, 2402, 240216, 2403, 2404, 2405, 2406, 24061, // List of relevant TalkGroups
                              24062, 24063, 2407, 240721, 2410, 2411, 2412, 2413, 2414, 2415, // 32 are fed into the rx group list
                              2416, 240240, 91, 9, 240850, 0, 0, 0, 0, 0, 0, 0
@@ -259,53 +259,19 @@ typedef struct
   uint8_t   tail;       // trailing character
 } db_SMSget_info;
 
-//-------------------------------------------------------------- Channel item struct - future use
-typedef struct {        //all our data of each channel in EEPROM
-  uint8_t   chnr;
-  uint32_t  TG;
-  unsigned long rx_freq;    //receiving fregency, long int version 446.500 = 44650000, total 8 digits
-  unsigned long tx_freq;    //transmiting frequency, long int version 446.500 = 44650000, total 8 digits
-  unsigned int  cc;          //CC color code
-  unsigned int ts;          // time slot
-  byte power;               //the output power level, 0 = high; 1 = low, 2 = 3 = middle
-  char nameCH[12];          //name of the channel, max 12 chars, as the char[12] = '\0',
-  //so you only have 11 chars
-} ChanItem ;
-ChanItem curChanItem;
-
-DmrSettingsS dmrSettings;
-int numManualRep = SETTINGS_MAX_NUM_MANUAL_REPEATERS;
-int maxRepeaters = SETTINGS_MAX_NUM_REPEATERS;
-int maxRepTG  =10;
-RepeaterS  reptemplist[21];       // temporary list of repeaters near given coordinate
-int   reptemplistMaxLen = 20;
-int   reptemplistCurLen;
+//-------------------------------------------------Digital Channel management
+RepeaterS  curdigCh;                                // currently selected channel
+TalkGroupS currepTG;                                // currently selected TalkGroup
+DmrSettingsS dmrSettings;                           // general settings and repeater channels
+uint8_t numManualRep = SETTINGS_MAX_NUM_MANUAL_REPEATERS;
+uint8_t maxRepeaters = SETTINGS_MAX_NUM_REPEATERS;
+uint8_t maxRepTG  = 10;
+RepeaterS  reptemplist[21];       // temp array used when selecting channels near a location p15
+uint8_t  reptemplistMaxLen = 14;
+uint8_t  reptemplistCurLen;
 
 WifiSettingS  WifiAp;
 
-void  NXinitDisplay();
-void  NXinitialSetup();
-void  NX_P0_showState();  
-void  NX_P0_DisplayMainPage();
-void  NX_P0_DisplayReceive(boolean rec_on, byte calltype, uint32_t TGId);
-void  NX_P0_DisplayTransmit(boolean on);
-void  NX_P0_DisplayCurrentTS();
-void  NX_P8_viewSMS(String rxContactChar, String SMStext);
-void  NX_P9_set_callsign_id();
-void  NX_P0_updateRSSI(uint8_t rssi);
-void  NX_P0_showVol();
-void  NX_P14_updateRepHotspotDB(int first, int last);
-boolean  wifiConnect();
-void  WiFisetTime();
-boolean  EIMreadStatus();
-void  EIMreadRepeaters();
-void  EIMreadHotspots();
-boolean EIMreadRepeaterDMRid(char* DMRid, int k);
-boolean EIMreadRepeatersLocation(char* longitude, char* latitude, int distance);
-void  EIMeraseRepHotspot(int k);
-void  EIMprintDMRsettingsitem(int k);
-void  NXhandler();
-void  wifiGetDMRID();
 
 void beep(bool bp)
 //---------------------------------------------------------------- beep
@@ -322,7 +288,7 @@ void beep(bool bp)
   }
 }
 
-//boolean calculateFreq(long int chan)
+//boolean calculateFreq(uin32_t chan)
 ////-------------------------------------------------------------- calculate freq
 //// calculate frequency pairs fråm Channel RUxxx and Uxxx
 ////
@@ -375,45 +341,86 @@ void setup()
   {
     UnitState = INITIAL_INPUT;                              // firsta app strt - need to init EEPROM parameter data
     dmrSettings.version = 0x1;
-    for (int k = 0; k < maxRepeaters ; k++)
+    for (uint8_t k = 0; k < maxRepeaters ; k++)
     {
-      dmrSettings.repeater[k].zone  = 0;
+      dmrSettings.repeater[k].chnr = k;
       dmrSettings.repeater[k].dmrId = 0;
-      dmrSettings.repeater[k].chnr = 0;
+      dmrSettings.repeater[k].tx = 0;
+      dmrSettings.repeater[k].rx = 0;
+      dmrSettings.repeater[k].cc = 0;
+      dmrSettings.repeater[k].timeSlot = 0;
+      dmrSettings.repeater[k].timeSlotNo = 0;
+      dmrSettings.repeater[k].repeaterName[0] = 0x0;
+      dmrSettings.repeater[k].repeaterLoc[0] = 0x0;
+      for (uint8_t x = 0; x < 10; x++)
+      {
+        dmrSettings.repeater[k].groups[x].tg_id = 0;
+        dmrSettings.repeater[k].groups[x].ts = 0;
+      }
     }
     dmrSettings.ts_scan = false;        //
-    for (int x = 0; x <= maxRepeaters; x++)
+    for (uint8_t x = 0; x <= maxRepeaters; x++)
     {
       dmrSettings.rxTGStatus[x] = rxTGStatus[x] ;
       dmrSettings.rxTalkGroup[x] = rxTalkGroup[x];
     }
     settingsWrite(&dmrSettings);
   }
-//      for (int k = 0; k <= maxRepeaters; k++)              // if you want to zero the repeater list
-//      {
-//        dmrSettings.repeater[k].chnr  = k;
-//        dmrSettings.repeater[k].zone  = 0;
-//        dmrSettings.repeater[k].dmrId = 0;
-//      }
-//      settingsWrite(&dmrSettings);
+    for (uint8_t x = 0; x <= maxRepeaters; x++)
+    {
+      dmrSettings.rxTGStatus[x] = rxTGStatus[x] ;
+      dmrSettings.rxTalkGroup[x] = rxTalkGroup[x];
+    }
+
+//  dmrSettings.audioLevel = 7;       //  1-9; default = 8
+//  dmrSettings.micLevel = 9;         //  0-15, mic gain setting
+//  strcpy(dmrSettings.callSign,"SM7ECA");   // callsign, max 12 chars
+//  dmrSettings.localID = 2400530;        //   DMRID
+//  strcpy(dmrSettings.longitude,"13.0141");  // saved from last location search
+//  strcpy(dmrSettings.latitude,"55.6091");   // "
+//  dmrSettings.distance = 20;       // "
+//  strcpy(dmrSettings.qthloc,"JO66mo");      // qth locator for future use
+//  dmrSettings.chnr = 0;           //  current channel
+//  dmrSettings.TG = 5;             //  current talk group index
+//  dmrSettings.ts_scan = true;        //
+//
+//  for (uint8_t k = 0; k <= maxRepeaters; k++)        //   if you want to zero the repeater list
+//  {
+//     dmrSettings.repeater[k].chnr = k;
+//     dmrSettings.repeater[k].dmrId = 0;
+//     dmrSettings.repeater[k].tx = 0;
+//     dmrSettings.repeater[k].rx = 0;
+//     dmrSettings.repeater[k].cc = 0;
+//     dmrSettings.repeater[k].timeSlot = 0;
+//     dmrSettings.repeater[k].timeSlotNo = 0;
+//     dmrSettings.repeater[k].repeaterName[0]=0x0;
+//     dmrSettings.repeater[k].repeaterLoc[0]=0x0;
+//    for (uint8_t x = 0; x < 10; x++)
+//    {
+//       dmrSettings.repeater[k].groups[x].tg_id = 0;
+//       dmrSettings.repeater[k].groups[x].ts = 0;
+//    }
+//  }
+  settingsWrite(&dmrSettings);
+  Serial.println(sizeof(dmrSettings));
   if (sizeof(dmrSettings) > 4096)
   {
     Serial.print("exceeded EEPROM capacity (4096): ");
     Serial.println(sizeof(dmrSettings));
   }
   DMRDebug = false;                            //  on Serial monitor
-  NXDebug = true;                              //  display communication
+  NXDebug = false;                              //  display communication
   //  UnitState=INITIAL_INPUT;
   if (UnitState == INITIAL_INPUT)              //  app strt - need to init EEPROM parameter data
   {
     NXinitialSetup();                          //  for initial init -test
   }
-  //  for (int i=0;i<=maxRepeaters;i++)
+  //  for (uint8_ti=0;i<=maxRepeaters;i++)
   //  {
   //   EIMprintDMRsettingsitem(i);
   //  }
   NXinitDisplay("Init ChannelDB");
-//  NX_P14_updateRepHotspotDB(0, maxRepeaters);                // Move rephotspots from EEPROM to memory
+  //  NX_P14_updateRepHotspotDB(0, maxRepeaters);                // Move rephotspots from EEPROM to memory
   NXinitDisplay("Init Ready");
 
 }

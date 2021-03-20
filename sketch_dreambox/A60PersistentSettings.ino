@@ -77,7 +77,7 @@ void settingsWrite(DmrSettingsS *dmrSettings)
   settingsPrintMsg("settingsWrite, finished");
 }
 
-void settingsAddWifiAp(DmrSettingsS* dmrSettings, WifiSettingS* wifiAp, int slot)
+void settingsAddWifiAp(DmrSettingsS* dmrSettings, WifiSettingS* wifiAp, uint8_t slot)
 {
   // write AP settings into a distinct slot
   settingsPrintMsg("settingsWriteWifi, start");

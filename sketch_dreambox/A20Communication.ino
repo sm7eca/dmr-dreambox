@@ -5,7 +5,7 @@ uint16_t PcCheckSum(uint8_t * buf, int len)
 //-----------------calculate checksum
 {
   uint32_t sum = 0;
-  int      Pcksum = 4;             // checksum position in buff
+  uint16_t      Pcksum = 4;             // checksum position in buff
   while (len > 1)
   {
     sum += 0xFFFF & (*buf << 8 | *(buf + 1));
@@ -31,7 +31,7 @@ int CheckCkSum(int len, uint8_t * buf)
 //---------------Check if check sum correct
 {
   uint16_t sum, cksum;
-  int      Pcksum = 4;             // checksum position in buff
+  uint16_t      Pcksum = 4;             // checksum position in buff
   sum = buf[Pcksum];
   buf[Pcksum] = 0;
   sum = (sum << 8);
@@ -304,9 +304,12 @@ boolean DMRlisten()
     return false;
   }
 }
-
-void DMRsetDigChannel(uint32_t rx_freq, uint32_t tx_freq, uint32_t tx_contact,
+// tillfällig fix pga BM visar fel i gränssnittet 20201-03-20
+void DMRsetDigChannel(uint32_t tx_freq, uint32_t rx_freq, uint32_t tx_contact,
                       uint8_t ContactType, uint8_t cc, uint8_t ts, uint8_t ChannelMode, uint8_t relay)
+//void DMRsetDigChannel(uint32_t rx_freq, uint32_t tx_freq, uint32_t tx_contact,
+//                      uint8_t ContactType, uint8_t cc, uint8_t ts, uint8_t ChannelMode, uint8_t relay)
+
 {
   //------------------------------------------------------------------ DMRsetDigChannel
   //       Packet header length = 8
@@ -685,22 +688,10 @@ boolean  DMRqueryReceived(boolean receiving)
   return false;
 }
 
-void DMRinitChannel(uint8_t chnr, uint32_t TG)
+void DMRinitChannel()
 //----------------------------------------------------------- DMRinitChannel
 {
-  if (DBgetsingleChannel(chnr))
-  {
-    if (!DBgetrepTG(curdigCh.dmrId, TG))
-    {
-      // dynamic TG!!
-      DBgetTG(TG);
-    }
-  }
-  else
-  {
-    Serial.print("DBgetChannel fail");
-    return;
-  }
+  DBgetTG(currepTG.tg_id);
   //calculateFreq(curdigCh.IARUchannel);
   DMRsetDigChannel(curdigCh.rx, curdigCh.tx, currepTG.tg_id,
                    curTG.calltype, curdigCh.cc, currepTG.ts, 0, 2);

@@ -17,11 +17,11 @@
 //
 //--------------------------------- new version digChS 
 //typedef struct digChS{
-//  int  chnr;
+//  uint8_t chnr;
 //  RepeaterS digRep;
 //}digChS;
 
-RepeaterS  curdigCh;
+
 //--------------------------------- temporay Channel while scrolling on page 4 and 5
 RepeaterS tmpdigCh;
 
@@ -37,7 +37,7 @@ RepeaterS tmpdigCh;
 //repTG currepTG;
 //repTG repTGlist[200];
 //----------------------------------------------------------- replace by tmpdigCh.groups
-TalkGroupS currepTG;
+
 
 //----------------------------------------------------------- Talk Groups
 typedef struct {              // Talk Group list
@@ -116,7 +116,7 @@ void readradioid(uint32_t rxContact)
 //  the last received DMRids are stored in ri_list.
 //  Search this list before accessing radioid.org
 {
-  for (int i = 0; i <= numradioid; i++)
+  for (int8_t i = 0; i <= numradioid; i++)
   {
     //        if (ri_list[i].ri_id==rxContact and ri_list[i].ri_talkgroup==rxGroup
     if (ri_list[i].ri_id == rxContact)
@@ -131,7 +131,7 @@ void readradioid(uint32_t rxContact)
       ri_id = ri_list[i].ri_id;
       ri_list[i].ri_count++;
       ri_count = ri_list[i].ri_count;
-      for (int j = i - 1; j >= 0; j--)
+      for (int8_t j = i - 1; j >= 0; j--)
       {
         ri_list[j + 1].ri_callsign = ri_list[j].ri_callsign;
         ri_list[j + 1].ri_talkgroup = ri_list[j].ri_talkgroup;
@@ -170,7 +170,7 @@ void readradioid(uint32_t rxContact)
       return;
     }
   }
-
+  Serial.println("Goto wifiGetDMRID(): ");
   wifiGetDMRID();
 }
 void insertradioid()
@@ -179,8 +179,11 @@ void insertradioid()
 // the last xx calls are stored in the list. It is round robin logic when
 // new id shall be stored.
 {
-  for (int j = numradioid; j >= 0; j--)
+  for (int8_t j = numradioid; j >= 0; j--)
   {
+    Serial.println("insertradioid()-1");
+    Serial.println(numradioid);
+    Serial.println(j);
     ri_list[j + 1].ri_callsign = ri_list[j].ri_callsign;
     ri_list[j + 1].ri_talkgroup = ri_list[j].ri_talkgroup;
     ri_list[j + 1].ri_fname = ri_list[j].ri_fname;
@@ -191,6 +194,7 @@ void insertradioid()
     ri_list[j + 1].ri_id = ri_list[j].ri_id;
     ri_list[j + 1].ri_count = ri_list[j].ri_count;
   }
+  Serial.println("insertradioid()-2");
   ri_list[0].ri_callsign = ri_callsign;
   ri_list[0].ri_talkgroup = rxGroup;
   ri_list[0].ri_fname =   ri_fname;
@@ -209,7 +213,7 @@ void insertradioid()
 //boolean DBgetChannel(uint8_t rowno)
 //------------------------------------------------------ DBgetChannel
 //{
-//  for (int i = 0; i <= maxdigChlist; i++)
+//  for (uint8_t i = 0; i <= maxdigChlist; i++)
 //  {
 //    if (digChlist[i].chnr == 255)
 //    {
@@ -226,7 +230,7 @@ void insertradioid()
 //boolean DBgetrepTG(uint32_t DMRid, uint32_t TG)
 ////------------------------------------------------------ DBgetrepTG
 //{
-//  for (int i = 0; i <= maxrepTGlist; i++)
+//  for (uint8_t i = 0; i <= maxrepTGlist; i++)
 //  {
 //    if (repTGlist[i].DMRid == 9999999)
 //    {
@@ -249,7 +253,7 @@ void insertradioid()
 boolean DBgetTG(uint32_t TG)
 //------------------------------------------------------ DBgetrepTG
 {
-  for (int j = 0; j <= maxTGlist; j++)
+  for (uint8_t j = 0; j <= maxTGlist; j++)
   {
     if (TGlist[j].TG == 9999999)
     {
@@ -263,7 +267,7 @@ boolean DBgetTG(uint32_t TG)
   }
   return false;
 }
-boolean DBgetsingleChannel(int rowno)
+boolean DBgetsingleChannel(uint8_t rowno)
 //------------------------------------------------------ 
 {
   if (rowno>=maxRepeaters or rowno<0)
@@ -279,26 +283,31 @@ boolean DBgetsingleChannel(int rowno)
   return true;
 }
 
-boolean DBgetnextChannel(int rowno)
+boolean DBgetnextChannel(int8_t rowno)
 //------------------------------------------------------ 
 {
+//  Serial.println("DBgetnextChannel: ");
   if (rowno+1>=maxRepeaters)
   {
+    Serial.print("DBgetnextChannel:end of array ");
+    Serial.println(rowno);
     return false;
   }
   rowno++;
-  for (int k=rowno;rowno<numManualRep and dmrSettings.repeater[rowno].dmrId==0;k++)
+  for (uint8_t k=rowno;rowno<numManualRep and (dmrSettings.repeater[rowno].dmrId==0);k++)
   {
       rowno++;
   }
   if (dmrSettings.repeater[rowno].dmrId==0)
   {
+    Serial.print("DBgetnextChannel:end of data: ");
+    Serial.println(rowno);
     return false;
   }
   tmpdigCh =dmrSettings.repeater[rowno];
   return true;
 }
-boolean DBgetsinglerepTG(int rowno)
+boolean DBgetsinglerepTG(uint8_t rowno)
 //------------------------------------------------------ DBgetrepTG
 {
   if (rowno>=maxRepTG)
