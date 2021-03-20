@@ -10,8 +10,8 @@ void IN_NormalStartup()
   WiFisetTime();
   audioVolume = dmrSettings.audioLevel;
   micVolume = dmrSettings.micLevel;
-  curChanItem.chnr = dmrSettings.chnr;
-  curChanItem.TG = dmrSettings.TG;
+  curdigCh = dmrSettings.repeater[dmrSettings.chnr];
+  currepTG = dmrSettings.repeater[dmrSettings.chnr].groups[dmrSettings.TG];
   NXinitDisplay("Connect to DMR-mod");
 #ifdef INC_DMR_CALLS
   while (not DMRTransmit(FUNC_ENABLE, QUERY_INIT_FINISHED)) // Check - DMR Module running?
@@ -21,14 +21,15 @@ void IN_NormalStartup()
   //NXdisplayVersion();
 #endif
   NXinitDisplay("Set DMR Channel");
-  DMRinitChannel(curChanItem.chnr, curChanItem.TG);        // Setup initial DMR digital channel
+  DMRinitChannel();                                        // Setup initial DMR digital channel
   DMRTransmit(FUNC_ENABLE, GET_DIGITAL_CHANNEL);           // Verify digital channel set
   NXinitDisplay("Display main page");
   NX_P9_set_callsign_id();
   NX_P0_DisplayMainPage();
   NX_P0_updateRSSI(0);                                     // reset S meter on page 0
+  NX_P15_initLongLat();
   NX_P0_showVol();                                         // update the volume display from actual DMR value
-  // long int rx, tx;
+  // uint32_t rx, tx;
   // NX_P0_DisplayCurrent();
   //stop the first beep
   beep(false);                                             // LED off - startup finished

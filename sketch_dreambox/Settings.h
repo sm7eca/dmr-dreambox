@@ -4,7 +4,6 @@
 
 #define SETTINGS_WIFI_SSID_LEN 32
 #define SETTINGS_WIFI_PASSWD_LEN 16
-#define REP_NEAR_OFFSET 5
 
 typedef struct _WifiSettingS {
   char ssid[SETTINGS_WIFI_SSID_LEN + 1];
@@ -27,11 +26,12 @@ typedef struct _RepeaterS {
   char        repeaterName[16];   // repeater call sign
   char        repeaterLoc[16];    // human readable location
   TalkGroupS  groups[10];
+  uint8_t     chnr;               // channel no
 } RepeaterS;
 
 #define SETTINGS_MAX_WIFI_AP 4
 #define SETTINGS_MAX_NUM_MANUAL_REPEATERS 4
-#define SETTINGS_MAX_NUM_REPEATERS 28
+#define SETTINGS_MAX_NUM_REPEATERS 25
 
 //typedef struct _RepeaterConfigS {
 //  RepeaterS   repeater[30];
@@ -39,18 +39,22 @@ typedef struct _RepeaterS {
 
 
 typedef struct _DmrSettingsS {
-  int           version;
+  uint16_t           version;
   WifiSettingS  wifisettings[SETTINGS_MAX_WIFI_AP];
   uint8_t       audioLevel;       //  1-9; default = 8
   uint8_t       micLevel;         //  0-15, mic gain setting
   char          callSign[12];     // callsign, max 12 chars
   uint32_t      localID;          //   DMRID
-  uint8_t       chnr;             //
+  char          longitude[11];    // saved from last location search
+  char          latitude[11];     // "
+  uint16_t      distance;         // "
+  char          qthloc[9];        // qth locator for future use
+  uint8_t       chnr;             //  current channel
   uint32_t      TG;               //  current talk group
   bool          ts_scan;          //
   uint8_t       rxTGStatus[33];   //
   uint32_t      rxTalkGroup[33];
-  RepeaterS     repeater[28];
+  RepeaterS     repeater[SETTINGS_MAX_NUM_REPEATERS];
 } DmrSettingsS;
 
 
@@ -74,6 +78,32 @@ void settingsWrite(DmrSettingsS* dmrSettings);
 void settingsRead(DmrSettingsS* dmrSettings);
 
 // write wifi settings into to a distinct slot
-void settingsAddWifiAp(DmrSettingsS* dmrSettings, WifiSettingS* wifiAp, int slot);
+void settingsAddWifiAp(DmrSettingsS* dmrSettings, WifiSettingS* wifiAp, uint8_t slot);
+
+void  NXinitDisplay(const String msg);
+void  NXinitialSetup();
+void  NXdimdisplay(uint8_t func);
+void  NX_P0_showState();
+void  NX_P0_DisplayMainPage();
+void  NX_P0_DisplayReceive(boolean rec_on, byte calltype, uint32_t TGId);
+void  NX_P0_DisplayTransmit(boolean on);
+void  NX_P0_DisplayCurrentTS();
+void  NX_P8_viewSMS(String rxContactChar, String SMStext);
+void  NX_P9_set_callsign_id();
+void  NX_P0_updateRSSI(uint8_t rssi);
+void  NX_P0_showVol();
+boolean  wifiConnect();
+void  WiFisetTime();
+boolean  EIMreadStatus();
+void  EIMreadRepeaters();
+void  EIMreadHotspots();
+boolean EIMreadRepeaterDMRid(char* DMRid, uint8_t k);
+boolean EIMreadRepeatersLocation(char* longitude, char* latitude, int distance);
+void  EIMeraseRepHotspot(uint8_t k);
+void  EIMprintDMRsettingsitem(uint8_t k);
+void  NXhandler();
+void  wifiGetDMRID();
+void DMRinitChannel();
+
 
 #endif /* SETTINGS_H */
