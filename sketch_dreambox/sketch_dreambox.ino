@@ -364,41 +364,41 @@ void setup()
     }
     settingsWrite(&dmrSettings);
   }
-    for (uint8_t x = 0; x <= maxRepeaters; x++)
-    {
-      dmrSettings.rxTGStatus[x] = rxTGStatus[x] ;
-      dmrSettings.rxTalkGroup[x] = rxTalkGroup[x];
-    }
+  for (uint8_t x = 0; x <= 31; x++)
+  {
+    dmrSettings.rxTGStatus[x] = rxTGStatus[x] ;
+    dmrSettings.rxTalkGroup[x] = rxTalkGroup[x];
+  }
 
-//  dmrSettings.audioLevel = 7;       //  1-9; default = 8
-//  dmrSettings.micLevel = 9;         //  0-15, mic gain setting
-//  strcpy(dmrSettings.callSign,"SM7ECA");   // callsign, max 12 chars
-//  dmrSettings.localID = 2400530;        //   DMRID
-//  strcpy(dmrSettings.longitude,"13.0141");  // saved from last location search
-//  strcpy(dmrSettings.latitude,"55.6091");   // "
-//  dmrSettings.distance = 20;       // "
-//  strcpy(dmrSettings.qthloc,"JO66mo");      // qth locator for future use
-//  dmrSettings.chnr = 0;           //  current channel
-//  dmrSettings.TG = 5;             //  current talk group index
-//  dmrSettings.ts_scan = true;        //
-//
-//  for (uint8_t k = 0; k <= maxRepeaters; k++)        //   if you want to zero the repeater list
-//  {
-//     dmrSettings.repeater[k].chnr = k;
-//     dmrSettings.repeater[k].dmrId = 0;
-//     dmrSettings.repeater[k].tx = 0;
-//     dmrSettings.repeater[k].rx = 0;
-//     dmrSettings.repeater[k].cc = 0;
-//     dmrSettings.repeater[k].timeSlot = 0;
-//     dmrSettings.repeater[k].timeSlotNo = 0;
-//     dmrSettings.repeater[k].repeaterName[0]=0x0;
-//     dmrSettings.repeater[k].repeaterLoc[0]=0x0;
-//    for (uint8_t x = 0; x < 10; x++)
-//    {
-//       dmrSettings.repeater[k].groups[x].tg_id = 0;
-//       dmrSettings.repeater[k].groups[x].ts = 0;
-//    }
-//  }
+  //  dmrSettings.audioLevel = 7;       //  1-9; default = 8
+  //  dmrSettings.micLevel = 9;         //  0-15, mic gain setting
+  //  strcpy(dmrSettings.callSign,"SM7ECA");   // callsign, max 12 chars
+  //  dmrSettings.localID = 2400530;        //   DMRID
+  //  strcpy(dmrSettings.longitude,"13.0141");  // saved from last location search
+  //  strcpy(dmrSettings.latitude,"55.6091");   // "
+  //  dmrSettings.distance = 20;       // "
+  //  strcpy(dmrSettings.qthloc,"JO66mo");      // qth locator for future use
+  //  dmrSettings.chnr = 0;           //  current channel
+  //  dmrSettings.TG = 5;             //  current talk group index
+  //  dmrSettings.ts_scan = true;        //
+  //
+  //  for (uint8_t k = 0; k <= maxRepeaters; k++)        //   if you want to zero the repeater list
+  //  {
+  //     dmrSettings.repeater[k].chnr = k;
+  //     dmrSettings.repeater[k].dmrId = 0;
+  //     dmrSettings.repeater[k].tx = 0;
+  //     dmrSettings.repeater[k].rx = 0;
+  //     dmrSettings.repeater[k].cc = 0;
+  //     dmrSettings.repeater[k].timeSlot = 0;
+  //     dmrSettings.repeater[k].timeSlotNo = 0;
+  //     dmrSettings.repeater[k].repeaterName[0]=0x0;
+  //     dmrSettings.repeater[k].repeaterLoc[0]=0x0;
+  //    for (uint8_t x = 0; x < 10; x++)
+  //    {
+  //       dmrSettings.repeater[k].groups[x].tg_id = 0;
+  //       dmrSettings.repeater[k].groups[x].ts = 0;
+  //    }
+  //  }
   settingsWrite(&dmrSettings);
   Serial.println(sizeof(dmrSettings));
   if (sizeof(dmrSettings) > 4096)
