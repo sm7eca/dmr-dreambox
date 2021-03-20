@@ -29,13 +29,22 @@ async def get_sys_info():
         uptime = int(datetime.now().timestamp() - fname.stat().st_ctime)
 
     db = MongoDB()
-    num_repeater: int = db.count_docs(collection="repeater")
+    try:
+        num_repeater: int = db.count_docs(collection="repeater")
+    except Exception as error:
+        num_repeater = 0
+
+    try:
+        num_users: int = db.count_docs(collection="dmr_user")
+    except Exception as error:
+        num_users = 0
 
     info = {
         "uptime": uptime_2_human_string(uptime),
         "git_commit": git_hash,
         "release": dmr_release_name,
         "maintainer": "Arne Nilsson (SM7ECA), Sebastian Mangelsen (SM6-8506)",
+        "user": num_users,
         "repeater": num_repeater}
 
     return SysInfo(**info)

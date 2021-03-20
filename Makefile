@@ -91,6 +91,7 @@ clean:
 	rm -rf Arduino/user
 	rm -f .ctags-*
 	rm -f ${SOURCEDIR}/.tags*
+	find eim-service/ -name "__pycache__" -exec rm -rf {} \;
 
 clean-all: clean
 	rm -rf Arduino/
@@ -205,7 +206,7 @@ venv-test: .built-venv-test
 		echo "==> run function tests"; \
 		python3 -m venv .venv ; \
 		. .venv/bin/activate ; \
-		python3 -m pytest -xvs tests/ ; \
+		python3 -m pytest -xvs --host localhost tests/ ; \
 	)
 	@touch $@
 
@@ -215,7 +216,8 @@ unit-test: .built-unit-test
 	@( \
 		echo "==> running unit tests"; \
 		. .venv/bin/activate ; \
-		python3 -m pytest -xvs eim-service/docker ; \
+		python3 -m pytest -xvs eim-service/docker/eim-harvester/src ; \
+		python3 -m pytest -xvs eim-service/docker/eim-core/src ; \
 	)
 	@touch $@
 

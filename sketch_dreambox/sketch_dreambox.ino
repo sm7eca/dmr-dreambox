@@ -1,4 +1,3 @@
-//
 char SoftwareVersion[21] = "SM7ECA-210320-4A";
 #include <Arduino.h>
 #include <WiFiMulti.h>
@@ -271,7 +270,6 @@ uint8_t  reptemplistMaxLen = 14;
 uint8_t  reptemplistCurLen;
 
 WifiSettingS  WifiAp;
-
 
 void beep(bool bp)
 //---------------------------------------------------------------- beep

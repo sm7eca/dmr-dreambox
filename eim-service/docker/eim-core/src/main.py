@@ -6,6 +6,7 @@ from routers import repeater
 from routers import hotspot
 from routers import dmr
 from routers import info
+from routers import user
 
 
 from common.logger import config_root_logger
@@ -42,4 +43,6 @@ def read_main(request: Request):
 app.include_router(repeater.router)
 app.include_router(hotspot.router)
 app.include_router(dmr.router)
+app.include_router(user.router)
 app.include_router(info.router)
+
