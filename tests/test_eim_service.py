@@ -164,9 +164,9 @@ def test_redirect_root(hostname):
 		(12.4605814, 56.8984846, 300, 5, 422)
 	],
 	ids=[
+		"falkenberg+99,distance-invalid",
 		"falkenberg+99,no-limit",
-		"falkenberg+99,limit:5",
-		"falkenberg+99,distance-invalid"
+		"falkenberg+99,limit:5"
 	]
 )
 def test_repeater_location(longitude, latitude, distance, limit, expected_status, hostname):

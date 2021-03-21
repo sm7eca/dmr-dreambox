@@ -33,16 +33,20 @@ def harvest_repeater(db: MongoDB):
 
 
 def harvest_users(db: MongoDB):
-	# ---------- Read from SDCL --------
-	user_db = DmrUserInfo(source=DmrUserSource.SDCL)
-	users = user_db.get_users()
-	db.update_users(users, source="SDCL")
-	del users
-
+	"""
+	Ensure that SDCL is overwriting entries coming from
+	RadioID because there are a lot of fixes.
+	"""
 	# ---------- Read from RadioID ------
 	user_db = DmrUserInfo(source=DmrUserSource.RADIOID)
 	users = user_db.get_users()
 	db.update_users(users, source="RadioID.net")
+	del users
+
+	# ---------- Read from SDCL --------
+	user_db = DmrUserInfo(source=DmrUserSource.SDCL)
+	users = user_db.get_users()
+	db.update_users(users, source="SDCL")
 	del users
 
 

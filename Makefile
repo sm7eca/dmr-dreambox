@@ -11,22 +11,29 @@ ARDUINO_PROGRAMMER_PORT = /dev/ttyUSB0
 ARDUINO_CLI_DOCKER_TAG = local/arduino-cli:latest
 BUILD_DIR = build
 RELEASE_VERSION_STRING=$(shell sed -n 's/^.*SoftwareVersion.* *= *//p' sketch_dreambox/sketch_dreambox.ino | sed 's/[;"]*//g')
-RELEASE_NAME = ${PROJECT_NAME}_${RELEASE_VERSION_STRING}
+RELEASE_NAME = ${RELEASE_VERSION_STRING}
 RELEASE_DIR = ${BUILD_DIR}/${RELEASE_NAME}
 GIT_COMMIT_HASH = $(shell git rev-parse HEAD)
 TIMESTAMP = $(shell date +"%Y%m%d_%H%M%S")
 
 CHANGES := $(shell git diff-index --name-only HEAD -- | wc -l)
 
-.PHONY = help
+
+
+.PHONY: help
 help:
 	@echo -e "\n  Make system for DMR Dreambox project"
-	@echo "    release     : build ESP binary, create ZIP file, build and upload Docker container"
-	@echo "    esp-binary  : build ESP binary "
-	@echo "    esp-upload  : build and upload ESP binary"
-	@echo "    eim-release : build and upload EIM Docker container"
-	@echo "    eim-deploy  : deploy EIM service to production"
+	@echo "    release            : build ESP binary, create ZIP file, build and upload Docker container"
+	@echo "    esp-binary         : build ESP binary "
+	@echo "    esp-upload         : build and upload ESP binary"
+	@echo "    eim-release        : build and upload EIM Docker container"
+	@echo "    eim-deploy         : deploy EIM service to production"
+	@echo "    eim-deploy-local   : deploy EIM service locally"
+	@echo "    function-test      : deploy EIM service locally and run function tests"
 	@echo
+
+show-release-name:
+	@echo "release name: ${RELEASE_VERSION_STRING}"
 
 esp-binary: venv boards libs ${BUILD_DIR}/${SOURCEDIR}.ino.bin
 
@@ -50,7 +57,7 @@ esp-erase-eeprom: venv
 	)
 	@echo "==> Done, EEPROM has been erased"
 
-release: ${BUILD_DIR}/${RELEASE_NAME}.zip unit-test function-test eim-release release-tag
+release: check-docker-daemon ${BUILD_DIR}/${RELEASE_NAME}.zip unit-test function-test eim-release release-tag
 	@echo "==> Release DONE, push tags and upload binaries to Github https://github.com/sm7eca/dmr-dreambox/releases"
 
 ${RELEASE_DIR}:
@@ -67,10 +74,18 @@ ${RELEASE_DIR}/manifest.txt: Makefile ${RELEASE_DIR}
 	@echo "version: ${RELEASE_VERSION_STRING}" >> $@
 	@echo "created: ${TIMESTAMP}" >> $@
 
+.PHONY: check-changes
 check-changes:
 	@if [ ${CHANGES} != 0 ]; then \
 	  echo "local changes, please cleanup"; exit 1 ; \
 	fi
+
+.PHONY:check-docker-daemon
+check-docker-daemon:
+	@if ! docker ps &> /dev/null ; then \
+		echo "Is the Docker daemon running?"; exit 1; \
+	fi
+
 
 ${BUILD_DIR}/%.zip: check-changes esp-binary manifest ${RELEASE_DIR}
 	@echo "==> Creating a release $@"
@@ -83,7 +98,7 @@ ${BUILD_DIR}/%.zip: check-changes esp-binary manifest ${RELEASE_DIR}
 		rm -rf ${RELEASE_NAME}/ ; \
 	)
 
-.PHONY=clean
+.PHONY:clean
 clean:
 	rm -rf build
 	rm -f .built*
@@ -141,7 +156,7 @@ boards: .built-boards
 
 eim-release: .built-pushed-docker
 
-.PHONY: .built-pushed-docker
+.PHONY:.built-pushed-docker
 .built-pushed-docker: Makefile docker-images
 	@echo "==> Push Docker container"
 	$(call docker-tag-push, smangelsen,eim-core,latest,${RELEASE_NAME})
@@ -167,7 +182,7 @@ docker-images:
 	@docker build -t eim-core-base eim-service/docker/eim-core-base/.
 	@docker-compose -f eim-service/docker-compose.yml build
 
-PHONY = eim-deploy-local
+.PHONY:eim-deploy-local
 eim-deploy-local: ${SOURCES_EIM_SERVICE} docker-images
 	@echo "==> deploy EIM service locally"
 	@( \
