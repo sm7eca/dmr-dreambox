@@ -1244,6 +1244,7 @@ void NX_button_pressed()
             audioVolume = 2;
           }
           audioVolume = audioVolume - 1;
+          MyPot.setWiper(volumn);
           DMRsetaudioVolume();
           break;
         case 0x02:                   //higher audio b2
@@ -1252,6 +1253,7 @@ void NX_button_pressed()
             audioVolume = maxAudioVolume - 1;
           }
           audioVolume = audioVolume + 1;
+          MyPot.setWiper(volumn);
           DMRsetaudioVolume();
           break;
       }

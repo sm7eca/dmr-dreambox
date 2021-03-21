@@ -1,11 +1,11 @@
-char SoftwareVersion[21] = "SM7ECA-210320-4A";
+char SoftwareVersion[21] = "SM7ECA-210320-4B";
 #include <Arduino.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include "Settings.h"
 #define INC_DMR_CALLS
-
+#include "MCP41_Simple.h"
 //----------------------------------------- DMR MODULE COMMANDS
 //
 #define SET_DIGITAL_CHANNEL            0x22
@@ -32,7 +32,7 @@ char SoftwareVersion[21] = "SM7ECA-210320-4A";
 #define FUNC_DISABLE                   0x02
 
 // ---------------------------------------------------- Pin definitions
-#define  beepPin    14  //beepPin; OUTPUT, this is is actually A0 but we are to use it
+#define  beepPin    34  //beepPin; OUTPUT,
 //for the beeper as pin 13 was used by SPI in this case
 
 //-------------------------------------------------------------- Main state machine states
@@ -157,6 +157,15 @@ byte  maxAudioVolume = 9;
 byte  maxMicVolume = 15;
 byte  audioVolume = 4;
 byte  micVolume = 15;
+
+// ------- MCp410010
+// *   MCP41xxx Pin 1 (CS)  => Arduino Pin 10 (see note below)            gpio 27
+// *   MCP41xxx Pin 2 (SCK) => Arduino Pin SCK  (13 on Uno/Pro-Mini etc)  gpio 14
+// *   MCP41xxx Pin 3 (SI)  => Arduino Pin MOSI (11 on Uno/Pro-Mini etc)  gpio 13
+//
+MCP41_Simple MyPot;               //MCP41010 chip and 11,12,13 pins are ocupried by the SPI interface also, do NOT re-use pin 12
+byte volumn = 128;                //the audio volumn (0-255), set to middle at beginning
+
 
 uint8_t  rxTGStatus[33] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                            1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -320,6 +329,7 @@ void setup()
 #endif
   pinMode(14, OUTPUT);                          //LED not used
   beep(true);                                   //set LED on
+  MyPot.begin(27);                              //CS_PIN     
   NXinitDisplay("Serial Mon init");
   while (!Serial)
   {
