@@ -157,26 +157,38 @@ def test_redirect_root(hostname):
 
 
 @pytest.mark.parametrize(
-	argnames="longitude,latitude,distance,limit,expected_status",
+	argnames="qth,long,lat,distance,limit,expected_status",
 	argvalues=[
-		(12.4605814, 56.8984846, 99, None, 200),
-		(12.4605814, 56.8984846, 99, 5, 200),
-		(12.4605814, 56.8984846, 300, 5, 422)
+		("Jo67AP18", None, None, 99, None, 200),
+		("JO67AP", None, None, 99, 3, 200),
+		("JO67AP", None, None, 300, 5, 422),
+		("JO6", None, None, 90, 5, 422),
+		(None, 12.033, 57.7601, 90, 5, 200),
+		(None, None, None, 90, None, 422)
 	],
 	ids=[
-		"falkenberg+99,distance-invalid",
-		"falkenberg+99,no-limit",
-		"falkenberg+99,limit:5"
+		"qth,Moelndal+99,valid,no-limit",
+		"qth,Moelndal+99,valid,limit3",
+		"qth,Moelndal+300,invalid-distance",
+		"qth,Moelndal,invalid_format",
+		"loc,Moelndal,",
+		"invalid,noQth,noLoc"
 	]
 )
-def test_repeater_location(longitude, latitude, distance, limit, expected_status, hostname):
+def test_repeater_location(qth, long, lat, distance, limit, expected_status, hostname):
 	"""
 	Given a location in Falkenberg, there is no DMR enabled
 	repeater in that area
 	"""
 	url = f"http://{hostname}/{API_ROOT}"
-	req_url = f"{url}/repeater/location" + \
-				 f"?longitude={longitude}&latitude={latitude}&distance={distance}"
+	if qth:
+		req_url = f"{url}/repeater/location" + \
+				    f"?qth_locator={qth}&distance={distance}"
+	elif long and lat:
+		req_url = f"{url}/repeater/location" + \
+				    f"?longitude={long}&latitude={lat}&distance={distance}"
+	else:
+		req_url = f"{url}/repeater/location"
 
 	if limit:
 		req_url += f"&limit={limit}"
