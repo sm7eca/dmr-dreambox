@@ -1,8 +1,9 @@
 """Implement Repeater routers"""
 
 import os
-from fastapi import APIRouter, Response, status, Query, Path
-from common.definitions import Repeater, RepeaterItem
+from fastapi import APIRouter, Response, status, Query, Path, HTTPException
+from common.qth import qth_2_location, QthLocatorE
+from common.definitions import RepeaterItem
 from common.logger import get_logger
 from common.tools import compute_end_index
 from db.mongodb import MongoDB
@@ -23,8 +24,9 @@ router = APIRouter(
 
 query_limit = Query(20, le=20, example=5, description="limit number of items returned")
 query_skip = Query(0, ge=0, example=0, description="skip N items")
-query_longitude = Query(..., ge=-180, le=180, example="12.4605814", description="longitude as float")
-query_latitude = Query(..., ge=-90, le=90, example="56.8984846", description="latitude as float")
+query_qth_locator = Query(None, example="Jo67AP", min_length=6, max_length=8, regexp="^[A-Za-z0-9]{4,8}$")
+query_longitude = Query(None, ge=-180, le=180, example="12.4605814", description="longitude as float")
+query_latitude = Query(None, ge=-90, le=90, example="56.8984846", description="latitude as float")
 query_distance = Query(30, ge=1, le=200, example=30, description="distance in km")
 
 path_dmr_id = Path(..., gt=0, example=2401, description="DMR ID, > 0")
@@ -91,6 +93,7 @@ async def repeater_callsign(
     summary="Get all repeater near a certain location,sorted by distance"
 )
 async def repeater_location(
+        qth_locator: str = query_qth_locator,
         longitude: float = query_longitude,
         latitude: float = query_latitude,
         distance: Optional[int] = query_distance,
@@ -98,9 +101,25 @@ async def repeater_location(
         skip: Optional[int] = query_skip,
         response: Response = Response()
 ):
+    if qth_locator:
+        logger.info(f"received qth_locator: {qth_locator}")
+        try:
+            long, lat = qth_2_location(qth_locator)
+        except QthLocatorE as error:
+            logger.error(f"invalid qth_locator: {qth_locator}, {error.msg}")
+            detail_obj = {"location": ["qth_locator"], "msg": error.msg, "type": "string"}
+            raise HTTPException(status_code=422, detail=detail_obj)
+    elif longitude and latitude:
+        logger.info(f"grid location: {[longitude, latitude]}")
+        long = longitude
+        lat = latitude
+    else:
+        error_msg = "either qth_locator or longitude/latitude has to be set"
+        detail_obj = {"location": ["qth_locator", "longitude", "latitude"], "msg": error_msg, "type": "string"}
+        raise HTTPException(status_code=422, detail=detail_obj)
 
     db = MongoDB()
-    repeaters = db.get_repeater_by_location(long=longitude, lat=latitude, distance_km=distance)
+    repeaters = db.get_repeater_by_location(long=long, lat=lat, distance_km=distance)
     length = len(repeaters)
 
     if repeaters:
