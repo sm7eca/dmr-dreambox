@@ -13,6 +13,37 @@ We are striving for automated deployment in order to ensure that everything will
 
 ![Docker container setup](img/eim-docker-architecture.png)
 
+## Docker Container 
+
+### EIM-Proxy
+
+- Nginx container with a couple of rules
+- Secures the EIM-Core container from bad requests
+- Applies request limitations rules
+- Allows us to later deploy test versions of Rest API
+
+### EIM-Core
+
+- delivering the RestAPI
+- based on FastAPI
+- is talking to EIM-Database
+- it is always reading, no write access
+
+
+### EIM-Harvester
+
+- Running plain Python3
+- It's main purpose is feeding DMR related data into the database
+- Periodically checks Brandmeister and RadioID as well as a special
+  site for swedish DMR user ID's.
+
+
+### EIM-Database
+
+- Based on MongoDB container with some modification
+- Runs with encryption
+- During initialization, a DB user for EIM is created
+
 ## Further Reading
 
 * [eim-deployment](eim-deployment.md)
