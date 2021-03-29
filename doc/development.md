@@ -11,7 +11,7 @@
 - create a new branch
 - develop the code changes
 - test code changes
-- write a good commit message in English, make use of "closes #<ISSUE-ID>" in the commit message
+- write a good commit message in English, make use of "closes #<ISSUE-ID>" in the commit message which will automatically close issues once the change got merged
 - push the changes to Github
 - Goto [Pull Request page at Github](https://github.com/sm7eca/dmr-dreambox/pulls)
 - Click on the button "Create new pull request"
