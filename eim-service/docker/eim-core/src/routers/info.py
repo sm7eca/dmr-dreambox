@@ -43,7 +43,7 @@ async def get_sys_info():
         "uptime": uptime_2_human_string(uptime),
         "git_commit": git_hash,
         "release": dmr_release_name,
-        "maintainer": "Arne Nilsson (SM7ECA), Sebastian Mangelsen (SM6-8506)",
+        "maintainer": "Arne Nilsson (SM7ECA), Sebastian Mangelsen (SA6SKM)",
         "user": num_users,
         "repeater": num_repeater}
 

@@ -73,7 +73,7 @@ class MongoDB:
             "max_ts": 0,
             "name": db_entry["callsign"],
             "location": f"{db_entry['lng']},{db_entry['lat']}",
-            "city": db_entry["city"],
+            "city": db_entry.get("city", "unknown") or "unknown",
             "num_tg": 0
         }
         r = Repeater(**r_object)
@@ -94,7 +94,7 @@ class MongoDB:
             "cc": int(db_entry["colorcode"]),
             "name": db_entry["callsign"],
             "location": f"{db_entry['lng']},{db_entry['lat']}",
-            "city": db_entry["city"]
+            "city": db_entry.get("city", "unknown") or "unknown"
         }
         ri = RepeaterItem(**ri_object)
         logger.debug(f"RepeaterItem translated: {repr(ri)}")

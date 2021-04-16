@@ -46,12 +46,12 @@ def test_repeater_master(master_id: int, expected_status: int, expected_len: int
 	argvalues=[
 		("PI1SPA", 200, 1),
 		("DL7MCK", 204, 0),
-		("AVQ", 200, 2)
+		("AVQ", 204, 2)
 	],
 	ids=[
 		"callsign_valid",
-		"callsign_invalid",
-		"callsign_regex"
+		"callsign_invalid_204",
+		"callsign_short_204"
 	]
 )
 def test_repeater_callsign(call_sign: str, expected_status: int, expected_len: int, hostname):
