@@ -421,6 +421,8 @@ void setup()
   //  NX_P14_updateRepHotspotDB(0, maxRepeaters);                // Move rephotspots from EEPROM to memory
   NXinitDisplay("Init Ready");
 
+  // initialize unit state
+  UnitState = SYSTEM_STARTING;
 }
 //************************************************************************** start main loop
 //******************************************************************************************
