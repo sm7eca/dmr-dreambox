@@ -22,20 +22,20 @@ boolean  wifiConnect()
       y++;
     }
   }
-  Serial.println("Connecting ...");
+  Terminal.println("Connecting ...");
   uint8_t i = 0;
   starttime = millis();
   while (wifiMulti.run() != WL_CONNECTED and (millis() - starttime) < Connecttimer) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
     delay(1000);
-    Serial.print('.');
+    Terminal.print('.');
   }
   if (wifiMulti.run() == WL_CONNECTED)
   {
-    Serial.println('\n');
-    Serial.print("Connected to ");
-    Serial.println(WiFi.SSID());              // Tell us what network we're connected to
-    Serial.print("IP address:\t");
-    Serial.println(WiFi.localIP());           // Send the IP address of the ESP8266 to the computer
+    Terminal.println('\n');
+    Terminal.print("Connected to ");
+    Terminal.println(WiFi.SSID());              // Tell us what network we're connected to
+    Terminal.print("IP address:\t");
+    Terminal.println(WiFi.localIP());           // Send the IP address of the ESP8266 to the computer
     return true;
   }
   return false;
@@ -49,8 +49,8 @@ void WiFisetTime()
     delay(2000);
     tmstruct.tm_year = 0;
     getLocalTime(&tmstruct, 5000);
-    Serial.printf("\nNow is : %d-%02d-%02d %02d:%02d:%02d\n", (tmstruct.tm_year) + 1900, ( tmstruct.tm_mon) + 1, tmstruct.tm_mday, tmstruct.tm_hour , tmstruct.tm_min, tmstruct.tm_sec);
-    Serial.println("");
+    Terminal.printf("\nNow is : %d-%02d-%02d %02d:%02d:%02d\n", (tmstruct.tm_year) + 1900, ( tmstruct.tm_mon) + 1, tmstruct.tm_mday, tmstruct.tm_hour , tmstruct.tm_min, tmstruct.tm_sec);
+    Terminal.println("");
   }
 }
 void wifiGetDMRID()
@@ -72,7 +72,7 @@ void wifiGetDMRIDswe()
     WIFIcallfound = false;
     char combinedArray[sizeof(dmrdreamUrl) + sizeof(rxContactChar) + 1];
     sprintf(combinedArray, "%s%s", dmrdreamUrl, rxContactChar); // with word space
-//    Serial.println(combinedArray);
+//    Terminal.println(combinedArray);
     http.begin(combinedArray);
     // start connection and send HTTP header
     int httpCode = http.GET();
@@ -83,13 +83,13 @@ void wifiGetDMRIDswe()
       {
         WIFIcallfound = true;
         String payload = http.getString();
-//        Serial.println("wifiGetDMRIDswe: ");
-//        Serial.println(payload);
+//        Terminal.println("wifiGetDMRIDswe: ");
+//        Terminal.println(payload);
         StaticJsonDocument<300> doc;
         DeserializationError error = deserializeJson(doc, payload);
         if (error) {
-          Serial.print(F("deserializeJson() failed: "));
-          Serial.println(error.f_str());
+          Terminal.print(F("deserializeJson() failed: "));
+          Terminal.println(error.f_str());
           return;
         }
 
@@ -99,7 +99,7 @@ void wifiGetDMRIDswe()
         const char* city = doc["city"]; // "MalmÃ¶"
         const char* state = doc["state"]; // ""
         const char* country = doc["country"]; // "Sweden"
-//        Serial.println(call_sign);
+//        Terminal.println(call_sign);
 
         ri_callsign = String(call_sign);
         ri_city = String(city);
@@ -113,30 +113,30 @@ void wifiGetDMRIDswe()
           ri_id = rxContact;
         }
         insertradioid();
-        Serial.print(ri_callsign);
-        Serial.print(" ");
-        Serial.print(ri_fname);
-        Serial.print(" ");
-        Serial.print(ri_surname);
-        Serial.print(" ");
-        Serial.print(ri_city);
-        Serial.print(" ");
-        Serial.print(ri_state);
-        Serial.print(" ");
-        Serial.print(ri_country);
-        Serial.print(" ");
-        Serial.print("(SE-DD) ");
+        Terminal.print(ri_callsign);
+        Terminal.print(" ");
+        Terminal.print(ri_fname);
+        Terminal.print(" ");
+        Terminal.print(ri_surname);
+        Terminal.print(" ");
+        Terminal.print(ri_city);
+        Terminal.print(" ");
+        Terminal.print(ri_state);
+        Terminal.print(" ");
+        Terminal.print(ri_country);
+        Terminal.print(" ");
+        Terminal.print("(SE-DD) ");
       }
     }
     else
     {
-      Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+      Terminal.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
     }
 
     http.end();
   }
   else {
-    Serial.print("wifi not connected");
+    Terminal.print("wifi not connected");
   }
 }
 
@@ -152,7 +152,7 @@ void wifiGetDMRIDswe()
 //    WIFIcallfound = false;
 //    char combinedArray[sizeof(radioIdUrl) + sizeof(rxContactChar) + 1];
 //    sprintf(combinedArray, "%s%s", radioIdUrl, rxContactChar); // with word space
-//    Serial.println(combinedArray);
+//    Terminal.println(combinedArray);
 //    http.begin(combinedArray);
 //    // start connection and send HTTP header
 //    int httpCode = http.GET();
@@ -160,29 +160,29 @@ void wifiGetDMRIDswe()
 //    if (httpCode > 0)
 //    {
 //      // HTTP header has been send and Server response header has been handled
-//      //           Serial.printf("[HTTP] GET... code: %d\n", httpCode);
+//      //           Terminal.printf("[HTTP] GET... code: %d\n", httpCode);
 //      // file found at server
 //      if (httpCode == HTTP_CODE_OK)
 //      {
 //        WIFIcallfound = true;
 //        String payload = http.getString();
-//        Serial.println(payload);
+//        Terminal.println(payload);
 //        size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(8) + 200;
 //        DynamicJsonDocument doc(capacity);
 //        DeserializationError err = deserializeJson(doc, payload);
 //        switch (err.code())
 //        {
 //          //  case DeserializationError::Ok:
-//          //    Serial.print(F("Deserialization succeeded"));
+//          //    Terminal.print(F("Deserialization succeeded"));
 //          //    break;
 //          case DeserializationError::InvalidInput:
-//            Serial.print(F("Invalid input!"));
+//            Terminal.print(F("Invalid input!"));
 //            break;
 //          case DeserializationError::NoMemory:
-//            Serial.print(F("Not enough memory"));
+//            Terminal.print(F("Not enough memory"));
 //            break;
 //          default:
-//            //                 Serial.print(F("Deserialization failed"));
+//            //                 Terminal.print(F("Deserialization failed"));
 //            break;
 //        }
 //        int count = doc["count"]; // 1
@@ -204,28 +204,28 @@ void wifiGetDMRIDswe()
 //        ri_state = results_0_state;
 //        ri_id = results_0_id;
 //        insertradioid();
-//        Serial.print(ri_callsign);
-//        Serial.print(" ");
-//        Serial.print(ri_fname);
-//        Serial.print(" ");
-//        Serial.print(ri_surname);
-//        Serial.print(" ");
-//        Serial.print(ri_city);
-//        Serial.print(" ");
-//        Serial.print(ri_state);
-//        Serial.print(" ");
-//        Serial.print(ri_country);
-//        Serial.print(" ");
-//        Serial.print("(US-DB) ");
+//        Terminal.print(ri_callsign);
+//        Terminal.print(" ");
+//        Terminal.print(ri_fname);
+//        Terminal.print(" ");
+//        Terminal.print(ri_surname);
+//        Terminal.print(" ");
+//        Terminal.print(ri_city);
+//        Terminal.print(" ");
+//        Terminal.print(ri_state);
+//        Terminal.print(" ");
+//        Terminal.print(ri_country);
+//        Terminal.print(" ");
+//        Terminal.print("(US-DB) ");
 //      }
 //    }
 //    else
 //    {
-//      Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+//      Terminal.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
 //    }
 //    http.end();
 //  }
 //  else {
-//    Serial.print("wifi not connected");
+//    Terminal.print("wifi not connected");
 //  }
 //}

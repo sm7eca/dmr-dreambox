@@ -27,23 +27,23 @@ boolean  EIMreadStatus()
       {
         WIFIcallfound = true;
         String payload = http.getString();
-        Serial.println(payload);
+        Terminal.println(payload);
         StaticJsonDocument<300> doc;
         DeserializationError error = deserializeJson(doc, payload);
         if (error)
         {
-          Serial.print(F("deserializeJson() failed: "));
-          Serial.println(error.f_str());
+          Terminal.print(F("deserializeJson() failed: "));
+          Terminal.println(error.f_str());
           return false;
         }
         const char* uptime = doc["uptime"]; // "134882s"
         const char* version = doc["version"]; // "0.1.1"
         const char* maintainer = doc["maintainer"]; // "Arne Nilsson"
         uint32_t repeater = doc["repeater"]; // 15431        switch (err.code())
-                Serial.println(uptime);
-                Serial.println(version);
-                Serial.println(maintainer);
-                Serial.println(repeater);
+                Terminal.println(uptime);
+                Terminal.println(version);
+                Terminal.println(maintainer);
+                Terminal.println(repeater);
         return true;
       }
     }
@@ -53,13 +53,13 @@ boolean  EIMreadStatus()
 boolean EIMdeserializeRepHot(String payload)
 //-----------------------------------------------------------------------------------
 {
-  //  Serial.println(payload);
+  //  Terminal.println(payload);
   StaticJsonDocument<384> doc;
   DeserializationError error = deserializeJson(doc, payload);
   if (error)
   {
-    Serial.print(F("deserializeJson() failed: "));
-    Serial.println(error.f_str());
+    Terminal.print(F("deserializeJson() failed: "));
+    Terminal.println(error.f_str());
     return false;
   }
   uint32_t  dmr_id = doc["dmr_id"];
@@ -80,8 +80,8 @@ boolean EIMreadRepeatersMaster(uint16_t master, uint8_t limit, uint8_t skip)
     WIFIcallfound = false;
     char combinedArray[sizeof(EIMrepeaterUrl)  + 50];
     sprintf(combinedArray, "%smaster/%u?limit=%u&skip=%u", EIMrepeaterUrl, master, limit, skip); // with word space
-    Serial.println("EIMreadRepeatersMaster");
-    Serial.println(combinedArray);
+    Terminal.println("EIMreadRepeatersMaster");
+    Terminal.println(combinedArray);
     http.begin(combinedArray);
     uint16_t httpCode = http.GET();
     if (httpCode > 0)
@@ -90,7 +90,7 @@ boolean EIMreadRepeatersMaster(uint16_t master, uint8_t limit, uint8_t skip)
       {
         WIFIcallfound = true;
         String payload = http.getString();
-        Serial.println(payload);
+        Terminal.println(payload);
         if (EIMdeserializeRepHot(payload))
         {
           return true;
@@ -107,8 +107,8 @@ boolean EIMdeserializeRepHotList(String payload)
   DynamicJsonDocument doc(9000);
   DeserializationError error = deserializeJson(doc, payload);
   if (error) {
-    Serial.print(F("deserializeJson() failed: "));
-    Serial.println(error.f_str());
+    Terminal.print(F("deserializeJson() failed: "));
+    Terminal.println(error.f_str());
     return false;
   }
   reptemplistCurLen = 0;
@@ -139,7 +139,7 @@ boolean EIMdeserializeRepHotList(String payload)
       reptemplistCurLen = k;
     }
   }
-  Serial.println(reptemplistCurLen);
+  Terminal.println(reptemplistCurLen);
   return true;
 }
 
@@ -151,11 +151,11 @@ boolean EIMreadRepeatersLocation(char* longitude, char* latitude, uint16_t dista
     HTTPClient http;
     char combinedArray[sizeof(EIMrepeaterLocationUrl)  + 100];
     sprintf(combinedArray, "%s?longitude=%s&latitude=%s&distance=%u&limit=14&skip=0", EIMrepeaterLocationUrl, longitude, latitude, distance); // with word space
-    Serial.println("EIMreadRepeatersLocation");
-    Serial.println(combinedArray);
+    Terminal.println("EIMreadRepeatersLocation");
+    Terminal.println(combinedArray);
     http.begin(combinedArray);
     uint16_t httpCode = http.GET();
-    Serial.println(httpCode);
+    Terminal.println(httpCode);
     if (httpCode > 0)
     {
       if (httpCode == HTTP_CODE_OK)
@@ -184,8 +184,8 @@ boolean EIMreadHotspots(char* callsign)
     HTTPClient http;
     char combinedArray[sizeof(EIMrepeaterUrl)  + 50];
     sprintf(combinedArray, "%s%s", EIMhotspotUrl, callsign); // with word space
-    Serial.println("EIMreadHotspots");
-    Serial.println(combinedArray);
+    Terminal.println("EIMreadHotspots");
+    Terminal.println(combinedArray);
     http.begin(combinedArray);
     uint16_t httpCode = http.GET();
     if (httpCode > 0)
@@ -194,7 +194,7 @@ boolean EIMreadHotspots(char* callsign)
       {
         WIFIcallfound = true;
         String payload = http.getString();
-        Serial.println(payload);
+        Terminal.println(payload);
         if (EIMdeserializeRepHot(payload))
         {
           return true;
@@ -213,8 +213,8 @@ boolean EIMdeserializeSingleRepeater(String input, uint8_t k)
   DeserializationError error = deserializeJson(doc, input);
 
   if (error) {
-    Serial.print(F("deserializeJson() failed: "));
-    Serial.println(error.f_str());
+    Terminal.print(F("deserializeJson() failed: "));
+    Terminal.println(error.f_str());
     return false;
   }
   dmrSettings.repeater[k].dmrId = doc["dmr_id"]; // 240701
@@ -262,8 +262,8 @@ boolean EIMreadRepeaterDMRid(char* DMRid, uint8_t k)
     HTTPClient http;
     char combinedArray[sizeof(EIMrepeaterUrl)  + 1536];
     sprintf(combinedArray, "%s%s", EIMDMRUrl, DMRid); // with word space
-    Serial.println("EIMreadRepeaterDMRid");
-    Serial.println(combinedArray);
+    Terminal.println("EIMreadRepeaterDMRid");
+    Terminal.println(combinedArray);
     http.begin(combinedArray);
     uint16_t httpCode = http.GET();
     if (httpCode > 0)
@@ -272,7 +272,7 @@ boolean EIMreadRepeaterDMRid(char* DMRid, uint8_t k)
       {
         WIFIcallfound = true;
         String payload = http.getString();
-        Serial.println(payload);
+        Terminal.println(payload);
         if (EIMdeserializeSingleRepeater(payload, k))
         {
           return true;
@@ -284,32 +284,32 @@ boolean EIMreadRepeaterDMRid(char* DMRid, uint8_t k)
 }
 void  EIMprintDMRsettingsitem(uint8_t k)
 {
-  Serial.println("chnr: ");
-  Serial.println(k);
-  Serial.print(dmrSettings.repeater[k].chnr);
-  Serial.print(" ");
-  Serial.print(dmrSettings.repeater[k].dmrId); // 240701
-  Serial.print(" ");
-  Serial.print(dmrSettings.repeater[k].rx); // 434587500
-  Serial.print(" ");
-  Serial.print(dmrSettings.repeater[k].tx); // 432587500
-  Serial.print(" ");
-  Serial.print(dmrSettings.repeater[k].cc); // 7
-  Serial.print(" ");
-  Serial.print(dmrSettings.repeater[k].timeSlot);
-  Serial.print(" ");
-  Serial.print(dmrSettings.repeater[k].timeSlotNo); // 0
-  Serial.print(" ");
-  Serial.print(dmrSettings.repeater[k].repeaterName); // "SK7RJL"
-  Serial.print(" ");
-  Serial.print(dmrSettings.repeater[k].repeaterLoc); // "Lund"
-  Serial.println();
+  Terminal.println("chnr: ");
+  Terminal.println(k);
+  Terminal.print(dmrSettings.repeater[k].chnr);
+  Terminal.print(" ");
+  Terminal.print(dmrSettings.repeater[k].dmrId); // 240701
+  Terminal.print(" ");
+  Terminal.print(dmrSettings.repeater[k].rx); // 434587500
+  Terminal.print(" ");
+  Terminal.print(dmrSettings.repeater[k].tx); // 432587500
+  Terminal.print(" ");
+  Terminal.print(dmrSettings.repeater[k].cc); // 7
+  Terminal.print(" ");
+  Terminal.print(dmrSettings.repeater[k].timeSlot);
+  Terminal.print(" ");
+  Terminal.print(dmrSettings.repeater[k].timeSlotNo); // 0
+  Terminal.print(" ");
+  Terminal.print(dmrSettings.repeater[k].repeaterName); // "SK7RJL"
+  Terminal.print(" ");
+  Terminal.print(dmrSettings.repeater[k].repeaterLoc); // "Lund"
+  Terminal.println();
   for (uint8_t x = 0; x < 10; x++)
   {
-    Serial.print(dmrSettings.repeater[k].groups[x].tg_id);
-    Serial.print(" ");
-    Serial.print(dmrSettings.repeater[k].groups[x].ts);
-    Serial.print(" ");
+    Terminal.print(dmrSettings.repeater[k].groups[x].tg_id);
+    Terminal.print(" ");
+    Terminal.print(dmrSettings.repeater[k].groups[x].ts);
+    Terminal.print(" ");
   }
-  Serial.println();
+  Terminal.println();
 }

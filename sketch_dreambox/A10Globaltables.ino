@@ -15,7 +15,7 @@
 //  char     Location[15];    //location of device Hotspot or repeater, 14 chars
 //} digCh;
 //
-//--------------------------------- new version digChS 
+//--------------------------------- new version digChS
 //typedef struct digChS{
 //  uint8_t chnr;
 //  RepeaterS digRep;
@@ -153,24 +153,24 @@ void readradioid(uint32_t rxContact)
       ri_list[0].ri_id = ri_id;
       ri_list[0].ri_count = ri_count;
 
-      Serial.print("** ");
-      Serial.print(ri_callsign);
-      Serial.print(" ");
-      Serial.print(ri_fname);
-      Serial.print(" ");
-      Serial.print(ri_surname);
-      Serial.print(" ");
-      Serial.print(ri_city);
-      Serial.print(" ");
-      Serial.print(ri_state);
-      Serial.print(" ");
-      Serial.print(ri_country);
-      Serial.print(", ");
-      Serial.print(ri_list[i].ri_count);
+      Terminal.print("** ");
+      Terminal.print(ri_callsign);
+      Terminal.print(" ");
+      Terminal.print(ri_fname);
+      Terminal.print(" ");
+      Terminal.print(ri_surname);
+      Terminal.print(" ");
+      Terminal.print(ri_city);
+      Terminal.print(" ");
+      Terminal.print(ri_state);
+      Terminal.print(" ");
+      Terminal.print(ri_country);
+      Terminal.print(", ");
+      Terminal.print(ri_list[i].ri_count);
       return;
     }
   }
-//  Serial.println("Goto wifiGetDMRID(): ");
+//  Terminal.println("Goto wifiGetDMRID(): ");
   wifiGetDMRID();
 }
 void insertradioid()
@@ -181,9 +181,9 @@ void insertradioid()
 {
   for (int8_t j = numradioid; j >= 0; j--)
   {
-//    Serial.println("insertradioid()-1");
-//    Serial.println(numradioid);
-//    Serial.println(j);
+//    Terminal.println("insertradioid()-1");
+//    Terminal.println(numradioid);
+//    Terminal.println(j);
     ri_list[j + 1].ri_callsign = ri_list[j].ri_callsign;
     ri_list[j + 1].ri_talkgroup = ri_list[j].ri_talkgroup;
     ri_list[j + 1].ri_fname = ri_list[j].ri_fname;
@@ -194,7 +194,7 @@ void insertradioid()
     ri_list[j + 1].ri_id = ri_list[j].ri_id;
     ri_list[j + 1].ri_count = ri_list[j].ri_count;
   }
-//  Serial.println("insertradioid()-2");
+//  Terminal.println("insertradioid()-2");
   ri_list[0].ri_callsign = ri_callsign;
   ri_list[0].ri_talkgroup = rxGroup;
   ri_list[0].ri_fname =   ri_fname;
@@ -241,8 +241,8 @@ void insertradioid()
 //      currepTG = repTGlist[i];
 //      if (!DBgetTG(repTGlist[i].TG))
 //      {
-//        Serial.print("TG not found ");
-//        Serial.print(repTGlist[i].TG);
+//        Terminal.print("TG not found ");
+//        Terminal.print(repTGlist[i].TG);
 //      }
 //      return true;
 //    }
@@ -268,7 +268,7 @@ boolean DBgetTG(uint32_t TG)
   return false;
 }
 boolean DBgetsingleChannel(uint8_t rowno)
-//------------------------------------------------------ 
+//------------------------------------------------------
 {
   if (rowno>=maxRepeaters or rowno<0)
   {
@@ -284,13 +284,13 @@ boolean DBgetsingleChannel(uint8_t rowno)
 }
 
 boolean DBgetnextChannel(int8_t rowno)
-//------------------------------------------------------ 
+//------------------------------------------------------
 {
-//  Serial.println("DBgetnextChannel: ");
+//  Terminal.println("DBgetnextChannel: ");
   if (rowno+1>=maxRepeaters)
   {
-    Serial.print("DBgetnextChannel:end of array ");
-    Serial.println(rowno);
+    Terminal.print("DBgetnextChannel:end of array ");
+    Terminal.println(rowno);
     return false;
   }
   rowno++;
@@ -300,8 +300,8 @@ boolean DBgetnextChannel(int8_t rowno)
   }
   if (dmrSettings.repeater[rowno].dmrId==0)
   {
-    Serial.print("DBgetnextChannel:end of data: ");
-    Serial.println(rowno);
+    Terminal.print("DBgetnextChannel:end of data: ");
+    Terminal.println(rowno);
     return false;
   }
   tmpdigCh =dmrSettings.repeater[rowno];

@@ -46,7 +46,7 @@ boolean NX_isvalidnum(char* charval)
 //-----------------------------------------------------------
 //
 {
-  Serial.println("check if num ");
+  Terminal.println("check if num ");
   boolean num = true;
   uint8_t m = 99;
   uint8_t p = 0;
@@ -68,28 +68,28 @@ boolean NX_isvalidnum(char* charval)
     {
       num = false;
     }
-    Serial.println(i);
-    Serial.println(charval[i]);
-    Serial.println(m);
-    Serial.println(p);
+    Terminal.println(i);
+    Terminal.println(charval[i]);
+    Terminal.println(m);
+    Terminal.println(p);
   }
-  Serial.println();
+  Terminal.println();
   if (num)
   {
     if (!(m == 0 or m == 99))
     {
       num = false;
-      Serial.println("!(m == 0 or m == 99)");
+      Terminal.println("!(m == 0 or m == 99)");
     }
     if (p == 0)
     {
       num = false;
-      Serial.println("p == 0");
+      Terminal.println("p == 0");
     }
     if (m == 0 and p > 4)
     {
       num = false;
-      Serial.println("m == 0 and p > 4");
+      Terminal.println("m == 0 and p > 4");
 
     }
     if (num)
@@ -98,11 +98,11 @@ boolean NX_isvalidnum(char* charval)
             m == 99 and p == 1 or m == 99 and p == 2 or m == 99 and p == 3 and charval[0] == '1'))
       {
         num = false;
-        Serial.println("num but wrong . placement");
+        Terminal.println("num but wrong . placement");
       }
     }
   }
-  Serial.print(num);
+  Terminal.print(num);
   return num;
 }
 //========================================================================== page 0
@@ -459,15 +459,15 @@ void  NX_P5_displayTGlist()
     p5_eof = true;
     NXend(25);
   }
-    Serial.println("NXp5repTG ");
-    Serial.print(NXselectRep);
-    Serial.println("");
+    Terminal.println("NXp5repTG ");
+    Terminal.print(NXselectRep);
+    Terminal.println("");
     for (uint8_t i=0;i<10;i++)
     {
-      Serial.print(NXp5repTG[i].tg_id);
-      Serial.print(" ");
-      Serial.print(NXp5repTG[i].ts);
-      Serial.println(" ");
+      Terminal.print(NXp5repTG[i].tg_id);
+      Terminal.print(" ");
+      Terminal.print(NXp5repTG[i].ts);
+      Terminal.println(" ");
     }
 }
 void NX_P5_buttonHandler()
@@ -503,20 +503,20 @@ void NX_P5_buttonHandler()
       currepTG = NXp5repTG[NXbuff[2]];
       digData.tx_contact = NXp5repTG[NXbuff[2]].tg_id;
       digData.ContactType = NXp5TG[NXbuff[2]].calltype;
-      Serial.println("Selected p5: ");
-      Serial.println(curdigCh.chnr);
-      Serial.print(" ");
-      Serial.print(curdigCh.dmrId);
-      Serial.print(" ");
-      Serial.print(curdigCh.repeaterName);
-      Serial.print(" ");
-      Serial.print(currepTG.tg_id);
-      Serial.print(" ");
-      Serial.print(currepTG.ts);
-      Serial.print(" ");
-      Serial.print(curdigCh.rx);
-      Serial.print(" ");
-      Serial.println(curdigCh.tx);
+      Terminal.println("Selected p5: ");
+      Terminal.println(curdigCh.chnr);
+      Terminal.print(" ");
+      Terminal.print(curdigCh.dmrId);
+      Terminal.print(" ");
+      Terminal.print(curdigCh.repeaterName);
+      Terminal.print(" ");
+      Terminal.print(currepTG.tg_id);
+      Terminal.print(" ");
+      Terminal.print(currepTG.ts);
+      Terminal.print(" ");
+      Terminal.print(curdigCh.rx);
+      Terminal.print(" ");
+      Terminal.println(curdigCh.tx);
       DMRinitChannel();
       dmrSettings.chnr = curdigCh.chnr;
       dmrSettings.TG =  NXbuff[2];
@@ -531,10 +531,10 @@ void NX_P5_buttonHandler()
       settingsWrite(&dmrSettings);
       Serial1.print("page 9");
     }
-    Serial.println("cur Chan in settings: ");
-    Serial.print(dmrSettings.chnr);
-    Serial.print(" ");
-    Serial.println(dmrSettings.TG);
+    Terminal.println("cur Chan in settings: ");
+    Terminal.print(dmrSettings.chnr);
+    Terminal.print(" ");
+    Terminal.println(dmrSettings.TG);
     NXend(55);
   }
 }
@@ -811,7 +811,7 @@ void NX_P14_getRepeaterDMRid()
     repeaterID = (uint32_t)NXbuff[6] << 24 | (uint32_t)NXbuff[5] << 16 |
                  (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
   }
-  //  Serial.println(repeaterID);
+  //  Terminal.println(repeaterID);
   ltoa(repeaterID, repeaterIDChar, 10);
   switch (NXbuff[2])
   {
@@ -905,8 +905,8 @@ void NX_P15_getInput()
           p15_long[x] = NXbuff[x + 3];
         }
       }
-      Serial.print("p15_long ");
-      Serial.println(p15_long);
+      Terminal.print("p15_long ");
+      Terminal.println(p15_long);
       break;
     case 0x17:
       for (uint8_t x = 0; x < 10; x++)
@@ -921,14 +921,14 @@ void NX_P15_getInput()
           p15_lat[x] = NXbuff[x + 3];
         }
       }
-      Serial.println("p15_lat ");
-      Serial.println(p15_lat);
+      Terminal.println("p15_lat ");
+      Terminal.println(p15_lat);
       break;
     case 0x14:
       p15_dist = (uint32_t)NXbuff[6] << 24 | (uint32_t)NXbuff[5] << 16 |
                  (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
-      Serial.println("p15_dist ");
-      Serial.println(p15_dist);
+      Terminal.println("p15_dist ");
+      Terminal.println(p15_dist);
       break;
   }
 }
@@ -1050,7 +1050,7 @@ void  NX_P15_saveRepeaterlist()
     return;
   }
   uint8_t j = numManualRep;
- 
+
   boolean manualfound = false;
   for (uint8_t i = 0; i <= rl; i++)
   {
@@ -1611,14 +1611,14 @@ void NXhandler()
         case 0x65:                  // Nextion standard message
           break;
         case 0x1A:                                  // Returned when invalid Variable name
-          Serial.print("Error NX message 0x1A ");    // or invalid attribute was used
-          Serial.println(lastNXtrans);
+          Terminal.print("Error NX message 0x1A ");    // or invalid attribute was used
+          Terminal.println(lastNXtrans);
           break;
         default:                                   // error message from Nextion
-          Serial.print("Error NX message ");
-          Serial.print(NXbuff[0], HEX);
-          Serial.print(" ");
-          Serial.println(lastNXtrans);
+          Terminal.print("Error NX message ");
+          Terminal.print(NXbuff[0], HEX);
+          Terminal.print(" ");
+          Terminal.println(lastNXtrans);
           break;
       }
     }
@@ -1658,21 +1658,21 @@ boolean NXlisten()
     }
     if (NXDebug)
     {
-      Serial.print("From NX:");
+      Terminal.print("From NX:");
       if (i > 0)
       {
         while (j < i)
         {
-          Serial.print(NXbuff[j++], HEX);
-          Serial.print(" ");
+          Terminal.print(NXbuff[j++], HEX);
+          Terminal.print(" ");
         }
       }
     }
     if (NXDebug)
     {
-      Serial.print(" < ");
-      Serial.print(i);
-      Serial.println(" ");
+      Terminal.print(" < ");
+      Terminal.print(i);
+      Terminal.println(" ");
     }
   }
   return rcode;         // return false if not a complete message is captured
@@ -1684,5 +1684,11 @@ void NXend(int nr)
   Serial1.write(0xff);
   Serial1.write(0xff);
   Serial1.write(0xff);
+  if (NXDebug)
+    {
+      Terminal.print("Nxend: ");
+      Terminal.print(nr);
+      Terminal.println(" ");
+    }
   lastNXtrans = nr;
 }
