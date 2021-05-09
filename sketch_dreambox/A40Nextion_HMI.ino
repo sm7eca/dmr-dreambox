@@ -1681,6 +1681,12 @@ void NXend(int nr)
   NextionCmd.write(0xff);
   NextionCmd.write(0xff);
   NextionCmd.write(0xff);
+  if (NXDebug)
+  {
+    Debug.print("Nxend: ");
+    Debug.print(nr);
+    Debug.println(" ");
+  }
   lastNXtrans = nr;
 }
 
