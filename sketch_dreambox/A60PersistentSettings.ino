@@ -12,13 +12,13 @@ const String debugStr = "PS: ";
 void settingsPrintMsg(const String msg)
 {
   // helper function, print debug message
-  Serial.println(debugStr + msg);
+  Debug.println(debugStr + msg);
 }
 
 void settingsInit(void)
 {
   //  initialize the EEPROM with the predefined size
-  
+
   EEPROM.begin(sizeof(EepromSettings));
   settingsPrintMsg("settingsInit, finished");
 }
@@ -36,8 +36,8 @@ bool settingsInitiated(void)
     settingsPrintMsg("settingsInitiated, TRUE");
     return true;
   } else {
-    Serial.println(eepromContainer.flag,HEX);
-    Serial.println(eepromContainer.version,HEX);
+    Debug.println(eepromContainer.flag,HEX);
+    Debug.println(eepromContainer.version,HEX);
     settingsPrintMsg("settingsInitiated, FALSE");
     return false;
   }
@@ -53,7 +53,7 @@ void settingsRead(DmrSettingsS* dmrSettings)
 
   // read from EEPROM
   EEPROM.get(ADDR_SETTINGS, eepromContainer);
-  
+
   // copy application settings into container
   memcpy(dmrSettings, &eepromContainer.settings, sizeof(DmrSettingsS));
 

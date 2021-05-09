@@ -13,7 +13,7 @@ void  do_idle()
     UnitState = TRANSMIT_STATE;
     DMRTransmit(FUNC_ENABLE, SET_TRANSMIT_INFORMATION);
     NX_P0_DisplayTransmit(true);
-    Serial.println("PTT down");
+    Debug.println("PTT down");
     return;
   }
   if (ts_scan and ((millis() - tsSwitchLast) > tsSwitchInterval))
@@ -41,7 +41,7 @@ void  do_transmit()
 {
   if (!btnPTT)                                  // PTT released
   {
-    Serial.println("PTT-up");
+    Debug.println("PTT-up");
     DMRTransmit(FUNC_DISABLE, SET_TRANSMIT_INFORMATION);
     NX_P0_DisplayTransmit(false);
     UnitState = IDLE_STATE;

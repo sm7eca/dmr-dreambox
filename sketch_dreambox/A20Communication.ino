@@ -68,27 +68,27 @@ void DMRhandler()
       DMRvoicemessageEnd();
       return;
     }
-    Serial.print("DMRhandler: message thrown away ");
-    Serial.print(buff[1], HEX);
-    Serial.print("");
-    Serial.println(buff[8], HEX);
+    Debug.print("DMRhandler: message thrown away ");
+    Debug.print(buff[1], HEX);
+    Debug.print("");
+    Debug.println(buff[8], HEX);
   }
   if (buff[1] == 0x2D)          // receiving SMS
   {
     DMRcheckSMSRec();
     return;
   }
-  Serial.print("DMRhandler: message thrown away: ");
-  Serial.print(buff[1], HEX);
-  Serial.print("");
-  Serial.println(buff[8], HEX);
+  Debug.print("DMRhandler: message thrown away: ");
+  Debug.print(buff[1], HEX);
+  Debug.print("");
+  Debug.println(buff[8], HEX);
 }
 
 void DMRvoicemessageStart()
 //----------------------------------------------------------------- DMRvoicemessageStart
 
 {
-  Serial.print("start 3xD ");
+  Debug.print("start 3xD ");
   UnitState = REC_DMR_STATE;
   bRecVoicemessage = true;
   DMRqueryReceived(true);
@@ -102,7 +102,7 @@ void DMRvoicemessageEnd()
 //----------------------------------------------------------------- DMRvoicemessageEnd
 
 {
-  Serial.println("- end 3xD ");
+  Debug.println("- end 3xD ");
   //   DisplayReceive(false, 0, 0);
   NX_P0_DisplayReceive(false, 0, 0);
   NX_P0_updateRSSI(0);                    // reset s-meter
@@ -112,12 +112,12 @@ void DMRvoicemessageEnd()
   {
     UnitState = IDLE_STATE;
   }
-  Serial.print(" Voice message end free heap ");
-  Serial.print(ESP.getFreeHeap());
-  Serial.print(" min heap ");
-  Serial.println(ESP.getMinFreeHeap());
-  Serial.print(" numradioid. ");
-  Serial.println(numradioid);
+  Debug.print(" Voice message end free heap ");
+  Debug.print(ESP.getFreeHeap());
+  Debug.print(" min heap ");
+  Debug.println(ESP.getMinFreeHeap());
+  Debug.print(" numradioid. ");
+  Debug.println(numradioid);
 }
 void DMRsendTo(int len) {
   //--------------------------------------------------------------- DMRsendTo
@@ -126,26 +126,26 @@ void DMRsendTo(int len) {
 
   if (DMRDebug)
   {
-    Serial.print ("To X DMR:");
+    Debug.print ("To X DMR:");
   }
   for (int i = 0; i < len; i++)
   {
-    antsent = Serial2.write(buff[i]);
+    antsent = DmrCmd.write(buff[i]);
     if (DMRDebug)
     {
       if (antsent > 0)
       {
-        Serial.print(buff[i], HEX);
+        Debug.print(buff[i], HEX);
         if  (i == 70 or i == 140)
         {
-          Serial.println();
+          Debug.println();
         }
-        Serial.print(" ");
+        Debug.print(" ");
       }
       else
       {
-        Serial.print("Send buffer overflow");
-        Serial.println("");
+        Debug.print("Send buffer overflow");
+        Debug.println("");
       }
     }
     if (buff[i] == 0x10)
@@ -155,7 +155,7 @@ void DMRsendTo(int len) {
   }
   if (DMRDebug)
   {
-    Serial.println();
+    Debug.println();
   }
 #endif
 }
@@ -167,14 +167,14 @@ boolean DMRreceive() {
   int j = 0;
   boolean rcode = false;
   uint32_t startmillis = millis();
-  while (Serial2.available() == 0 and ((millis() - startmillis) < 1000)) { // wait for first character
+  while (DmrCmd.available() == 0 and ((millis() - startmillis) < 1000)) { // wait for first character
   }
-  if (Serial2.available() > 0)                                       // we have a message
+  if (DmrCmd.available() > 0)                                       // we have a message
   {
-    while (Serial2.available() > 0)                                // read rest of message
+    while (DmrCmd.available() > 0)                                // read rest of message
     {
-      buff[i++] = Serial2.read(); //these are received response
-      if (buff[i - 1] == 0x10) // and Serial2.available())             // until tail captured
+      buff[i++] = DmrCmd.read(); //these are received response
+      if (buff[i - 1] == 0x10) // and DmrCmd.available())             // until tail captured
       {
         rcode = false;
         if (buff[3] == 0x0)
@@ -184,31 +184,31 @@ boolean DMRreceive() {
         break;
       }
       startmillis = millis();
-      while (!(Serial2.available() > 0) and (millis() - startmillis) < 10000)
+      while (!(DmrCmd.available() > 0) and (millis() - startmillis) < 10000)
       { // wait max 5s if host is slow
       }
     }
     if (DMRDebug)
     {
-      Serial.print("From DMR:");
+      Debug.print("From DMR:");
       if (i > 0)
       {
         while (j < i)
         {
-          Serial.print(buff[j++], HEX);
+          Debug.print(buff[j++], HEX);
           //            if (j==71 or j==141)
           //            {
-          //              Serial.println();
+          //              Debug.println();
           //            }
-          Serial.print(" ");
+          Debug.print(" ");
         }
       }
     }
     if (DMRDebug)
     {
-      Serial.print(" < ");
-      Serial.print(i);
-      Serial.println(" ");
+      Debug.print(" < ");
+      Debug.print(i);
+      Debug.println(" ");
     }
   }
   return rcode;         // return false if not a complete message is captured
@@ -250,10 +250,10 @@ boolean DMRreceiveReply(uint8_t CMD)
   {
     return rcode;
   }
-  Serial.print ("error wrong command reply ");
-  Serial.print (buff[1], HEX);
-  Serial.print (" ");
-  Serial.println (CMD, HEX);
+  Debug.print ("error wrong command reply ");
+  Debug.print (buff[1], HEX);
+  Debug.print (" ");
+  Debug.println (CMD, HEX);
   return rcode;
 }
 
@@ -405,7 +405,7 @@ void DMRsetAnaChannel() {
   anaData.relay = 1;         //relay disconnectnet 2:disable 1:enable
   anaData.tail = 0x10;
   len = sizeof(anaData);
-  //Serial.println(len);
+  //Debug.println(len);
   memcpy (buff, &anaData, sizeof (anaData));
   PcCheckSum(buff, len);
   DMRsendTo(len);
@@ -442,7 +442,7 @@ void DMRsetAnaChannel1(uint32_t rx_freq, uint32_t tx_freq, uint8_t rx_type,
   anaData.relay = 2;         //relay disconnectnet 2:disable 1:enable
   anaData.tail = 0x10;
   len = sizeof(anaData);
-  //Serial.println(len);
+  //Debug.println(len);
   memcpy (buff, &anaData, sizeof (anaData));
   PcCheckSum(buff, len);
   //  buff[Pcksum+1] = (cksum&0xff);
@@ -626,14 +626,14 @@ boolean DMRcheckSMSRec()
 // check SMS received - SMS is copied to a separat buffer when received
 {
   String  SMSmessage;
-  Serial.print(buff[7], DEC);
+  Debug.print(buff[7], DEC);
   for (int i = 15; i <= 11 + buff[7] - 4; i++)
   {
     if (i & 0x01)
     { // ==> odd     //  bit magic
       SMSmessage = SMSmessage + String((char)buff[i]);
-      Serial.print(String((char)buff[i]));
-      Serial.print(" ");
+      Debug.print(String((char)buff[i]));
+      Debug.print(" ");
     }
   }
   //    rxContact =  (uint32_t)buff[11]<<24|(uint32_t)buff[10]<<16|
@@ -641,7 +641,7 @@ boolean DMRcheckSMSRec()
   rxContact =  (uint32_t)buff[11] << 16 |
                (uint32_t)buff[10] << 8 | (uint32_t)buff[9];
   ltoa(rxContact, rxContactChar, 10);
-  //    Serial.print(rxContactChar);
+  //    Debug.print(rxContactChar);
   readradioid(rxContact);
   NX_P8_viewSMS(rxContactChar, SMSmessage);
 }
@@ -657,13 +657,13 @@ boolean  DMRqueryReceived(boolean receiving)
                  (uint32_t)buff[10] << 8 | (uint32_t)buff[9];
     rxGroup =  (uint32_t)buff[16] << 24 | (uint32_t)buff[15] << 16 |
                (uint32_t)buff[14] << 8 | (uint32_t)buff[13];
-    Serial.print(rxGroup);
-    Serial.print(" ");
-    Serial.print(rxContact);
-    Serial.print(" ts:");
-    Serial.print(" ");
-    Serial.print(digData.InboundSlot + 1);
-    Serial.print(" - ");
+    Debug.print(rxGroup);
+    Debug.print(" ");
+    Debug.print(rxContact);
+    Debug.print(" ts:");
+    Debug.print(" ");
+    Debug.print(digData.InboundSlot + 1);
+    Debug.print(" - ");
   }
   else
   {
@@ -674,7 +674,7 @@ boolean  DMRqueryReceived(boolean receiving)
     if (receiving)
     {
       ltoa(rxContact, rxContactChar, 10);
-      //      Serial.print(rxContactChar);
+      //      Debug.print(rxContactChar);
 
       readradioid(rxContact);
       //     DisplayReceive(true, buff[8], rxContact);

@@ -3,18 +3,18 @@ void NXend(int nr);
 
 void NX_P3_statusDisplay(const String msg)
 {
-  Serial1.print("DMRlogga.t0");
-  Serial1.print(".txt=");
-  Serial1.print("\"");
-  Serial1.print(msg);
-  Serial1.print("\"");
+  NextionCmd.print("DMRlogga.t0");
+  NextionCmd.print(".txt=");
+  NextionCmd.print("\"");
+  NextionCmd.print(msg);
+  NextionCmd.print("\"");
   NXend(300);
 }
 void NXinitDisplay(const String msg)
 //----------------------------------------------------- NXinitDisplay
 //    start Nextion Screen
 {
-  Serial1.print("page 3");   //page 3
+  NextionCmd.print("page 3");   //page 3
   NXend(2);
   NX_P3_statusDisplay(msg);
 }
@@ -22,7 +22,7 @@ void NXinitialSetup()
 //----------------------------------------------------------- Initial setup screen (
 //
 {
-  Serial1.print("page 13");
+  NextionCmd.print("page 13");
   NXend(201);
 }
 
@@ -32,12 +32,12 @@ void NXdimdisplay(uint8_t func)
 {
   if (func == 1)
   {
-    Serial1.print("dim=25");
+    NextionCmd.print("dim=25");
     NXend(202);
   }
   else
   {
-    Serial1.print("dim=100");
+    NextionCmd.print("dim=100");
     NXend(203);
   }
 
@@ -46,7 +46,7 @@ boolean NX_isvalidnum(char* charval)
 //-----------------------------------------------------------
 //
 {
-  Serial.println("check if num ");
+  Debug.println("check if num ");
   boolean num = true;
   uint8_t m = 99;
   uint8_t p = 0;
@@ -68,28 +68,28 @@ boolean NX_isvalidnum(char* charval)
     {
       num = false;
     }
-    Serial.println(i);
-    Serial.println(charval[i]);
-    Serial.println(m);
-    Serial.println(p);
+    Debug.println(i);
+    Debug.println(charval[i]);
+    Debug.println(m);
+    Debug.println(p);
   }
-  Serial.println();
+  Debug.println();
   if (num)
   {
     if (!(m == 0 or m == 99))
     {
       num = false;
-      Serial.println("!(m == 0 or m == 99)");
+      Debug.println("!(m == 0 or m == 99)");
     }
     if (p == 0)
     {
       num = false;
-      Serial.println("p == 0");
+      Debug.println("p == 0");
     }
     if (m == 0 and p > 4)
     {
       num = false;
-      Serial.println("m == 0 and p > 4");
+      Debug.println("m == 0 and p > 4");
 
     }
     if (num)
@@ -98,11 +98,11 @@ boolean NX_isvalidnum(char* charval)
             m == 99 and p == 1 or m == 99 and p == 2 or m == 99 and p == 3 and charval[0] == '1'))
       {
         num = false;
-        Serial.println("num but wrong . placement");
+        Debug.println("num but wrong . placement");
       }
     }
   }
-  Serial.print(num);
+  Debug.print(num);
   return num;
 }
 //========================================================================== page 0
@@ -110,7 +110,7 @@ void NX_P0_DisplayMainPage()
 //----------------------------------------------------------- DisplayMainPage
 //
 {
-  Serial1.print("page main");
+  NextionCmd.print("page main");
   NXend(24);
 }
 void NX_P0_DisplayCurrent()
@@ -126,41 +126,41 @@ void NX_P0_DisplayCurrent()
   String fullName = String(dmrSettings.repeater[dmrSettings.chnr].repeaterName) + " " + String(dmrSettings.repeater[dmrSettings.chnr].repeaterLoc);
   fullName.trim();
   String firstBlock = String(dmrSettings.localID);
-  Serial1.print("main.t0.txt=\"");
-  Serial1.print(firstBlock);
-  Serial1.print("\"");
+  NextionCmd.print("main.t0.txt=\"");
+  NextionCmd.print(firstBlock);
+  NextionCmd.print("\"");
   NXend(8);
-  Serial1.print("main.t2.txt=\"");
-  Serial1.print(fullName);
-  Serial1.print("\"");
+  NextionCmd.print("main.t2.txt=\"");
+  NextionCmd.print(fullName);
+  NextionCmd.print("\"");
   NXend(9);
-  Serial1.print("main.t3.txt=\"");
-  Serial1.print(dmrSettings.callSign);
-  Serial1.print("\"");
+  NextionCmd.print("main.t3.txt=\"");
+  NextionCmd.print(dmrSettings.callSign);
+  NextionCmd.print("\"");
   NXend(4);
   //these lines are for "TX:444.88250"
-  Serial1.print("main.t5.txt=\"");
-  Serial1.print(fT);
-  Serial1.print("\"");
+  NextionCmd.print("main.t5.txt=\"");
+  NextionCmd.print(fT);
+  NextionCmd.print("\"");
   NXend(10);
   switch (digData.power)
   {
     case 0:
-      Serial1.print("main.t4.txt=\"1 W\"");
+      NextionCmd.print("main.t4.txt=\"1 W\"");
       break;
     case 1:
-      Serial1.print("main.t4.txt=\"5 W\"");
+      NextionCmd.print("main.t4.txt=\"5 W\"");
       break;
     default:
-      Serial1.print("main.t4.txt=\"1 W\"");
+      NextionCmd.print("main.t4.txt=\"1 W\"");
       break;
   }
   NXend(11);
   //these for large receiving frequency
-  Serial1.print("main.t6.txt=\"");
-  Serial1.print(fR.substring(0, 7));
-  Serial1.println(fR.substring(7, 9));
-  Serial1.print("\"");
+  NextionCmd.print("main.t6.txt=\"");
+  NextionCmd.print(fR.substring(0, 7));
+  NextionCmd.println(fR.substring(7, 9));
+  NextionCmd.print("\"");
   NXend(12);
   NX_P0_updateTXinfo();
 }
@@ -172,30 +172,30 @@ void NX_P0_updateTXinfo()
   switch (digData.ContactType)
   {
     case 0:
-      Serial1.print("main.t1.txt=\"Individual\"");
+      NextionCmd.print("main.t1.txt=\"Individual\"");
       break;
     case 1:
-      Serial1.print("main.t1.txt=\"Group Call\"");
+      NextionCmd.print("main.t1.txt=\"Group Call\"");
       break;
     default:
-      Serial1.print("main.t1.txt=\"Group Call\"");
+      NextionCmd.print("main.t1.txt=\"Group Call\"");
       break;
   }
   NXend(13);
-  Serial1.print("main.n5.val=");
-  Serial1.print(digData.tx_contact);
+  NextionCmd.print("main.n5.val=");
+  NextionCmd.print(digData.tx_contact);
   NXend(14);
   NX_P0_DisplayCurrentTS();
-  Serial1.print("main.n3.val=");
-  Serial1.print(digData.cc);
+  NextionCmd.print("main.n3.val=");
+  NextionCmd.print(digData.cc);
   NXend(16);
 }
 void  NX_P0_DisplayCurrentTS()
 //----------------------------------------------------------- DisplayCurrentTS
 //
 {
-  Serial1.print("main.n2.val=");
-  Serial1.print(digData.InboundSlot + 1);
+  NextionCmd.print("main.n2.val=");
+  NextionCmd.print(digData.InboundSlot + 1);
   NXend(15);
 }
 void  NX_P0_DisplayTransmit(boolean on)
@@ -208,36 +208,36 @@ void  NX_P0_DisplayTransmit(boolean on)
   {
     tempS = String(digData.rx_freq);
     tempS = tempS.substring(0, 3) + "." + tempS.substring(3, 8);
-    Serial1.print("main.t5.txt=\"");
-    Serial1.print(tempS);
-    Serial1.print("\"");
+    NextionCmd.print("main.t5.txt=\"");
+    NextionCmd.print(tempS);
+    NextionCmd.print("\"");
     NXend(17);
     NxSetStatus(String("TX"), 65535, 63488, true);    // white on red background, centered
     rxS = String(digData.tx_freq);
-    Serial1.print("main.t6.txt=\"");
-    Serial1.print(rxS.substring(0, 3));
-    Serial1.print(F("."));
-    Serial1.print(rxS.substring(3, 6));
-    Serial1.print(rxS.substring(6, 40));
-    Serial1.print("\"");
+    NextionCmd.print("main.t6.txt=\"");
+    NextionCmd.print(rxS.substring(0, 3));
+    NextionCmd.print(F("."));
+    NextionCmd.print(rxS.substring(3, 6));
+    NextionCmd.print(rxS.substring(6, 40));
+    NextionCmd.print("\"");
     NXend(19);
   }
   else
   {
     tempS = String(digData.tx_freq);
     tempS = tempS.substring(0, 3) + "." + tempS.substring(3, 8);
-    Serial1.print("main.t5.txt=\"");
-    Serial1.print(tempS);
-    Serial1.print("\"");
+    NextionCmd.print("main.t5.txt=\"");
+    NextionCmd.print(tempS);
+    NextionCmd.print("\"");
     NXend(20);
     NxSetStatus(String("MON"), 65535, 0, true);   // white on black background, centered
     rxS = String(digData.rx_freq);
-    Serial1.print("main.t6.txt=\"");
-    Serial1.print(rxS.substring(0, 3));
-    Serial1.print(F("."));
-    Serial1.print(rxS.substring(3, 6));
-    Serial1.print(rxS.substring(6, 40));
-    Serial1.print("\"");
+    NextionCmd.print("main.t6.txt=\"");
+    NextionCmd.print(rxS.substring(0, 3));
+    NextionCmd.print(F("."));
+    NextionCmd.print(rxS.substring(3, 6));
+    NextionCmd.print(rxS.substring(6, 40));
+    NextionCmd.print("\"");
     NXend(23);
   }
 }
@@ -248,75 +248,75 @@ void NX_P0_DisplayReceive(boolean rec_on, byte calltype, uint32_t TGId)
   if (rec_on)
   {
     NxSetStatus(String("RX"), 0, 2016, true);   // black on green background, centered
-    Serial1.print("main.t10.txt=\"");
-    Serial1.print(rxGroup);
-    Serial1.print("\"");
+    NextionCmd.print("main.t10.txt=\"");
+    NextionCmd.print(rxGroup);
+    NextionCmd.print("\"");
     //    switch (calltype)
     //    {
     //    case 0:
-    //      Serial1.print("main.t10.txt=\"Individual\"");
+    //      NextionCmd.print("main.t10.txt=\"Individual\"");
     //      break;
     //    case 1:
-    //      Serial1.print("main.t10.txt=\"Group Call\"");
+    //      NextionCmd.print("main.t10.txt=\"Group Call\"");
     //      break;
     //    default:
-    //      Serial1.print("main.t10.txt=\"Group Call\"");
+    //      NextionCmd.print("main.t10.txt=\"Group Call\"");
     //      break;
     //    }
     NXend(24);
-    Serial1.print("main.n4.val=");
-    Serial1.print(TGId);
+    NextionCmd.print("main.n4.val=");
+    NextionCmd.print(TGId);
     NXend(25);
     if (WIFIcallfound)
     {
-      Serial1.print("main.t12.txt=\"");
-      Serial1.print(ri_callsign);
-      Serial1.print("\"");
+      NextionCmd.print("main.t12.txt=\"");
+      NextionCmd.print(ri_callsign);
+      NextionCmd.print("\"");
       NXend(26);
-      Serial1.print("main.t17.txt=\"");
-      Serial1.print(ri_fname);
-      Serial1.print(",");
+      NextionCmd.print("main.t17.txt=\"");
+      NextionCmd.print(ri_fname);
+      NextionCmd.print(",");
       if (ri_surname != "null")
       {
-        Serial1.print(ri_surname);
-        Serial1.print(",");
+        NextionCmd.print(ri_surname);
+        NextionCmd.print(",");
       }
-      Serial1.print(ri_city);
-      Serial1.print("\"");
+      NextionCmd.print(ri_city);
+      NextionCmd.print("\"");
       NXend(27);
-      Serial1.print("main.t18.txt=\"");
+      NextionCmd.print("main.t18.txt=\"");
       if (ri_state.length() != 0)
       {
-        Serial1.print(ri_state);
-        Serial1.print(",");
+        NextionCmd.print(ri_state);
+        NextionCmd.print(",");
       }
-      Serial1.print(ri_country);
-      Serial1.print("\"");
+      NextionCmd.print(ri_country);
+      NextionCmd.print("\"");
       NXend(27);
     }
     else
     {
-      Serial1.print("main.t12.txt=\"");
-      Serial1.print("-- ");
-      Serial1.print("\"");
+      NextionCmd.print("main.t12.txt=\"");
+      NextionCmd.print("-- ");
+      NextionCmd.print("\"");
       NXend(28);
-      Serial1.print("main.t17.txt=\"");
-      Serial1.print(" ");
-      Serial1.print("\"");
+      NextionCmd.print("main.t17.txt=\"");
+      NextionCmd.print(" ");
+      NextionCmd.print("\"");
       NXend(29);
-      Serial1.print("main.t18.txt=\"");
-      Serial1.print(" ");
-      Serial1.print("\"");
+      NextionCmd.print("main.t18.txt=\"");
+      NextionCmd.print(" ");
+      NextionCmd.print("\"");
       NXend(29);
     }
   }
   else
   {
-    //    Serial1.print("main.t10.txt=\"Last\""); Ska kanske vara byte av färg istället?
+    //    NextionCmd.print("main.t10.txt=\"Last\""); Ska kanske vara byte av färg istället?
     //    NXend(30);
     NxSetStatus(String("MON"), 65535, 0, true);   // white on black background, centered
     NXend(31);
-    //   Serial1.print("main.t8.txt=\"     \"");
+    //   NextionCmd.print("main.t8.txt=\"     \"");
     //   NXend(31);
   }
 }
@@ -324,18 +324,18 @@ void NX_P0_updateRSSI(uint8_t rssi)
 //----------------------------------------------------- NX_P0_updateRSSI
 
 {
-  Serial1.print("main.j1.val="); // Changing the value of box n1
+  NextionCmd.print("main.j1.val="); // Changing the value of box n1
   uint8_t rssiproc = (100 * rssi) / 33;
-  Serial1.print(rssiproc); // show set volume level
+  NextionCmd.print(rssiproc); // show set volume level
   NXend(23);
 }
 void NX_P0_showVol()
 //----------------------------------------------------- NXshowVol
 
 {
-  Serial1.print("main.j0.val="); // Changing the value of progress bar
+  NextionCmd.print("main.j0.val="); // Changing the value of progress bar
   int volproc = (100 * (audioVolume - 1)) / (maxAudioVolume - 1);
-  Serial1.print(volproc); // show set volume level
+  NextionCmd.print(volproc); // show set volume level
   NXend(22);
 }
 
@@ -346,8 +346,8 @@ void  NX_P0_showState()
 {
   if (UnitState != lastUnitState)
   {
-    Serial1.print("main.n0.val="); // Changing the value of box n0
-    Serial1.print(UnitState);
+    NextionCmd.print("main.n0.val="); // Changing the value of box n0
+    NextionCmd.print(UnitState);
     NXend(6);
     lastUnitState = UnitState;
   }
@@ -355,8 +355,8 @@ void  NX_P0_showState()
   //  loopstartNext = millis();
   //  if (abs(looptime)>150)
   //  {
-  //    Serial1.print("main.n1.val="); // Changing the value of box n1
-  //    Serial1.print(looptime); // show loop time
+  //    NextionCmd.print("main.n1.val="); // Changing the value of box n1
+  //    NextionCmd.print(looptime); // show loop time
   //    NXend(7);
   //  }
   //  looptimelast = looptime;
@@ -375,29 +375,29 @@ void  NX_P4_displayChannels()
   while (DBgetnextChannel(p4_repeaterChnr) and curRow < p4_numRows)
   {
     p4_repeaterChnr = tmpdigCh.chnr;
-    Serial1.print("b");
-    Serial1.print(curRow);
-    Serial1.print(".txt=");
-    Serial1.print("\"");
-    Serial1.print(tmpdigCh.repeaterName);
-    Serial1.print(" ");
-    Serial1.print(tmpdigCh.repeaterLoc);
-    Serial1.print(" (");
-    Serial1.print(tmpdigCh.dmrId);
-    Serial1.print(")");
-    Serial1.print("\"");
+    NextionCmd.print("b");
+    NextionCmd.print(curRow);
+    NextionCmd.print(".txt=");
+    NextionCmd.print("\"");
+    NextionCmd.print(tmpdigCh.repeaterName);
+    NextionCmd.print(" ");
+    NextionCmd.print(tmpdigCh.repeaterLoc);
+    NextionCmd.print(" (");
+    NextionCmd.print(tmpdigCh.dmrId);
+    NextionCmd.print(")");
+    NextionCmd.print("\"");
     NXp4Ch[curRow] = tmpdigCh;
     NXend(23);
     curRow++;
   }
   while (curRow < p4_numRows)
   {
-    Serial1.print("b");
-    Serial1.print(curRow);
-    Serial1.print(".txt=");
-    Serial1.print("\"");
-    Serial1.print(" ");
-    Serial1.print("\"");
+    NextionCmd.print("b");
+    NextionCmd.print(curRow);
+    NextionCmd.print(".txt=");
+    NextionCmd.print("\"");
+    NextionCmd.print(" ");
+    NextionCmd.print("\"");
     p4_eof = true;
     NXend(24);
     curRow++;
@@ -413,10 +413,10 @@ void  NX_P5_displayTGlist()
   //------------- display page header
   String fullName = String(NXp4Ch[p4_selectedRow].repeaterName) + " " + String(NXp4Ch[p4_selectedRow].repeaterLoc);
   fullName.trim();
-  Serial1.print("t0.txt=");
-  Serial1.print("\"");
-  Serial1.print(fullName);
-  Serial1.print("\"");
+  NextionCmd.print("t0.txt=");
+  NextionCmd.print("\"");
+  NextionCmd.print(fullName);
+  NextionCmd.print("\"");
   NXend(26);
   //--------------- display static TGs connected to channel - max p5_numRows on a page
   uint8_t curRow = 0;
@@ -427,44 +427,44 @@ void  NX_P5_displayTGlist()
     if (DBgetsinglerepTG(i))
     {
       NXp5repTG[i] = currepTG;
-      Serial1.print("b");
-      Serial1.print(curRow);
-      Serial1.print(".txt=");
+      NextionCmd.print("b");
+      NextionCmd.print(curRow);
+      NextionCmd.print(".txt=");
 //      NXp5repTG[curRow] = repTGlist[i];
-      Serial1.print("\"");
-      Serial1.print(String(NXp5repTG[i].tg_id));
-      Serial1.print(" ");
+      NextionCmd.print("\"");
+      NextionCmd.print(String(NXp5repTG[i].tg_id));
+      NextionCmd.print(" ");
       if (DBgetTG(NXp5repTG[i].tg_id))
       {
-        Serial1.print(curTG.TGname);
+        NextionCmd.print(curTG.TGname);
         //        NXp5TG[curRow] = curTG;
       }
-      Serial1.print(" ts:");
-      Serial1.print(String(NXp5repTG[i].ts));
-      Serial1.print("\"");
+      NextionCmd.print(" ts:");
+      NextionCmd.print(String(NXp5repTG[i].ts));
+      NextionCmd.print("\"");
       NXend(23);
     }
   }
   for (uint8_t i = curRow+1; i < p5_numRows; i++) // if page not filled blank out the rest
   {
-    Serial1.print("b");
-    Serial1.print(i);
-    Serial1.print(".txt=");
-    Serial1.print("\"");
-    Serial1.print(" ");
-    Serial1.print("\"");
+    NextionCmd.print("b");
+    NextionCmd.print(i);
+    NextionCmd.print(".txt=");
+    NextionCmd.print("\"");
+    NextionCmd.print(" ");
+    NextionCmd.print("\"");
     p5_eof = true;
     NXend(25);
   }
-    Serial.println("NXp5repTG ");
-    Serial.print(NXselectRep);
-    Serial.println("");
+    Debug.println("NXp5repTG ");
+    Debug.print(NXselectRep);
+    Debug.println("");
     for (uint8_t i=0;i<10;i++)
     {
-      Serial.print(NXp5repTG[i].tg_id);
-      Serial.print(" ");
-      Serial.print(NXp5repTG[i].ts);
-      Serial.println(" ");
+      Debug.print(NXp5repTG[i].tg_id);
+      Debug.print(" ");
+      Debug.print(NXp5repTG[i].ts);
+      Debug.println(" ");
     }
 }
 void NX_P5_buttonHandler()
@@ -474,24 +474,24 @@ void NX_P5_buttonHandler()
   {
     // --- scroll back to first page
     p5_lastRecord = -1;
-    Serial1.print("TGlist.va0.val=1");
+    NextionCmd.print("TGlist.va0.val=1");
     NXend(50);
-    Serial1.print("page 5");
+    NextionCmd.print("page 5");
     NXend(51);
   }
   if (NXbuff[2] == 0x20)
   {
     if (!p5_eof)
     {
-      Serial1.print("TGlist.va0.val=1");
+      NextionCmd.print("TGlist.va0.val=1");
       NXend(52);
-      Serial1.print("page 5");
+      NextionCmd.print("page 5");
       NXend(53);
     }
   }
   if (NXbuff[2] < 18)   // ---- Channel selected
   {
-    Serial1.print("TGlist.va0.val=0");
+    NextionCmd.print("TGlist.va0.val=0");
     NXend(54);
     p5_lastRecord = -1; // ----- reset scroll page
     if (NXbuff[3] == 1)
@@ -500,38 +500,38 @@ void NX_P5_buttonHandler()
       currepTG = NXp5repTG[NXbuff[2]];
       digData.tx_contact = NXp5repTG[NXbuff[2]].tg_id;
       digData.ContactType = NXp5TG[NXbuff[2]].calltype;
-      Serial.println("Selected p5: ");
-      Serial.println(curdigCh.chnr);
-      Serial.print(" ");
-      Serial.print(curdigCh.dmrId);
-      Serial.print(" ");
-      Serial.print(curdigCh.repeaterName);
-      Serial.print(" ");
-      Serial.print(currepTG.tg_id);
-      Serial.print(" ");
-      Serial.print(currepTG.ts);
-      Serial.print(" ");
-      Serial.print(curdigCh.rx);
-      Serial.print(" ");
-      Serial.println(curdigCh.tx);
+      Debug.println("Selected p5: ");
+      Debug.println(curdigCh.chnr);
+      Debug.print(" ");
+      Debug.print(curdigCh.dmrId);
+      Debug.print(" ");
+      Debug.print(curdigCh.repeaterName);
+      Debug.print(" ");
+      Debug.print(currepTG.tg_id);
+      Debug.print(" ");
+      Debug.print(currepTG.ts);
+      Debug.print(" ");
+      Debug.print(curdigCh.rx);
+      Debug.print(" ");
+      Debug.println(curdigCh.tx);
       DMRinitChannel();
       dmrSettings.chnr = curdigCh.chnr;
       dmrSettings.TG =  NXbuff[2];
       settingsWrite(&dmrSettings);
 
-      Serial1.print("page 0");
+      NextionCmd.print("page 0");
     }
     else
     {
       dmrSettings.chnr = curdigCh.chnr;
       dmrSettings.TG =  NXbuff[2];
       settingsWrite(&dmrSettings);
-      Serial1.print("page 9");
+      NextionCmd.print("page 9");
     }
-    Serial.println("cur Chan in settings: ");
-    Serial.print(dmrSettings.chnr);
-    Serial.print(" ");
-    Serial.println(dmrSettings.TG);
+    Debug.println("cur Chan in settings: ");
+    Debug.print(dmrSettings.chnr);
+    Debug.print(" ");
+    Debug.println(dmrSettings.TG);
     NXend(55);
   }
 }
@@ -550,27 +550,27 @@ void NX_P6_displayTG()
     }
     if (TGlist[recnr + p6_startRecord].TG != 0 and !p6_eof)
     {
-      Serial1.print("b");
-      Serial1.print(recnr);
-      Serial1.print(".txt=");
-      Serial1.print("\"");
-      // Serial1.print(String(recnr+p6_startRecord));
-      // Serial1.print(" ");
-      Serial1.print(TGlist[recnr + p6_startRecord].TG);
-      Serial1.print(" ");
-      Serial1.print(TGlist[recnr + p6_startRecord].TGname);
-      Serial1.print("\"");
+      NextionCmd.print("b");
+      NextionCmd.print(recnr);
+      NextionCmd.print(".txt=");
+      NextionCmd.print("\"");
+      // NextionCmd.print(String(recnr+p6_startRecord));
+      // NextionCmd.print(" ");
+      NextionCmd.print(TGlist[recnr + p6_startRecord].TG);
+      NextionCmd.print(" ");
+      NextionCmd.print(TGlist[recnr + p6_startRecord].TGname);
+      NextionCmd.print("\"");
       NXp6TG[recnr] = TGlist[recnr + p6_startRecord];
       NXend(33);
     }
     else
     {
-      Serial1.print("b");
-      Serial1.print(recnr);
-      Serial1.print(".txt=");
-      Serial1.print("\"");
-      Serial1.print(" ");
-      Serial1.print("\"");
+      NextionCmd.print("b");
+      NextionCmd.print(recnr);
+      NextionCmd.print(".txt=");
+      NextionCmd.print("\"");
+      NextionCmd.print(" ");
+      NextionCmd.print("\"");
       p6_eof = true;
       NXend(34);
     }
@@ -580,67 +580,67 @@ void NX_P6_displayTG()
 //========================================================================== page 8
 void NX_P8_viewSMS(String rxContactChar, String SMStext)
 {
-  Serial1.print("page recSMS");
+  NextionCmd.print("page recSMS");
   NXend(82);
   char combinedArray[sizeof(rxContactChar) + sizeof(ri_callsign) + 3];
   sprintf(combinedArray, "%s %s", rxContactChar, ri_callsign); // with word space
-  Serial1.print("t11.txt=");
-  Serial1.print("\"");
-  Serial1.print(String(combinedArray));
-  Serial1.print("\"");
+  NextionCmd.print("t11.txt=");
+  NextionCmd.print("\"");
+  NextionCmd.print(String(combinedArray));
+  NextionCmd.print("\"");
   NXend(80);
   //  String SMStext ="fglkj lkjdf gkj dfgkj ödjsf göj dsöfgj sdöfgj södfgj sdlfk60";
-  Serial1.print("t0.txt=");
-  Serial1.print("\"");
-  Serial1.print(SMStext);
-  Serial1.print("\"");
+  NextionCmd.print("t0.txt=");
+  NextionCmd.print("\"");
+  NextionCmd.print(SMStext);
+  NextionCmd.print("\"");
   NXend(81);
 }
 //========================================================================== page 9
 void NX_P9_displaySSID()
 {
-  Serial1.print("setup.t11.txt=\"");
-  Serial1.print(dmrSettings.wifisettings[0].ssid);
-  Serial1.print("\"");
+  NextionCmd.print("setup.t11.txt=\"");
+  NextionCmd.print(dmrSettings.wifisettings[0].ssid);
+  NextionCmd.print("\"");
   NXend(900);
-  Serial1.print("setup.t12.txt=\"");
-  Serial1.print(dmrSettings.wifisettings[0].passwd);
-  Serial1.print("\"");
+  NextionCmd.print("setup.t12.txt=\"");
+  NextionCmd.print(dmrSettings.wifisettings[0].passwd);
+  NextionCmd.print("\"");
   NXend(910);
-  Serial1.print("setup.t13.txt=\"");
-  Serial1.print(dmrSettings.wifisettings[1].ssid);
-  Serial1.print("\"");
+  NextionCmd.print("setup.t13.txt=\"");
+  NextionCmd.print(dmrSettings.wifisettings[1].ssid);
+  NextionCmd.print("\"");
   NXend(901);
-  Serial1.print("setup.t14.txt=\"");
-  Serial1.print(dmrSettings.wifisettings[1].passwd);
-  Serial1.print("\"");
+  NextionCmd.print("setup.t14.txt=\"");
+  NextionCmd.print(dmrSettings.wifisettings[1].passwd);
+  NextionCmd.print("\"");
   NXend(911);
-  Serial1.print("setup.t15.txt=\"");
-  Serial1.print(dmrSettings.wifisettings[2].ssid);
-  Serial1.print("\"");
+  NextionCmd.print("setup.t15.txt=\"");
+  NextionCmd.print(dmrSettings.wifisettings[2].ssid);
+  NextionCmd.print("\"");
   NXend(902);
-  Serial1.print("setup.t16.txt=\"");
-  Serial1.print(dmrSettings.wifisettings[2].passwd);
-  Serial1.print("\"");
+  NextionCmd.print("setup.t16.txt=\"");
+  NextionCmd.print(dmrSettings.wifisettings[2].passwd);
+  NextionCmd.print("\"");
   NXend(912);
-  Serial1.print("setup.t18.txt=\"");
-  Serial1.print(dmrSettings.wifisettings[3].ssid);
-  Serial1.print("\"");
+  NextionCmd.print("setup.t18.txt=\"");
+  NextionCmd.print(dmrSettings.wifisettings[3].ssid);
+  NextionCmd.print("\"");
   NXend(903);
-  Serial1.print("setup.t19.txt=\"");
-  Serial1.print(dmrSettings.wifisettings[3].passwd);
-  Serial1.print("\"");
+  NextionCmd.print("setup.t19.txt=\"");
+  NextionCmd.print(dmrSettings.wifisettings[3].passwd);
+  NextionCmd.print("\"");
   NXend(913);
 
 }
 void NX_P9_set_callsign_id()
 {
-  Serial1.print("setup.t8.txt=\"");
-  Serial1.print(dmrSettings.callSign);
-  Serial1.print("\"");
+  NextionCmd.print("setup.t8.txt=\"");
+  NextionCmd.print(dmrSettings.callSign);
+  NextionCmd.print("\"");
   NXend(90);
-  Serial1.print("setup.n9.val=");
-  Serial1.print(dmrSettings.localID);
+  NextionCmd.print("setup.n9.val=");
+  NextionCmd.print(dmrSettings.localID);
   NXend(91);
 }
 void NX_P9_set_channelinfo()
@@ -648,12 +648,12 @@ void NX_P9_set_channelinfo()
 {
   String fullName = String(dmrSettings.repeater[dmrSettings.chnr].repeaterName) + " " + String(dmrSettings.repeater[dmrSettings.chnr].repeaterLoc);
   fullName.trim();
-  Serial1.print("setup.t2.txt=\"");
-  Serial1.print(fullName);
-  Serial1.print("\"");
+  NextionCmd.print("setup.t2.txt=\"");
+  NextionCmd.print(fullName);
+  NextionCmd.print("\"");
   NXend(92);
-  Serial1.print("setup.n2.val=");
-  Serial1.print(dmrSettings.repeater[dmrSettings.chnr].groups[dmrSettings.TG].tg_id);
+  NextionCmd.print("setup.n2.val=");
+  NextionCmd.print(dmrSettings.repeater[dmrSettings.chnr].groups[dmrSettings.TG].tg_id);
   NXend(93);
 
 }
@@ -664,9 +664,9 @@ void NX_P9_displayVersion()
 // Query DMR module version and display on oled, last line (unused for now)
 {
 
-  Serial1.print("t6.txt=\"");
-  Serial1.print(SoftwareVersion);
-  Serial1.print("\"");
+  NextionCmd.print("t6.txt=\"");
+  NextionCmd.print(SoftwareVersion);
+  NextionCmd.print("\"");
   NXend(94);
 #ifdef INC_DMR_CALLS
   if (DMRgetVersion())
@@ -677,9 +677,9 @@ void NX_P9_displayVersion()
       ModuleVersion[x - 8] = char(buff[x]);
     }
     //    ModuleVersion[18] = 0x0;
-    Serial1.print("t7.txt=\"");
-    Serial1.print(ModuleVersion);
-    Serial1.print("\"");
+    NextionCmd.print("t7.txt=\"");
+    NextionCmd.print(ModuleVersion);
+    NextionCmd.print("\"");
     NXend(95);
   }
 #endif
@@ -688,18 +688,18 @@ void NX_P9_showVol()
 //----------------------------------------------------- NXshowVol
 
 {
-  Serial1.print("j0.val="); // Changing the value of progress bar
+  NextionCmd.print("j0.val="); // Changing the value of progress bar
   int volproc = (100 * (dmrSettings.audioLevel - 1)) / (maxAudioVolume - 1);
-  Serial1.print(volproc); // show set volume level
+  NextionCmd.print(volproc); // show set volume level
   NXend(96);
 }
 void NX_P9_showMicVol()
 //----------------------------------------------------- NXshowVol
 
 {
-  Serial1.print("j1.val="); // Changing the value of progress bar
+  NextionCmd.print("j1.val="); // Changing the value of progress bar
   int volproc = (100 * dmrSettings.micLevel) / maxMicVolume;
-  Serial1.print(volproc); // show set volume level
+  NextionCmd.print(volproc); // show set volume level
   NXend(97);
 }
 void NX_P9_getCallsign()
@@ -769,22 +769,22 @@ void NX_P10_rxLastHeard()
   for (uint8_t i = 0; i < numradioid; i++)
   {
     k++;
-    Serial1.print("t");
-    Serial1.print(k);
-    Serial1.print(".txt=");
-    Serial1.print("\"");
-    Serial1.print(ri_list[i].ri_talkgroup);
-    Serial1.print(" ");
-    Serial1.print(ri_list[i].ri_id);
-    Serial1.print(" ");
-    Serial1.print(ri_list[i].ri_callsign);
-    Serial1.print(" ");
-    Serial1.print(ri_list[i].ri_fname);
-    Serial1.print(" ");
-    Serial1.print(ri_list[i].ri_city);
-    Serial1.print(" :");
-    Serial1.print(ri_list[i].ri_count);
-    Serial1.print("\"");
+    NextionCmd.print("t");
+    NextionCmd.print(k);
+    NextionCmd.print(".txt=");
+    NextionCmd.print("\"");
+    NextionCmd.print(ri_list[i].ri_talkgroup);
+    NextionCmd.print(" ");
+    NextionCmd.print(ri_list[i].ri_id);
+    NextionCmd.print(" ");
+    NextionCmd.print(ri_list[i].ri_callsign);
+    NextionCmd.print(" ");
+    NextionCmd.print(ri_list[i].ri_fname);
+    NextionCmd.print(" ");
+    NextionCmd.print(ri_list[i].ri_city);
+    NextionCmd.print(" :");
+    NextionCmd.print(ri_list[i].ri_count);
+    NextionCmd.print("\"");
     NXend(30);
     if (k > 9)
     {
@@ -808,7 +808,7 @@ void NX_P14_getRepeaterDMRid()
     repeaterID = (uint32_t)NXbuff[6] << 24 | (uint32_t)NXbuff[5] << 16 |
                  (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
   }
-  //  Serial.println(repeaterID);
+  //  Debug.println(repeaterID);
   ltoa(repeaterID, repeaterIDChar, 10);
   switch (NXbuff[2])
   {
@@ -844,18 +844,18 @@ void NX_P14_getRepeaterDMRid()
     NXrepeaterName[0] = 0x0;
   }
   settingsWrite(&dmrSettings);
-  Serial1.print("n");
-  Serial1.print(k);
-  Serial1.print(".val=");
-  Serial1.print(repeaterID);
+  NextionCmd.print("n");
+  NextionCmd.print(k);
+  NextionCmd.print(".val=");
+  NextionCmd.print(repeaterID);
   NXend(142);
 
-  Serial1.print("t");
-  Serial1.print(k);
-  Serial1.print(".txt=");
-  Serial1.print("\"");
-  Serial1.print(NXrepeaterName);
-  Serial1.print("\"");
+  NextionCmd.print("t");
+  NextionCmd.print(k);
+  NextionCmd.print(".txt=");
+  NextionCmd.print("\"");
+  NextionCmd.print(NXrepeaterName);
+  NextionCmd.print("\"");
   NXend(140);
 }
 
@@ -864,10 +864,10 @@ void  NX_P14_fillRepeaterlist()
 {
   for (uint8_t k = 0; k < numManualRep; k++)
   {
-    Serial1.print("n");
-    Serial1.print(k);
-    Serial1.print(".val=");
-    Serial1.print(dmrSettings.repeater[k].dmrId);
+    NextionCmd.print("n");
+    NextionCmd.print(k);
+    NextionCmd.print(".val=");
+    NextionCmd.print(dmrSettings.repeater[k].dmrId);
     NXend(141);
     char charTmp[40] = "";
     if (dmrSettings.repeater[k].dmrId != 0)
@@ -875,12 +875,12 @@ void  NX_P14_fillRepeaterlist()
       sprintf(charTmp, "%s,%s", dmrSettings.repeater[k].repeaterName, dmrSettings.repeater[k].repeaterLoc);
       charTmp[29] = 0x0;
     }
-    Serial1.print("t");
-    Serial1.print(k);
-    Serial1.print(".txt=");
-    Serial1.print("\"");
-    Serial1.print(charTmp);
-    Serial1.print("\"");
+    NextionCmd.print("t");
+    NextionCmd.print(k);
+    NextionCmd.print(".txt=");
+    NextionCmd.print("\"");
+    NextionCmd.print(charTmp);
+    NextionCmd.print("\"");
     NXend(142);
   }
 }
@@ -902,8 +902,8 @@ void NX_P15_getInput()
           p15_long[x] = NXbuff[x + 3];
         }
       }
-      Serial.print("p15_long ");
-      Serial.println(p15_long);
+      Debug.print("p15_long ");
+      Debug.println(p15_long);
       break;
     case 0x17:
       for (uint8_t x = 0; x < 10; x++)
@@ -918,14 +918,14 @@ void NX_P15_getInput()
           p15_lat[x] = NXbuff[x + 3];
         }
       }
-      Serial.println("p15_lat ");
-      Serial.println(p15_lat);
+      Debug.println("p15_lat ");
+      Debug.println(p15_lat);
       break;
     case 0x14:
       p15_dist = (uint32_t)NXbuff[6] << 24 | (uint32_t)NXbuff[5] << 16 |
                  (uint32_t)NXbuff[4] << 8 | (uint32_t)NXbuff[3];
-      Serial.println("p15_dist ");
-      Serial.println(p15_dist);
+      Debug.println("p15_dist ");
+      Debug.println(p15_dist);
       break;
   }
 }
@@ -933,24 +933,24 @@ void NX_P15_getInput()
 void NX_P15_initLongLat()
 //---------------------------------------------------------------------
 {
-  Serial1.print("EIMlocation.t");
-  Serial1.print(0);
-  Serial1.print(".txt=");
-  Serial1.print("\"");
-  Serial1.print(dmrSettings.longitude);
-  Serial1.print("\"");
+  NextionCmd.print("EIMlocation.t");
+  NextionCmd.print(0);
+  NextionCmd.print(".txt=");
+  NextionCmd.print("\"");
+  NextionCmd.print(dmrSettings.longitude);
+  NextionCmd.print("\"");
   NXend(152);
-  Serial1.print("EIMlocation.t");
-  Serial1.print(1);
-  Serial1.print(".txt=");
-  Serial1.print("\"");
-  Serial1.print(dmrSettings.latitude);
-  Serial1.print("\"");
+  NextionCmd.print("EIMlocation.t");
+  NextionCmd.print(1);
+  NextionCmd.print(".txt=");
+  NextionCmd.print("\"");
+  NextionCmd.print(dmrSettings.latitude);
+  NextionCmd.print("\"");
   NXend(153);
-  Serial1.print("EIMlocation.n");
-  Serial1.print(0);
-  Serial1.print(".val=");
-  Serial1.print(dmrSettings.distance);
+  NextionCmd.print("EIMlocation.n");
+  NextionCmd.print(0);
+  NextionCmd.print(".val=");
+  NextionCmd.print(dmrSettings.distance);
   NXend(154);
 }
 
@@ -958,12 +958,12 @@ void NX_P15_initLongLat()
 void NX_P15_initPage()
 //---------------------------------------------------------------------
 {
-  Serial1.print("t");
-  Serial1.print(33);
-  Serial1.print(".txt=");
-  Serial1.print("\"");
-  Serial1.print("");
-  Serial1.print("\"");
+  NextionCmd.print("t");
+  NextionCmd.print(33);
+  NextionCmd.print(".txt=");
+  NextionCmd.print("\"");
+  NextionCmd.print("");
+  NextionCmd.print("\"");
   NXend(151);
 }
 boolean NX_P15_checkinputfields()
@@ -982,12 +982,12 @@ boolean NX_P15_checkinputfields()
   {
     strcat(p15_errortext, "err:dist");
   }
-  Serial1.print("t");
-  Serial1.print(33);
-  Serial1.print(".txt=");
-  Serial1.print("\"");
-  Serial1.print(p15_errortext);
-  Serial1.print("\"");
+  NextionCmd.print("t");
+  NextionCmd.print(33);
+  NextionCmd.print(".txt=");
+  NextionCmd.print("\"");
+  NextionCmd.print(p15_errortext);
+  NextionCmd.print("\"");
   NXend(151);
 
   if (strlen(p15_errortext) > 0)
@@ -1017,12 +1017,12 @@ void  NX_P15_fillRepeaterlist()
       sprintf(NXrepeaterName, "%s,%s", reptemplist[i].repeaterName, reptemplist[i].repeaterLoc);
       NXrepeaterName[25] = 0x0;
     }
-    Serial1.print("t");
-    Serial1.print(i + 20);
-    Serial1.print(".txt=");
-    Serial1.print("\"");
-    Serial1.print(NXrepeaterName);
-    Serial1.print("\"");
+    NextionCmd.print("t");
+    NextionCmd.print(i + 20);
+    NextionCmd.print(".txt=");
+    NextionCmd.print("\"");
+    NextionCmd.print(NXrepeaterName);
+    NextionCmd.print("\"");
     NXend(150);
   }
 
@@ -1104,13 +1104,13 @@ void NX_txtfield_touched()
           switch (digData.power)
           {
             case 0:
-              Serial1.print("main.t4.txt=\"1 W\"");
+              NextionCmd.print("main.t4.txt=\"1 W\"");
               break;
             case 1:
-              Serial1.print("main.t4.txt=\"5 W\"");
+              NextionCmd.print("main.t4.txt=\"5 W\"");
               break;
             default:
-              Serial1.print("main.t4.txt=\"1 W\"");
+              NextionCmd.print("main.t4.txt=\"1 W\"");
               break;
           }
           NXend(11);
@@ -1259,9 +1259,9 @@ void NX_button_pressed()
         case 0x19:          // --- scroll back one page if there is
           p4_curPage = 0;
           p4_repeaterChnr = 0;
-          Serial1.print("replist.va0.val=1");
+          NextionCmd.print("replist.va0.val=1");
           NXend(40);
-          Serial1.print("page 4");
+          NextionCmd.print("page 4");
           NXend(41);
 
           break;
@@ -1274,9 +1274,9 @@ void NX_button_pressed()
             {
               p4_curPage--;
             }
-            Serial1.print("replist.va0.val=1");
+            NextionCmd.print("replist.va0.val=1");
             NXend(42);
-            Serial1.print("page 4");
+            NextionCmd.print("page 4");
             NXend(43);
           }
           break;
@@ -1285,9 +1285,9 @@ void NX_button_pressed()
       {
         p4_selectedRow = NXbuff[2];
         NXselectRep = NXbuff[2] + p4_startRecord;
-        Serial1.print("TGlist.va0.val=1");
+        NextionCmd.print("TGlist.va0.val=1");
         NXend(42);
-        Serial1.print("page 5");
+        NextionCmd.print("page 5");
         NXend(27);
       }
       return;
@@ -1299,9 +1299,9 @@ void NX_button_pressed()
       {
         case 0x19:          // --- scroll back one page if there is
           p6_curPage = 0;
-          Serial1.print("txGroup.va0.val=1");
+          NextionCmd.print("txGroup.va0.val=1");
           NXend(60);
-          Serial1.print("page 6");
+          NextionCmd.print("page 6");
           NXend(61);
           break;
         case 0x20:          // --- scroll to next page if there is
@@ -1310,9 +1310,9 @@ void NX_button_pressed()
             p6_curPage++;
             if (p6_curPage > (maxTGlist / p6_numRows))
               p6_curPage--;
-            Serial1.print("txGroup.va0.val=1");
+            NextionCmd.print("txGroup.va0.val=1");
             NXend(62);
-            Serial1.print("page 6");
+            NextionCmd.print("page 6");
             NXend(63);
           }
           break;
@@ -1323,7 +1323,7 @@ void NX_button_pressed()
         digData.ContactType = NXp6TG[NXbuff[2]].calltype;
         NXselectTG = digData.tx_contact;
         DMRupdateDigChannel();
-        Serial1.print("page 0");
+        NextionCmd.print("page 0");
         NXend(27);
       }
       break;
@@ -1457,9 +1457,9 @@ void  NX_page_init()
       NX_P0_DisplayCurrent();
       break;
     case 0x01:                                      //start page
-      Serial1.print("t0.txt=\"");
-      Serial1.print(String(dmrSettings.callSign));
-      Serial1.print("\"");
+      NextionCmd.print("t0.txt=\"");
+      NextionCmd.print(String(dmrSettings.callSign));
+      NextionCmd.print("\"");
       NXend(4);
 
     case 0x04:                                      //select repeater
@@ -1503,17 +1503,17 @@ void  NX_page_init()
       {
         if (dmrSettings.rxTalkGroup[i] > 0)
         {
-          Serial1.print("bt");
-          Serial1.print(i);
-          Serial1.print(".txt=\"");
-          Serial1.print(String(dmrSettings.rxTalkGroup[i]));
-          Serial1.print("\"");
+          NextionCmd.print("bt");
+          NextionCmd.print(i);
+          NextionCmd.print(".txt=\"");
+          NextionCmd.print(String(dmrSettings.rxTalkGroup[i]));
+          NextionCmd.print("\"");
           NXend(50);
           if (dmrSettings.rxTGStatus[i] == 1)
           {
-            Serial1.print("bt");
-            Serial1.print(i);
-            Serial1.print(".val=1");
+            NextionCmd.print("bt");
+            NextionCmd.print(i);
+            NextionCmd.print(".val=1");
             NXend(50);
           }
         }
@@ -1522,25 +1522,25 @@ void  NX_page_init()
     case 0x12:                                      // TS usage setup
       if (digData.InboundSlot == 0)
       {
-        Serial1.print("bt0.val=1");
+        NextionCmd.print("bt0.val=1");
         NXend(40);
-        Serial1.print("bt1.val=0");
+        NextionCmd.print("bt1.val=0");
         NXend(41);
       }
       else
       {
-        Serial1.print("bt1.val=1");
+        NextionCmd.print("bt1.val=1");
         NXend(42);
-        Serial1.print("bt0.val=0");
+        NextionCmd.print("bt0.val=0");
         NXend(43);
       }
       if (ts_scan)
       {
-        Serial1.print("bt2.val=1");
+        NextionCmd.print("bt2.val=1");
       }
       else
       {
-        Serial1.print("bt2.val=0");
+        NextionCmd.print("bt2.val=0");
       }
       NXend(44);
       break;
@@ -1567,7 +1567,7 @@ void NXhandler()
 //--------------------------------------------------- NXhandler
 //                                                    takes care of messages from Nextion
 {
-  if (Serial1.available() > 0)
+  if (NextionCmd.available() > 0)
   {
     if (idletimer > 0)
     {
@@ -1608,14 +1608,14 @@ void NXhandler()
         case 0x65:                  // Nextion standard message
           break;
         case 0x1A:                                  // Returned when invalid Variable name
-          Serial.print("Error NX message 0x1A ");    // or invalid attribute was used
-          Serial.println(lastNXtrans);
+          Debug.print("Error NX message 0x1A ");    // or invalid attribute was used
+          Debug.println(lastNXtrans);
           break;
         default:                                   // error message from Nextion
-          Serial.print("Error NX message ");
-          Serial.print(NXbuff[0], HEX);
-          Serial.print(" ");
-          Serial.println(lastNXtrans);
+          Debug.print("Error NX message ");
+          Debug.print(NXbuff[0], HEX);
+          Debug.print(" ");
+          Debug.println(lastNXtrans);
           break;
       }
     }
@@ -1632,14 +1632,14 @@ boolean NXlisten()
   uint8_t ffcount = 0;
   boolean rcode = false;
   uint32_t startmillis = millis();
-  while (Serial1.available() == 0 and ((millis() - startmillis) < 500)) { // wait for first character
+  while (NextionCmd.available() == 0 and ((millis() - startmillis) < 500)) { // wait for first character
   }
-  if (Serial1.available() > 0)                                       // we have a message
+  if (NextionCmd.available() > 0)                                       // we have a message
   {
-    while (Serial1.available() > 0 and i < 39)                              // read rest of message
+    while (NextionCmd.available() > 0 and i < 39)                              // read rest of message
     {
-      NXbuff[i++] = Serial1.read(); //these are received response
-      if (NXbuff[i - 1] == 0xFF) // and Serial2.available())             // until tail captured (FF FF FF)
+      NXbuff[i++] = NextionCmd.read(); //these are received response
+      if (NXbuff[i - 1] == 0xFF) // and DmrCmd.available())             // until tail captured (FF FF FF)
       {
         ffcount++;
         if (ffcount == 3)
@@ -1649,27 +1649,27 @@ boolean NXlisten()
         }
       }
       startmillis = millis();
-      while (!(Serial1.available() > 0) and (millis() - startmillis) < 10000)
+      while (!(NextionCmd.available() > 0) and (millis() - startmillis) < 10000)
       { // wait max 5s if host is slow
       }
     }
     if (NXDebug)
     {
-      Serial.print("From NX:");
+      Debug.print("From NX:");
       if (i > 0)
       {
         while (j < i)
         {
-          Serial.print(NXbuff[j++], HEX);
-          Serial.print(" ");
+          Debug.print(NXbuff[j++], HEX);
+          Debug.print(" ");
         }
       }
     }
     if (NXDebug)
     {
-      Serial.print(" < ");
-      Serial.print(i);
-      Serial.println(" ");
+      Debug.print(" < ");
+      Debug.print(i);
+      Debug.println(" ");
     }
   }
   return rcode;         // return false if not a complete message is captured
@@ -1678,9 +1678,9 @@ boolean NXlisten()
 void NXend(int nr)
 //----------------------------------------------------------- NXend
 {
-  Serial1.write(0xff);
-  Serial1.write(0xff);
-  Serial1.write(0xff);
+  NextionCmd.write(0xff);
+  NextionCmd.write(0xff);
+  NextionCmd.write(0xff);
   lastNXtrans = nr;
 }
 
@@ -1691,18 +1691,18 @@ void NxSetStatus(String text, uint16_t fgc, uint16_t bgc, boolean centered)
     print the status field, supports foreground, background color code as
     well as centering the text
   */
-  Serial1.print("main.t7.txt=\"" + text + "\"");  // text
+  NextionCmd.print("main.t7.txt=\"" + text + "\"");  // text
   NXend(6533);
-  Serial1.print("main.t7.pco=" + String(fgc, DEC));   // white foreground
+  NextionCmd.print("main.t7.pco=" + String(fgc, DEC));   // white foreground
   NXend(6534);
-  Serial1.print("main.t7.bco=" + String(bgc, DEC));   // red background
+  NextionCmd.print("main.t7.bco=" + String(bgc, DEC));   // red background
   NXend(6535);
   if (centered)
   {
-    Serial1.print("main.t7.xcen=1");       // centered
+    NextionCmd.print("main.t7.xcen=1");       // centered
   } else
   {
-    Serial1.print("main.t7.xcen=0");       // left aligned
+    NextionCmd.print("main.t7.xcen=0");       // left aligned
   }
 
   NXend(21);
