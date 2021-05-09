@@ -212,8 +212,7 @@ void  NX_P0_DisplayTransmit(boolean on)
     Serial1.print(tempS);
     Serial1.print("\"");
     NXend(17);
-    Serial1.print("main.t7.txt=\"on air\"");
-    NXend(18);
+    NxSetStatus(String("TX"), 65535, 63488, true);    // white on red background, centered
     rxS = String(digData.tx_freq);
     Serial1.print("main.t6.txt=\"");
     Serial1.print(rxS.substring(0, 3));
@@ -231,8 +230,7 @@ void  NX_P0_DisplayTransmit(boolean on)
     Serial1.print(tempS);
     Serial1.print("\"");
     NXend(20);
-    Serial1.print("main.t7.txt=\"idle\""); // to erase the "on"
-    NXend(21);
+    NxSetStatus(String("MON"), 65535, 0, true);   // white on black background, centered
     rxS = String(digData.rx_freq);
     Serial1.print("main.t6.txt=\"");
     Serial1.print(rxS.substring(0, 3));
@@ -249,8 +247,7 @@ void NX_P0_DisplayReceive(boolean rec_on, byte calltype, uint32_t TGId)
 {
   if (rec_on)
   {
-    Serial1.print("main.t7.txt=\"mon\"");
-    NXend(23);
+    NxSetStatus(String("RX"), 0, 2016, true);   // black on green background, centered
     Serial1.print("main.t10.txt=\"");
     Serial1.print(rxGroup);
     Serial1.print("\"");
@@ -317,7 +314,7 @@ void NX_P0_DisplayReceive(boolean rec_on, byte calltype, uint32_t TGId)
   {
     //    Serial1.print("main.t10.txt=\"Last\""); Ska kanske vara byte av färg istället?
     //    NXend(30);
-    Serial1.print("main.t7.txt=\"idle\"");
+    NxSetStatus(String("MON"), 65535, 0, true);   // white on black background, centered
     NXend(31);
     //   Serial1.print("main.t8.txt=\"     \"");
     //   NXend(31);
@@ -1050,7 +1047,7 @@ void  NX_P15_saveRepeaterlist()
     return;
   }
   uint8_t j = numManualRep;
- 
+
   boolean manualfound = false;
   for (uint8_t i = 0; i <= rl; i++)
   {
@@ -1685,4 +1682,28 @@ void NXend(int nr)
   Serial1.write(0xff);
   Serial1.write(0xff);
   lastNXtrans = nr;
+}
+
+
+void NxSetStatus(String text, uint16_t fgc, uint16_t bgc, boolean centered)
+{
+  /*
+    print the status field, supports foreground, background color code as
+    well as centering the text
+  */
+  Serial1.print("main.t7.txt=\"" + text + "\"");  // text
+  NXend(6533);
+  Serial1.print("main.t7.pco=" + String(fgc, DEC));   // white foreground
+  NXend(6534);
+  Serial1.print("main.t7.bco=" + String(bgc, DEC));   // red background
+  NXend(6535);
+  if (centered)
+  {
+    Serial1.print("main.t7.xcen=1");       // centered
+  } else
+  {
+    Serial1.print("main.t7.xcen=0");       // left aligned
+  }
+
+  NXend(21);
 }
