@@ -1681,6 +1681,12 @@ void NXend(int nr)
   Serial1.write(0xff);
   Serial1.write(0xff);
   Serial1.write(0xff);
+  if (NXDebug)
+    {
+      Serial.print("Nxend: ");
+      Serial.print(nr);
+      Serial.println(" ");
+    }
   lastNXtrans = nr;
 }
 
