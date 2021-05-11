@@ -31,6 +31,15 @@ char SoftwareVersion[21] = "SM7ECA-210416-4C";
 #define FUNC_ENABLE                    0x01
 #define FUNC_DISABLE                   0x02
 
+/* ----------------------------------------------------
+  Rename Serial interface in order to make them more
+  selfdescribing
+*/
+HardwareSerial & Debug = Serial;
+HardwareSerial & NextionCmd = Serial1;
+HardwareSerial & DmrCmd = Serial2;
+
+
 // ---------------------------------------------------- Pin definitions
 #define  beepPin    14  //beepPin; OUTPUT, this is is actually A0 but we are to use it
 //for the beeper as pin 13 was used by SPI in this case
@@ -311,12 +320,12 @@ void beep(bool bp)
 void setup()
 {
   // put your setup code here, to run once:
-  Serial.begin(serial_speed);                   //Serial monitor
-  Serial1.begin(57600, SERIAL_8N1, RXD1, TXD1);  //Nextion Display
+  Debug.begin(serial_speed);                   //Serial monitor
+  NextionCmd.begin(57600, SERIAL_8N1, RXD1, TXD1);  //Nextion Display
 #ifdef INC_DMR_CALLS
   NXinitDisplay("DMR init");
-  Serial2.begin(57600, SERIAL_8N1, RXD2, TXD2); //DMR module
-  Serial2.setRxBufferSize(264);                 //We need at least 177 bytes for 0x24
+  DmrCmd.begin(57600, SERIAL_8N1, RXD2, TXD2); //DMR module
+  DmrCmd.setRxBufferSize(264);                 //We need at least 177 bytes for 0x24
 #endif
   pinMode(14, OUTPUT);                          //LED not used
   beep(true);                                   //set LED on
@@ -325,7 +334,7 @@ void setup()
   {
     ; // wait for serial port to connect. Needed for native USB port only
   }
-  Serial.println("Serial communication active");
+  Debug.println("Serial communication active");
   ;                                         // Show the DMR page
   NXinitDisplay("Init EEPROM");
   settingsInit();                                          // EEPROM initate
@@ -400,11 +409,11 @@ void setup()
   //    }
   //  }
   settingsWrite(&dmrSettings);
-  Serial.println(sizeof(dmrSettings));
+  Debug.println(sizeof(dmrSettings));
   if (sizeof(dmrSettings) > 4096)
   {
-    Serial.print("exceeded EEPROM capacity (4096): ");
-    Serial.println(sizeof(dmrSettings));
+    Debug.print("exceeded EEPROM capacity (4096): ");
+    Debug.println(sizeof(dmrSettings));
   }
   DMRDebug = false;                            //  on Serial monitor
   NXDebug = false;                              //  display communication
@@ -459,13 +468,13 @@ void loop()
   }
 #ifdef INC_DMR_CALLS
   //------------------------------- take care of message from DMR
-  if (Serial2.available() != 0)
+  if (DmrCmd.available() != 0)
   {
     DMRhandler();
   }
 #endif
   //-------------------------------- take care of message from Nextion
-  if (Serial1.available() != 0)
+  if (NextionCmd.available() != 0)
   {
     NXhandler();
   }

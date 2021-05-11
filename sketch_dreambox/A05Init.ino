@@ -38,7 +38,7 @@ void IN_NormalStartup()
   loopstart = loopstartNext = millis();
   ts_scan = dmrSettings.ts_scan;
   tsSwitchLast = millis();
-  Serial.print(" Setup free heap ");
-  Serial.println(ESP.getFreeHeap());
+  Debug.print(" Setup free heap ");
+  Debug.println(ESP.getFreeHeap());
 
 }
