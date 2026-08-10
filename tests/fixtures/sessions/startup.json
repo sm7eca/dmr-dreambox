@@ -1,0 +1,122 @@
+{
+  "flow": "startup",
+  "description": "Normal boot sequence: wait for DMR module, push initial digital channel, verify, show main page. Predicted from source; no bench capture exists yet.",
+  "source_refs": [
+    "sketch_dreambox/A05Init.ino:1-44",
+    "sketch_dreambox/A20Communication.ino:260-283,360-377",
+    "sketch_dreambox/A40Nextion_HMI.ino:13-27"
+  ],
+  "frames": [
+    {
+      "seq": 1,
+      "bus": "nextion",
+      "direction": "host_to_display",
+      "command": "NXinitDisplay: page 3 (boot status page)",
+      "confidence": "computed",
+      "ascii": "page 3",
+      "bytes_hex": null,
+      "known_fields": null,
+      "notes": "Sent once per NXinitDisplay(msg) call throughout startup; each call also updates DMRlogga.t0.txt with the current status string."
+    },
+    {
+      "seq": 2,
+      "bus": "nextion",
+      "direction": "host_to_display",
+      "command": "NX_P3_statusDisplay: status text",
+      "confidence": "computed",
+      "ascii": "DMRlogga.t0.txt=\"Connect to DMR-mod\"",
+      "bytes_hex": null,
+      "known_fields": null,
+      "notes": "Text is whichever string NXinitDisplay(msg) was called with; this example matches A05Init.ino:15."
+    },
+    {
+      "seq": 3,
+      "bus": "dmr",
+      "direction": "host_to_module",
+      "command": "QUERY_INIT_FINISHED / FUNC_ENABLE",
+      "confidence": "computed",
+      "ascii": null,
+      "bytes_hex": "68 27 01 01 95 C6 00 01 01 10",
+      "known_fields": null,
+      "notes": "Retried every 1000ms (delay(1000) in A05Init.ino:19) until a successful reply. No upper bound on retry count in source -- confirm on bench whether a real module can leave this loop stuck forever."
+    },
+    {
+      "seq": 4,
+      "bus": "dmr",
+      "direction": "module_to_host",
+      "command": "QUERY_INIT_FINISHED reply",
+      "confidence": "known-partial",
+      "ascii": null,
+      "bytes_hex": null,
+      "known_fields": {
+        "offset_0": "0x68 (head)",
+        "offset_1": "0x27 (echoes CMD)",
+        "offset_3": "0x00 on success (SR field checked by DMRreceive, A20Communication.ino:180-182)",
+        "last_byte": "0x10 (tail)"
+      },
+      "notes": "Total length and payload (offsets 4 onward besides tail) unknown -- DMRreceive only inspects buff[3] and the 0x10 terminator. Needs a bench capture."
+    },
+    {
+      "seq": 5,
+      "bus": "dmr",
+      "direction": "host_to_module",
+      "command": "SET_DIGITAL_CHANNEL (example channel)",
+      "confidence": "computed-assuming-natural-alignment",
+      "ascii": null,
+      "bytes_hex": "68 22 01 01 8C 28 00 A3 6C 47 E7 19 EC C2 C8 19 0B 9F 24 00 61 09 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 61 09 00 00 01 00 07 00 00 00 02 00 00 00 00 00 00 00 00 02 04 0F 02 10",
+      "known_fields": null,
+      "notes": "172 bytes = db_digital_info (sketch_dreambox.ino:180-207) with example values: rx_freq=434587500, tx_freq=432587500, localID=2400011, GroupList[0]=2401 (rest 0), tx_contact=2401, ContactType=1 (group call), power=0, cc=7, InboundSlot=OutboundSlot=0, ChannelMode=0, EncryptSw=2, EncryptKey=all-zero, pwrsave=2, volume=4, mic=15, relay=2. Byte offsets computed assuming no compiler-inserted padding (every uint32 field lands on a 4-byte boundary given this field order, verified by hand) -- NOT confirmed against a compiled sizeof(db_digital_info) or a bench capture. See doc/akb/dmr-protocol.md open items."
+    },
+    {
+      "seq": 6,
+      "bus": "dmr",
+      "direction": "module_to_host",
+      "command": "SET_DIGITAL_CHANNEL reply",
+      "confidence": "known-partial",
+      "ascii": null,
+      "bytes_hex": null,
+      "known_fields": {
+        "offset_0": "0x68 (head)",
+        "offset_1": "0x22 (echoes CMD)",
+        "offset_3": "0x00 on success"
+      },
+      "notes": "Same caveats as seq 4."
+    },
+    {
+      "seq": 7,
+      "bus": "dmr",
+      "direction": "host_to_module",
+      "command": "GET_DIGITAL_CHANNEL / FUNC_ENABLE",
+      "confidence": "computed",
+      "ascii": null,
+      "bytes_hex": "68 24 01 01 95 C9 00 01 01 10",
+      "known_fields": null,
+      "notes": "Sent once, to verify the channel that was just set (A05Init.ino:25). Reply is expected to echo back a db_digital_info-shaped payload but this is not verified anywhere in source -- reply frame shape is unknown-partial, same as seq 4/6."
+    },
+    {
+      "seq": 8,
+      "bus": "dmr",
+      "direction": "module_to_host",
+      "command": "GET_DIGITAL_CHANNEL reply",
+      "confidence": "known-partial",
+      "ascii": null,
+      "bytes_hex": null,
+      "known_fields": {
+        "offset_0": "0x68 (head)",
+        "offset_1": "0x24 (echoes CMD)"
+      },
+      "notes": "Firmware never inspects this reply's payload (A05Init.ino:25 discards the boolean return); only presence of a well-formed reply matters to the current implementation."
+    },
+    {
+      "seq": 9,
+      "bus": "nextion",
+      "direction": "host_to_display",
+      "command": "NX_P0_DisplayMainPage",
+      "confidence": "computed",
+      "ascii": "page main",
+      "bytes_hex": null,
+      "known_fields": null,
+      "notes": "A05Init.ino:28. Followed by NX_P0_updateRSSI(0), NX_P15_initLongLat(), NX_P0_showVol() -- omitted here for brevity, each is a simple attribute-set command of the same ASCII+FF FF FF shape."
+    }
+  ]
+}

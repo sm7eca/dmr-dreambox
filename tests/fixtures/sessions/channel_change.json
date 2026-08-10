@@ -1,0 +1,83 @@
+{
+  "flow": "channel_change",
+  "description": "User navigates to the repeater/channel list, selects a row, and the firmware re-sends a full digital channel config for the new selection. Predicted from source; no bench capture exists yet.",
+  "source_refs": [
+    "sketch_dreambox/A40Nextion_HMI.ino:366-407,1448-1487",
+    "sketch_dreambox/A20Communication.ino:360-377,688-695"
+  ],
+  "frames": [
+    {
+      "seq": 1,
+      "bus": "nextion",
+      "direction": "display_to_host",
+      "command": "0x34 page event: enter page 4 (repeater select)",
+      "confidence": "computed",
+      "ascii": null,
+      "bytes_hex": "34 04",
+      "known_fields": null,
+      "notes": "Dispatched to NX_page_init case 0x04 (A40Nextion_HMI.ino:1465-1473), which calls NX_P4_displayChannels()."
+    },
+    {
+      "seq": 2,
+      "bus": "nextion",
+      "direction": "host_to_display",
+      "command": "NX_P4_displayChannels: list row population",
+      "confidence": "assumption",
+      "ascii": null,
+      "bytes_hex": null,
+      "known_fields": null,
+      "notes": "Function body not transcribed into this fixture set (A40Nextion_HMI.ino:366-407) -- it fills up to p4_numRows (10) rows from dmrSettings.repeater[]. Fill in exact per-row ASCII commands from source before treating this as computed."
+    },
+    {
+      "seq": 3,
+      "bus": "nextion",
+      "direction": "display_to_host",
+      "command": "0x33 button event: page 4, row selected, press",
+      "confidence": "assumption",
+      "ascii": null,
+      "bytes_hex": "33 04 00 01",
+      "known_fields": null,
+      "notes": "Row/button ID (third byte) depends on which list row was touched -- 0x00 here is a placeholder for 'first row'. Confirm the exact button-ID scheme for page 4 rows against NX_button_pressed's page-4 case before relying on this byte value (not fully traced in dmr-protocol.md/nextion-protocol.md yet)."
+    },
+    {
+      "seq": 4,
+      "bus": "dmr",
+      "direction": "host_to_module",
+      "command": "SET_DIGITAL_CHANNEL (new channel selection)",
+      "confidence": "computed-assuming-natural-alignment",
+      "ascii": null,
+      "bytes_hex": null,
+      "known_fields": {
+        "layout": "identical structure to sessions/startup.json seq 5 (db_digital_info, 172 bytes)",
+        "changed_fields": "rx_freq, tx_freq, localID unchanged; tx_contact/GroupList/cc/InboundSlot etc. reflect the newly selected repeater's stored settings (DBgetTG + DMRsetDigChannel, A20Communication.ino:688-695)"
+      },
+      "notes": "Not pre-computed here to avoid duplicating a 172-byte hex string with arbitrary example values for every possible channel selection -- reuse startup.json's computed example and tools/pc_checksum.py to generate a variant with the specific channel values you want to test."
+    },
+    {
+      "seq": 5,
+      "bus": "dmr",
+      "direction": "module_to_host",
+      "command": "SET_DIGITAL_CHANNEL reply",
+      "confidence": "known-partial",
+      "ascii": null,
+      "bytes_hex": null,
+      "known_fields": {
+        "offset_0": "0x68 (head)",
+        "offset_1": "0x22 (echoes CMD)",
+        "offset_3": "0x00 on success"
+      },
+      "notes": "DMRupdateDigChannel's return value is discarded by DMRinitChannel/callers in this flow."
+    },
+    {
+      "seq": 6,
+      "bus": "nextion",
+      "direction": "host_to_display",
+      "command": "NX_P0_DisplayCurrent: refresh main page fields",
+      "confidence": "assumption",
+      "ascii": null,
+      "bytes_hex": null,
+      "known_fields": null,
+      "notes": "Function body read but not transcribed here (A40Nextion_HMI.ino:116-166) -- updates callsign, name/location, tx power label, and TX/RX frequency fields on the main page after a channel change."
+    }
+  ]
+}

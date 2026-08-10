@@ -1,0 +1,107 @@
+{
+  "flow": "tx_ptt",
+  "description": "PTT press and release: Nextion button event drives a DMR transmit-info command and a display update. Predicted from source; no bench capture exists yet.",
+  "source_refs": [
+    "sketch_dreambox/A30Main_State_Handling.ino:5-50",
+    "sketch_dreambox/A40Nextion_HMI.ino:201-243,1217-1257",
+    "sketch_dreambox/A40Nextion_HMI.ino:1566-1623"
+  ],
+  "frames": [
+    {
+      "seq": 1,
+      "bus": "nextion",
+      "direction": "display_to_host",
+      "command": "0x33 button event: page 0, button 0 (PTT), press",
+      "confidence": "computed",
+      "ascii": null,
+      "bytes_hex": "33 00 00 01",
+      "known_fields": null,
+      "notes": "Wire form is this 4-byte payload followed by the standard FF FF FF terminator (not repeated in bytes_hex). Page/button IDs per doc/akb/nextion-protocol.md button table: page 0 button 0x0 = PTT. Dispatched by NXhandler -> NX_button_pressed (A40Nextion_HMI.ino:1220-1257)."
+    },
+    {
+      "seq": 2,
+      "bus": "dmr",
+      "direction": "host_to_module",
+      "command": "SET_TRANSMIT_INFORMATION / FUNC_ENABLE (PTT down)",
+      "confidence": "computed",
+      "ascii": null,
+      "bytes_hex": "68 26 01 01 95 C7 00 01 01 10",
+      "known_fields": null,
+      "notes": "do_idle() -> DMRTransmit(FUNC_ENABLE, SET_TRANSMIT_INFORMATION), A30Main_State_Handling.ino:14."
+    },
+    {
+      "seq": 3,
+      "bus": "dmr",
+      "direction": "module_to_host",
+      "command": "SET_TRANSMIT_INFORMATION reply",
+      "confidence": "known-partial",
+      "ascii": null,
+      "bytes_hex": null,
+      "known_fields": {
+        "offset_0": "0x68 (head)",
+        "offset_1": "0x26 (echoes CMD)",
+        "offset_3": "0x00 on success"
+      },
+      "notes": "Return value discarded by do_idle() -- firmware does not verify the module accepted the transmit request before updating the display."
+    },
+    {
+      "seq": 4,
+      "bus": "nextion",
+      "direction": "host_to_display",
+      "command": "NX_P0_DisplayTransmit(true): frequency + status banner",
+      "confidence": "computed",
+      "ascii": "main.t5.txt=\"434.58750\"",
+      "bytes_hex": null,
+      "known_fields": null,
+      "notes": "First of several commands in NX_P0_DisplayTransmit(true) (A40Nextion_HMI.ino:207-223): formats digData.rx_freq (434587500 in the example channel used throughout these fixtures) as substring(0,3)+\".\"+substring(3,8) = \"434.58750\", then calls NxSetStatus(\"TX\", white-on-red, centered), then sets main.t6.txt to the tx frequency (432587500). Only the first command is spelled out here; the rest follow the same ASCII attribute-set shape documented in nextion-protocol.md."
+    },
+    {
+      "seq": 5,
+      "bus": "nextion",
+      "direction": "display_to_host",
+      "command": "0x33 button event: page 0, button 0 (PTT), release",
+      "confidence": "computed",
+      "ascii": null,
+      "bytes_hex": "33 00 00 00",
+      "known_fields": null,
+      "notes": "Activity byte 0x00 = release, per the NXhandler comment table."
+    },
+    {
+      "seq": 6,
+      "bus": "dmr",
+      "direction": "host_to_module",
+      "command": "SET_TRANSMIT_INFORMATION / FUNC_DISABLE (PTT up)",
+      "confidence": "computed",
+      "ascii": null,
+      "bytes_hex": "68 26 01 01 94 C7 00 01 02 10",
+      "known_fields": null,
+      "notes": "do_transmit() -> DMRTransmit(FUNC_DISABLE, SET_TRANSMIT_INFORMATION), A30Main_State_Handling.ino:45. Note this is driven by polling !btnPTT in the main loop, not by the button-release event directly -- the release event at seq 5 and this command are not guaranteed to be adjacent on the wire; there is no coupling in source between the two."
+    },
+    {
+      "seq": 7,
+      "bus": "dmr",
+      "direction": "module_to_host",
+      "command": "SET_TRANSMIT_INFORMATION reply",
+      "confidence": "known-partial",
+      "ascii": null,
+      "bytes_hex": null,
+      "known_fields": {
+        "offset_0": "0x68 (head)",
+        "offset_1": "0x26 (echoes CMD)",
+        "offset_3": "0x00 on success"
+      },
+      "notes": "Same shape as seq 3."
+    },
+    {
+      "seq": 8,
+      "bus": "nextion",
+      "direction": "host_to_display",
+      "command": "NX_P0_DisplayTransmit(false): frequency + status banner",
+      "confidence": "computed",
+      "ascii": "main.t5.txt=\"432.58750\"",
+      "bytes_hex": null,
+      "known_fields": null,
+      "notes": "First command of NX_P0_DisplayTransmit(false) (A40Nextion_HMI.ino:225-241): now formats digData.tx_freq (432587500 in the example channel) as \"432.58750\" into t5, then NxSetStatus(\"MON\", white-on-black, centered), then t6 back to rx frequency (434587500)."
+    }
+  ]
+}

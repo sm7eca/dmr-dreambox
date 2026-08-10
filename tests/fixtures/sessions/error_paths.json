@@ -1,0 +1,76 @@
+{
+  "flow": "error_paths",
+  "description": "Malformed/incomplete/mismatched frames, on both the DMR and Nextion links, plus the checksum-not-enforced gap noted in doc/akb/dmr-protocol.md. These are synthetic test cases for milestone 1's harness, not predictions of a specific real session.",
+  "source_refs": [
+    "sketch_dreambox/A20Communication.ino:29-53,163-258",
+    "sketch_dreambox/A40Nextion_HMI.ino:1566-1676"
+  ],
+  "frames": [
+    {
+      "seq": 1,
+      "bus": "dmr",
+      "direction": "module_to_host",
+      "command": "Truncated frame: no 0x10 tail before timeout",
+      "confidence": "synthetic-malformed",
+      "ascii": null,
+      "bytes_hex": "68 27 01",
+      "known_fields": null,
+      "notes": "DMRreceive() (A20Communication.ino:163-219) waits up to 1000ms for the first byte, then up to 10000ms between subsequent bytes; if the 0x10 tail never arrives, the read loop exhausts its budget and DMRreceive returns false without an explicit exception -- the harness must model this as a transport-level timeout, not a decode error. Expected caller behavior: DMRTransmit returns false; most callers (see dmr-protocol.md) ignore the boolean, so the state machine does not visibly react to this on its own."
+    },
+    {
+      "seq": 2,
+      "bus": "dmr",
+      "direction": "module_to_host",
+      "command": "Unsolicited event instead of expected reply",
+      "confidence": "synthetic-malformed",
+      "ascii": null,
+      "bytes_hex": "68 3D 01 01 00 00 00 01 00 10",
+      "known_fields": null,
+      "notes": "Scenario: host sent QUERY_SIGNAL_STRENGTH (0x32) and the module emits an unsolicited 0x3D call-start event before the actual 0x32 reply. DMRreceiveReply (A20Communication.ino:221-258) detects the CMD mismatch, updates the corresponding unsolicited-event flag (bRecVoicemessageStart here), then attempts exactly one more read for the expected reply. If that second read also fails to match, it logs an error and returns whatever the second DMRreceive returned. A harness test should feed [this frame, then a correct 0x32 reply] and assert the caller still gets the 0x32 data, and separately feed [this frame, then another wrong frame] and assert the logged-error path is taken."
+    },
+    {
+      "seq": 3,
+      "bus": "dmr",
+      "direction": "module_to_host",
+      "command": "Reply with corrupted checksum bytes",
+      "confidence": "synthetic-malformed",
+      "ascii": null,
+      "bytes_hex": "68 27 01 00 FF FF 00 01 01 10",
+      "known_fields": null,
+      "notes": "Checksum bytes (offsets 4-5) deliberately do not match tools/pc_checksum.py's output for this frame. Per dmr-protocol.md, CheckCkSum exists in source but DMRreceive/DMRreceiveReply never call it -- the current firmware would accept this frame as a successful QUERY_INIT_FINISHED reply (offset_3=0x00) despite the bad checksum. This fixture exists to force an explicit decision in the port: enforce CheckCkSum strictly (recommended, breaking compatibility with this exact legacy behavior) or preserve the lenient behavior deliberately, and write the choice down as an ADR either way."
+    },
+    {
+      "seq": 4,
+      "bus": "nextion",
+      "direction": "display_to_host",
+      "command": "0x1A error: invalid variable name/attribute",
+      "confidence": "assumption",
+      "ascii": null,
+      "bytes_hex": "1A",
+      "known_fields": null,
+      "notes": "Per the NXhandler comment table (A40Nextion_HMI.ino:1594) and case 0x1A (A40Nextion_HMI.ino:1610-1613), which only logs lastNXtrans and does not otherwise react. Exact payload length after the 0x1A byte (if any) before the FF FF FF terminator is not specified in source or in the Nextion Instruction Set docs referenced here -- treat the trailing bytes as unknown until confirmed."
+    },
+    {
+      "seq": 5,
+      "bus": "nextion",
+      "direction": "display_to_host",
+      "command": "Frame never reaches three trailing 0xFF bytes",
+      "confidence": "synthetic-malformed",
+      "ascii": null,
+      "bytes_hex": "33 00 00",
+      "known_fields": null,
+      "notes": "NXlisten() (A40Nextion_HMI.ino:1627-1676) caps reads at 39 bytes and waits up to 500ms for the first byte then up to 10000ms between subsequent bytes; if fewer than three consecutive 0xFF bytes ever arrive, rcode stays false and the partial NXbuff content is discarded by the caller (NXhandler only proceeds into the dispatch switch when NXlisten() returns true). Harness should assert no dispatch occurs and no state changes as a result."
+    },
+    {
+      "seq": 6,
+      "bus": "nextion",
+      "direction": "display_to_host",
+      "command": "0x31 numeric-field event -- verified fallthrough into text-field handler",
+      "confidence": "computed",
+      "ascii": null,
+      "bytes_hex": "31 00 04 05",
+      "known_fields": null,
+      "notes": "Not strictly an error, but a source-verified quirk worth testing explicitly: case 0x31 in NXhandler (A40Nextion_HMI.ino:1597-1599) has no break statement, so every 0x31 event also runs NX_txtfield_touched() immediately afterward with the same NXbuff contents. A harness test should assert BOTH NX_numfield_touched() and NX_txtfield_touched() run for this input, and flag (rather than silently 'fix') this if the port's decoder is written to dispatch each event type exactly once."
+    }
+  ]
+}

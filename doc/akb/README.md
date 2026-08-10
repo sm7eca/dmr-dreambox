@@ -10,6 +10,14 @@ documentation and ADRs; it does not replace source code or bench measurements.
   constraints, and known risks derived from the repository.
 - [Raspberry Pi port plan](raspberry-pi-port-plan.md) — target boundaries,
   milestones, validation gates, and rollback strategy.
+- [DMR module protocol](dmr-protocol.md) — command table, checksum, framing,
+  timeouts (milestone 0, item 1).
+- [Nextion HMI protocol](nextion-protocol.md) — outbound commands, inbound
+  event codes, page map (milestone 0, item 2).
+- [Session capture status](session-capture-status.md) — bench capture
+  blockers and source-derived flow predictions (milestone 0, item 3).
+- [EIM request/response examples](eim-examples.md) — sanitized API shapes and
+  firmware/service contract drift (milestone 0, item 4).
 - [Architecture decisions](../adr/) — decisions that are already recorded.
 - [Development workflow](../development.md) — build, test, and release workflow.
 

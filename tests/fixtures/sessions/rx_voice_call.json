@@ -1,0 +1,128 @@
+{
+  "flow": "rx_voice_call",
+  "description": "Incoming voice call: unsolicited 0x3D start event, periodic RSSI/contact polling while receiving, unsolicited 0x3D end event (or RSSI dropping to 0). Predicted from source; no bench capture exists yet.",
+  "source_refs": [
+    "sketch_dreambox/A20Communication.ino:55-121,611-686",
+    "sketch_dreambox/A30Main_State_Handling.ino:52-71",
+    "sketch_dreambox/A40Nextion_HMI.ino:244-331"
+  ],
+  "frames": [
+    {
+      "seq": 1,
+      "bus": "dmr",
+      "direction": "module_to_host",
+      "command": "0x3D unsolicited: voice call start",
+      "confidence": "known-partial",
+      "ascii": null,
+      "bytes_hex": null,
+      "known_fields": {
+        "offset_0": "0x68 (head)",
+        "offset_1": "0x3D",
+        "offset_8": "0x00 (call start, checked in DMRhandler, A20Communication.ino:61)"
+      },
+      "notes": "Arrives at any time, not in response to a host command -- DMRlisten()/DMRhandler() poll for this. Sets UnitState=REC_DMR_STATE, arms RSSItimer, and immediately triggers a QUERY_DIGITAL_VOICE_INFO query (seq 2)."
+    },
+    {
+      "seq": 2,
+      "bus": "dmr",
+      "direction": "host_to_module",
+      "command": "QUERY_DIGITAL_VOICE_INFO / FUNC_ENABLE",
+      "confidence": "computed",
+      "ascii": null,
+      "bytes_hex": "68 2B 01 01 95 C2 00 01 01 10",
+      "known_fields": null,
+      "notes": "DMRqueryReceived(true) -> DMRTransmit(FUNC_ENABLE, QUERY_DIGITAL_VOICE_INFO), A20Communication.ino:654. Checksum computed with tools/pc_checksum.py the same way as the other fixed 10-byte commands."
+    },
+    {
+      "seq": 3,
+      "bus": "dmr",
+      "direction": "module_to_host",
+      "command": "QUERY_DIGITAL_VOICE_INFO reply",
+      "confidence": "known-partial",
+      "ascii": null,
+      "bytes_hex": null,
+      "known_fields": {
+        "offset_0": "0x68 (head)",
+        "offset_1": "0x2B (echoes CMD)",
+        "offset_9_to_12": "rxContact, little-endian uint32 (A20Communication.ino:656-657)",
+        "offset_13_to_16": "rxGroup, little-endian uint32 (A20Communication.ino:658-659)",
+        "offset_12": "must be 0x00 for the reply to be accepted as valid data (A20Communication.ino:654 checks buff[12]==0x0)"
+      },
+      "notes": "Example values for a fixture: rxContact=2400011, rxGroup=2401. Total frame length and remaining bytes are unknown -- needs a bench capture. Note buff[12] is read both as part of the rxContact decode AND as the 'is this valid' guard in the calling code -- worth a dedicated bench check, since that looks like it could be a coincidental double-use of one byte."
+    },
+    {
+      "seq": 4,
+      "bus": "dmr",
+      "direction": "host_to_module",
+      "command": "QUERY_SIGNAL_STRENGTH / FUNC_ENABLE",
+      "confidence": "computed",
+      "ascii": null,
+      "bytes_hex": "68 32 01 01 95 BB 00 01 01 10",
+      "known_fields": null,
+      "notes": "DMRcheckRSSI() -> DMRTransmit(FUNC_ENABLE, QUERY_SIGNAL_STRENGTH), A20Communication.ino:616. Called once right after call-start (A20Communication.ino:95) and then every 5000ms while receiving (do_RecDMR, A30Main_State_Handling.ino:57-70)."
+    },
+    {
+      "seq": 5,
+      "bus": "dmr",
+      "direction": "module_to_host",
+      "command": "QUERY_SIGNAL_STRENGTH reply",
+      "confidence": "known-partial",
+      "ascii": null,
+      "bytes_hex": null,
+      "known_fields": {
+        "offset_0": "0x68 (head)",
+        "offset_1": "0x32 (echoes CMD)",
+        "offset_8": "RSSI value, 0 = no signal / lost call (A20Communication.ino:617-620, A30Main_State_Handling.ino:61-65)"
+      },
+      "notes": "Example value for a fixture: offset_8 = 0x2A (nonzero, signal present). A reply with offset_8 == 0x00 while UnitState is REC_DMR_STATE forces a return to IDLE_STATE even without an explicit 0x3D end event -- worth its own fixture variant."
+    },
+    {
+      "seq": 6,
+      "bus": "nextion",
+      "direction": "host_to_display",
+      "command": "NX_P0_DisplayReceive(true, ...): status banner + contact display",
+      "confidence": "computed",
+      "ascii": "main.t10.txt=\"2401\"",
+      "bytes_hex": null,
+      "known_fields": null,
+      "notes": "First substantive command after NxSetStatus(\"RX\", black-on-green, centered) in NX_P0_DisplayReceive (A40Nextion_HMI.ino:244-269): rxGroup formatted into main.t10, then TGId into main.n4.val. If WIFIcallfound is true (an EIM/radioid lookup succeeded), main.t12/t17/t18 are also populated with callsign/name/location -- omitted here, see doc/akb/eim-examples.md for the sanitized shape of that lookup data."
+    },
+    {
+      "seq": 7,
+      "bus": "nextion",
+      "direction": "host_to_display",
+      "command": "NX_P0_updateRSSI: S-meter update",
+      "confidence": "assumption",
+      "ascii": null,
+      "bytes_hex": null,
+      "known_fields": null,
+      "notes": "Function body not transcribed into this fixture set (A40Nextion_HMI.ino:323-331) -- included as a placeholder because it is called from DMRvoicemessageStart and do_RecDMR. Fill in the exact ASCII command from source before treating this frame as computed."
+    },
+    {
+      "seq": 8,
+      "bus": "dmr",
+      "direction": "module_to_host",
+      "command": "0x3D unsolicited: voice call end",
+      "confidence": "known-partial",
+      "ascii": null,
+      "bytes_hex": null,
+      "known_fields": {
+        "offset_0": "0x68 (head)",
+        "offset_1": "0x3D",
+        "offset_8": "0x01 (call end, A20Communication.ino:66-67)"
+      },
+      "notes": "Triggers DMRvoicemessageEnd(): clears display, resets S-meter to 0, and returns UnitState to IDLE_STATE if it was REC_DMR_STATE."
+    },
+    {
+      "seq": 9,
+      "bus": "nextion",
+      "direction": "host_to_display",
+      "command": "NX_P0_DisplayReceive(false, ...): banner reset",
+      "confidence": "computed",
+      "ascii": "main.t7.txt=\"MON\"",
+      "bytes_hex": null,
+      "known_fields": null,
+      "notes": "NX_P0_DisplayReceive(false,...) just calls NxSetStatus(\"MON\", white-on-black, centered) (A40Nextion_HMI.ino:313-318); shown here as the t7 text-set half of that helper (NxSetStatus also sets t7.pco/t7.bco/t7.xcen -- omitted for brevity)."
+    }
+  ]
+}
