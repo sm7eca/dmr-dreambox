@@ -1,4 +1,5 @@
 six
+pyserial
 pytest
 pytest-cov
 pytest-clarity
