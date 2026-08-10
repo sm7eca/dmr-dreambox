@@ -9,6 +9,7 @@ SOURCES_H = $(wildcard ${SOURCEDIR}/*.h)
 ARDUINO_BOARD_FQDN = "esp32:esp32:esp32-DevKitLipo"
 ARDUINO_PROGRAMMER_PORT = /dev/ttyUSB0
 ARDUINO_CLI_DOCKER_TAG = local/arduino-cli:latest
+ARDUINO_CLI_CONFIG = --config-file arduino-cli.yaml
 BUILD_DIR = build
 RELEASE_VERSION_STRING=$(shell sed -n 's/^.*SoftwareVersion.* *= *//p' sketch_dreambox/sketch_dreambox.ino | sed 's/[;"]*//g')
 RELEASE_NAME = ${RELEASE_VERSION_STRING}
@@ -42,7 +43,7 @@ ${BUILD_DIR}/%.bin: venv Makefile ${SOURCES_C} ${SOURCES_H}
 	@test -d ${BUILD_DIR} || mkdir -p ${BUILD_DIR}
 	@( \
 		. .venv/bin/activate ; \
-		arduino-cli compile --config-file arduino-cli.yaml --output-dir ${BUILD_DIR} --fqbn ${ARDUINO_BOARD_FQDN} ${SOURCEDIR}/ ; \
+		arduino-cli compile ${ARDUINO_CLI_CONFIG} --output-dir ${BUILD_DIR} --fqbn ${ARDUINO_BOARD_FQDN} ${SOURCEDIR}/ ; \
 	)
 
 esp-upload: esp-binary
@@ -112,7 +113,7 @@ clean-all: clean
 	rm -rf Arduino/
 
 update:
-	arduino-cli update --config-file arduino-cli.yaml
+	arduino-cli update ${ARDUINO_CLI_CONFIG}
 
 
 libs: .built-libs
@@ -130,11 +131,11 @@ venv: .built-venv
 
 .built-libs: requirements.libraries.txt
 	@echo "==> Installing libraries ***"
-	arduino-cli lib update-index
+	arduino-cli lib update-index ${ARDUINO_CLI_CONFIG}
 	@if [ -e $< ]; \
 	then while read -r i ; do echo ; \
 	  echo "---> Installing " '"'$$i'"' ; \
-	  arduino-cli lib install "$$i" ; \
+	  arduino-cli lib install ${ARDUINO_CLI_CONFIG} "$i" ; \
 	  touch $@; \
 	done < $< ; \
 	else echo "---> MISSING boards.arduino.txt file"; \
@@ -144,11 +145,11 @@ boards: .built-boards
 
 .built-boards: requirements.boards.txt
 	@echo "==> Installing board support ***"
-	arduino-cli core update-index
+	arduino-cli core update-index ${ARDUINO_CLI_CONFIG}
 	@if [ -e $< ]; \
 	then while read -r i ; do echo ; \
 	  echo "---> Installing " '"'$$i'"' ; \
-	  arduino-cli core install "$$i" ; \
+	  arduino-cli core install ${ARDUINO_CLI_CONFIG} "$i" ; \
 	  touch $@ ; \
 	done < $< ; \
 	else echo "---> MISSING requirements.boards.txt file"; \
