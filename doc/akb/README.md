@@ -18,6 +18,10 @@ documentation and ADRs; it does not replace source code or bench measurements.
   blockers and source-derived flow predictions (milestone 0, item 3).
 - [EIM request/response examples](eim-examples.md) — sanitized API shapes and
   firmware/service contract drift (milestone 0, item 4).
+- [Raspberry Pi 4 hardware spec](hardware-raspberry-pi.md) — power
+  distribution, DMR module connector pinout, and UART wiring options for
+  replacing the ESP32 with a Pi 4; elaborates the port plan's
+  hardware-mapping table with datasheet-sourced detail.
 - [Architecture decisions](../adr/) — decisions that are already recorded.
 - [Development workflow](../development.md) — build, test, and release workflow.
 
