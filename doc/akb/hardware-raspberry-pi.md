@@ -95,9 +95,16 @@ above are done. Two options, in order of preference:
 
 ### Recommended for the prototype: two USB-to-TTL-serial adapters
 
-- One adapter's TX/RX/GND to the DMR module's `UART_TX`/`UART_RX`/`GND`
-  (pins 5/6/3-4).
-- One adapter's TX/RX/GND to the Nextion display's TX/RX/GND.
+**UART connections always cross over — do not pair same-named pins.** Per
+the connector table above: the DMR module's `UART_TX` (pin 5, an output)
+goes to the adapter's **RX**, and the module's `UART_RX` (pin 6, an input)
+goes to the adapter's **TX**. The Nextion display's TX goes to the
+adapter's RX and its RX to the adapter's TX, the same way.
+
+- One adapter: its RX to the DMR module's `UART_TX` (pin 5), its TX to the
+  module's `UART_RX` (pin 6), GND to GND (pins 3-4).
+- A second adapter: its RX to the Nextion display's TX, its TX to the
+  display's RX, GND to GND.
 - Both enumerate as separate `/dev/ttyUSB*` (or stable `/dev/serial/by-id/*`)
   devices on the Pi 4 — a direct match for
   [`SerialConfig.port`](../../dreambox_pi/service/config.py) in the config
@@ -153,8 +160,12 @@ untested against real hardware): `GpioBeeper` takes a configurable
 ## Not needed on the Pi 4: SD card reader
 
 The hand-annotated ESP32 diagram (`doc/hw/ESP32-DMR-NX-SD-connect.pdf`)
-shows an SD card reader wired over the ESP32's HSPI pins, labeled "SD KORT
-LÄSARE" (SD card reader). No `.ino` file reviewed for this project
+shows a "SD KORT LÄSARE" (SD card reader) label with a CS/SCK/MISO/MOSI
+annotation that, from the diagram's own column labels, appears to align
+with the board's **VSPI** pins (GPIO 5/18/19/23) rather than HSPI — but
+reading exact pin alignment off a hand-drawn sketch is inherently
+imprecise, so treat the specific bus as an unconfirmed detail; it doesn't
+change the conclusion below. No `.ino` file reviewed for this project
 (`sketch_dreambox.ino`, `A05`–`A70`) includes `SD.h` or otherwise reads from
 an SD card at runtime — the only documented SD-card use anywhere in this
 repository is flashing the *Nextion display's own* firmware from a microSD
