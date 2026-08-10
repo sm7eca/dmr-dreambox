@@ -43,7 +43,7 @@ ${BUILD_DIR}/%.bin: venv Makefile ${SOURCES_C} ${SOURCES_H}
 	@test -d ${BUILD_DIR} || mkdir -p ${BUILD_DIR}
 	@( \
 		. .venv/bin/activate ; \
-		arduino-cli compile ${ARDUINO_CLI_CONFIG} --output-dir ${BUILD_DIR} --fqbn ${ARDUINO_BOARD_FQDN} ${SOURCEDIR}/ ; \
+		arduino-cli ${ARDUINO_CLI_CONFIG} compile --output-dir ${BUILD_DIR} --fqbn ${ARDUINO_BOARD_FQDN} ${SOURCEDIR}/ ; \
 	)
 
 esp-upload: esp-binary
@@ -113,7 +113,7 @@ clean-all: clean
 	rm -rf Arduino/
 
 update:
-	arduino-cli update ${ARDUINO_CLI_CONFIG}
+	arduino-cli ${ARDUINO_CLI_CONFIG} update
 
 
 libs: .built-libs
@@ -131,11 +131,11 @@ venv: .built-venv
 
 .built-libs: requirements.libraries.txt
 	@echo "==> Installing libraries ***"
-	arduino-cli lib update-index ${ARDUINO_CLI_CONFIG}
+	arduino-cli ${ARDUINO_CLI_CONFIG} lib update-index
 	@if [ -e $< ]; \
 	then while read -r i ; do echo ; \
 	  echo "---> Installing " '"'$$i'"' ; \
-	  arduino-cli lib install ${ARDUINO_CLI_CONFIG} "$i" ; \
+	  arduino-cli ${ARDUINO_CLI_CONFIG} lib install "$$i" ; \
 	  touch $@; \
 	done < $< ; \
 	else echo "---> MISSING boards.arduino.txt file"; \
@@ -145,11 +145,11 @@ boards: .built-boards
 
 .built-boards: requirements.boards.txt
 	@echo "==> Installing board support ***"
-	arduino-cli core update-index ${ARDUINO_CLI_CONFIG}
+	arduino-cli ${ARDUINO_CLI_CONFIG} core update-index
 	@if [ -e $< ]; \
 	then while read -r i ; do echo ; \
 	  echo "---> Installing " '"'$$i'"' ; \
-	  arduino-cli core install ${ARDUINO_CLI_CONFIG} "$i" ; \
+	  arduino-cli ${ARDUINO_CLI_CONFIG} core install "$$i" ; \
 	  touch $@ ; \
 	done < $< ; \
 	else echo "---> MISSING requirements.boards.txt file"; \
