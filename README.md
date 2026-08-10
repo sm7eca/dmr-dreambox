@@ -42,3 +42,8 @@ For more information about how we develop code, please refer to documentation of
 * [Arduino json library](https://arduinojson.org/)
 * [Github - simple Makefile](https://github.com/digiampietro/arduino-makefile/blob/master/blink-arduino/Makefile)
 * [Nextion Editor - display layout tool](https://nextion.tech/nextion-editor/)
+
+## Architecture and porting
+
+Repository architecture knowledge and the Raspberry Pi migration plan are kept
+in the [Agent Knowledge Base](doc/akb/README.md).
