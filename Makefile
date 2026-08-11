@@ -4,6 +4,7 @@ all: help
 PROJECT_NAME = dmr_dreambox
 SOURCEDIR = sketch_dreambox
 SOURCES_EIM_SERVICE = $(shell find eim-service/ -type f -name "*.py")
+SOURCES_DREAMBOX_PI = $(shell find dreambox_pi/ tests/dreambox_pi/ tests/fixtures/ -type f -name "*.py" -o -type f -name "*.json")
 SOURCES_C = $(wildcard ${SOURCEDIR}/*.ino)
 SOURCES_H = $(wildcard ${SOURCEDIR}/*.h)
 ARDUINO_BOARD_FQDN = "esp32:esp32:esp32-DevKitLipo"
@@ -130,11 +131,11 @@ venv: .built-venv
 
 .built-libs: requirements.libraries.txt
 	@echo "==> Installing libraries ***"
-	arduino-cli lib update-index
+	arduino-cli lib update-index --config-file arduino-cli.yaml
 	@if [ -e $< ]; \
 	then while read -r i ; do echo ; \
 	  echo "---> Installing " '"'$$i'"' ; \
-	  arduino-cli lib install "$$i" ; \
+	  arduino-cli lib install "$$i" --config-file arduino-cli.yaml ; \
 	  touch $@; \
 	done < $< ; \
 	else echo "---> MISSING boards.arduino.txt file"; \
@@ -144,11 +145,11 @@ boards: .built-boards
 
 .built-boards: requirements.boards.txt
 	@echo "==> Installing board support ***"
-	arduino-cli core update-index
+	arduino-cli core update-index --config-file arduino-cli.yaml
 	@if [ -e $< ]; \
 	then while read -r i ; do echo ; \
 	  echo "---> Installing " '"'$$i'"' ; \
-	  arduino-cli core install "$$i" ; \
+	  arduino-cli core install "$$i" --config-file arduino-cli.yaml ; \
 	  touch $@ ; \
 	done < $< ; \
 	else echo "---> MISSING requirements.boards.txt file"; \
@@ -227,12 +228,13 @@ venv-test: .built-venv-test
 
 unit-test: .built-unit-test
 
-.built-unit-test: venv-test Makefile ${SOURCES_EIM_SERVICE}
+.built-unit-test: venv-test Makefile ${SOURCES_EIM_SERVICE} ${SOURCES_DREAMBOX_PI}
 	@( \
 		echo "==> running unit tests"; \
 		. .venv/bin/activate ; \
 		python3 -m pytest -xvs eim-service/docker/eim-harvester/src ; \
 		python3 -m pytest -xvs eim-service/docker/eim-core/src ; \
+		python3 -m pytest -xvs tests/dreambox_pi ; \
 	)
 	@touch $@
 

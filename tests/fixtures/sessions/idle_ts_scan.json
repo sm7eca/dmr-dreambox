@@ -1,0 +1,58 @@
+{
+  "flow": "idle_ts_scan",
+  "description": "Idle-state time-slot scanning: every tsSwitchInterval (2000ms) the firmware toggles InboundSlot/OutboundSlot and re-sends the FULL digital channel config, rather than a lightweight mode switch. Predicted from source; no bench capture exists yet.",
+  "source_refs": [
+    "sketch_dreambox/A30Main_State_Handling.ino:5-35",
+    "sketch_dreambox/A40Nextion_HMI.ino:193-200"
+  ],
+  "frames": [
+    {
+      "seq": 1,
+      "bus": "dmr",
+      "direction": "host_to_module",
+      "command": "SET_DIGITAL_CHANNEL (InboundSlot=OutboundSlot=1)",
+      "confidence": "computed-assuming-natural-alignment",
+      "ascii": null,
+      "bytes_hex": "68 22 01 01 8B 27 00 A3 6C 47 E7 19 EC C2 C8 19 0B 9F 24 00 61 09 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 61 09 00 00 01 00 07 01 01 00 02 00 00 00 00 00 00 00 00 02 04 0F 02 10",
+      "known_fields": null,
+      "notes": "Same 172-byte layout as startup.json seq 5, only InboundSlot/OutboundSlot changed from 0 to 1 (do_idle(), A30Main_State_Handling.ino:19-33). Same natural-alignment caveat applies."
+    },
+    {
+      "seq": 2,
+      "bus": "dmr",
+      "direction": "module_to_host",
+      "command": "SET_DIGITAL_CHANNEL reply",
+      "confidence": "known-partial",
+      "ascii": null,
+      "bytes_hex": null,
+      "known_fields": {
+        "offset_0": "0x68 (head)",
+        "offset_1": "0x22 (echoes CMD)",
+        "offset_3": "0x00 on success"
+      },
+      "notes": "Return value of DMRupdateDigChannel is discarded by do_idle() -- current firmware does not act on failure here."
+    },
+    {
+      "seq": 3,
+      "bus": "nextion",
+      "direction": "host_to_display",
+      "command": "NX_P0_DisplayCurrentTS",
+      "confidence": "computed",
+      "ascii": "main.n2.val=2",
+      "bytes_hex": null,
+      "known_fields": null,
+      "notes": "main.n2.val = InboundSlot + 1, so 2 corresponds to InboundSlot=1 in this frame's SET_DIGITAL_CHANNEL. On the next 2000ms tick the slot flips back to 0 and this becomes main.n2.val=1."
+    },
+    {
+      "seq": 4,
+      "bus": "dmr",
+      "direction": "host_to_module",
+      "command": "SET_DIGITAL_CHANNEL (InboundSlot=OutboundSlot=0, next tick)",
+      "confidence": "computed-assuming-natural-alignment",
+      "ascii": null,
+      "bytes_hex": "68 22 01 01 8C 28 00 A3 6C 47 E7 19 EC C2 C8 19 0B 9F 24 00 61 09 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 61 09 00 00 01 00 07 00 00 00 02 00 00 00 00 00 00 00 00 02 04 0F 02 10",
+      "known_fields": null,
+      "notes": "Identical to startup.json seq 5 -- confirms the toggle is a simple 0/1 flip on every 2000ms tick, not a monotonic cycle."
+    }
+  ]
+}

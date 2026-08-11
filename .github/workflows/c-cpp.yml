@@ -18,4 +18,4 @@ jobs:
     - name: Arduino, CLI update
       run: make update
     - name: Arduino, make ESP32 binary
-      run: make binary
+      run: make esp-binary

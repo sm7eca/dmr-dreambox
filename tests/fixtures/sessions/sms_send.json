@@ -1,0 +1,35 @@
+{
+  "flow": "sms_send",
+  "description": "SEND_SMS (0x2C) is fully hardcoded in the current firmware -- DMRsendSMS() writes literal bytes rather than filling a struct, so this frame is fully computable from source. Included even though it wasn't one of the six named flows in the port plan's milestone 0 item 3, because it exercises a real source-verified quirk (see notes on seq 1) that a decoder must handle deliberately.",
+  "source_refs": [
+    "sketch_dreambox/A20Communication.ino:454-527"
+  ],
+  "frames": [
+    {
+      "seq": 1,
+      "bus": "dmr",
+      "direction": "host_to_module",
+      "command": "SEND_SMS (sanitized example message)",
+      "confidence": "computed",
+      "ascii": null,
+      "bytes_hex": "68 2C 01 01 F4 0B 00 1B 01 0B 9F 24 00 0D 00 0A 00 44 00 45 00 20 00 45 00 58 00 31 00 41 00 4D 00 50 00 10",
+      "known_fields": null,
+      "notes": "36 bytes total, matches len=36 literal in source. Sanitized: original firmware hardcodes a real maintainer callsign ('DE SM7ECA') and DMR ID (2400481) as the message body -- this fixture substitutes the fictional callsign 'EX1AMP' (DMR ID 2400011) with identical byte lengths so the checksum math stays representative, per README.md's sanitization rule. Message text is UCS-2 big-endian per character (0x00 high byte + ASCII low byte, since all characters are in ASCII range), preceded by a 4-byte header filler (0x000D 0x000A = CRLF) that source comments call 'undocumented'. Contact ID is 3 bytes, little-endian, at offsets 9-11 -- NOT 4 bytes; this is a documented gotcha (source comment: 'callnum ar 3 byte!! took a hell of a time to find out'). There is also a stray extra 0x00 byte at offset 33 (between the last text byte and the tail) that isn't part of a clean UCS-2 code unit -- verified present in source (buff[34]=0x00 immediately before buff[35]=0x10), likely a firmware quirk/bug rather than intentional framing. Decoders should treat this byte as a documented anomaly, not silently drop or 'fix' it, until confirmed against a bench capture."
+    },
+    {
+      "seq": 2,
+      "bus": "dmr",
+      "direction": "module_to_host",
+      "command": "SEND_SMS reply",
+      "confidence": "known-partial",
+      "ascii": null,
+      "bytes_hex": null,
+      "known_fields": {
+        "offset_0": "0x68 (head)",
+        "offset_1": "0x2C (echoes CMD)",
+        "offset_3": "0x00 on success"
+      },
+      "notes": "DMRreceiveReply(0x2C) return value is discarded by DMRsendSMS -- current firmware does not confirm delivery."
+    }
+  ]
+}
