@@ -124,6 +124,20 @@ the NX_P*/button dispatch table reconstructed from `A40Nextion_HMI.ino`,
 which remains out of scope per `application/effects.py`'s
 `UpdateNextionDisplay` docstring.
 
+`dreambox_pi/service/main.py` is the composition root and process
+entrypoint: `build_runtime(config)` wires two real `SerialTransport`s, a
+real `EimClient`, and the persisted channel into a `Runtime`; `main()` loads
+config, sets up logging, and runs until SIGTERM/SIGINT. It deliberately
+refuses to invent a default `DigitalChannel` (frequencies, DMR ID, and
+talkgroups are operator-specific license data) -- if `settings_path` has no
+file yet, `build_runtime()` raises `ConfigError` rather than starting on a
+synthesized channel; a `settings.json` must be provisioned once via
+`adapters.settings_store.save()` before the first run. Milestone 3's "the
+service runs unprivileged where practical, restarts cleanly" exit criterion
+still needs a systemd unit to actually verify against real process
+supervision -- that unit is milestone 6 ("package and operate"), not this
+one; `main.py` only makes sure clean SIGTERM handling doesn't block on it.
+
 ### 4. Bench integration
 
 Connect one peripheral at a time through verified electrical interfaces. Start
