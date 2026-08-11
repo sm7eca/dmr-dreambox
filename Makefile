@@ -131,11 +131,11 @@ venv: .built-venv
 
 .built-libs: requirements.libraries.txt
 	@echo "==> Installing libraries ***"
-	arduino-cli lib update-index
+	arduino-cli lib update-index --config-file arduino-cli.yaml
 	@if [ -e $< ]; \
 	then while read -r i ; do echo ; \
 	  echo "---> Installing " '"'$$i'"' ; \
-	  arduino-cli lib install "$$i" ; \
+	  arduino-cli lib install "$$i" --config-file arduino-cli.yaml ; \
 	  touch $@; \
 	done < $< ; \
 	else echo "---> MISSING boards.arduino.txt file"; \
@@ -145,11 +145,11 @@ boards: .built-boards
 
 .built-boards: requirements.boards.txt
 	@echo "==> Installing board support ***"
-	arduino-cli core update-index
+	arduino-cli core update-index --config-file arduino-cli.yaml
 	@if [ -e $< ]; \
 	then while read -r i ; do echo ; \
 	  echo "---> Installing " '"'$$i'"' ; \
-	  arduino-cli core install "$$i" ; \
+	  arduino-cli core install "$$i" --config-file arduino-cli.yaml ; \
 	  touch $@ ; \
 	done < $< ; \
 	else echo "---> MISSING requirements.boards.txt file"; \
