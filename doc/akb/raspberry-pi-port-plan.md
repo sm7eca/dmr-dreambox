@@ -103,6 +103,27 @@ timeouts must be configuration—not source constants.
 Exit criteria: the service runs unprivileged where practical, restarts cleanly,
 uses atomic settings writes, and passes adapter tests with pseudo-terminals.
 
+The threading/queue model for running the DMR UART, Nextion UART, and EIM
+HTTP adapters concurrently against the single `StateMachine`, and the switch
+from busy-polling to blocking `select()`-based waits in `SerialTransport`,
+are recorded in [ADR 04](../adr/04_adr_dreambox_pi_io_concurrency_model.md)
+and implemented in `dreambox_pi/service/runtime.py`.
+
+`runtime.py` also had to decide, beyond what ADR 04 scoped, which
+`StateMachine.on_*()` call a given incoming DMR frame answers. It does this
+with a FIFO of "replies still expected," fed by the commands it has sent and
+drained in send order -- see the DMR-protocol note in
+[dmr-protocol.md](dmr-protocol.md#open-items-for-the-port-not-yet-verified).
+This sequencing policy is new
+to the port and not bench-validated; treat it as an assumption like the
+other open items there, not as confirmed behavior.
+
+Nextion touch events are parsed by `runtime.py` but not yet routed into the
+state machine -- mapping a page/button event to a specific input still needs
+the NX_P*/button dispatch table reconstructed from `A40Nextion_HMI.ino`,
+which remains out of scope per `application/effects.py`'s
+`UpdateNextionDisplay` docstring.
+
 ### 4. Bench integration
 
 Connect one peripheral at a time through verified electrical interfaces. Start

@@ -15,17 +15,32 @@ non-blocking read() contract, not a device/protocol behavior choice -- the
 actual "how long to wait for data" behavior is entirely handled by
 wait_for_data(), matching first_byte_timeout/inter_byte_timeout at the
 protocol layer (service/config.py's TimeoutConfig).
+
+wait_for_data() blocks in the kernel via select() rather than sleep-polling
+in_waiting -- see doc/adr/04_adr_dreambox_pi_io_concurrency_model.md. This
+matters because dreambox_pi/service/runtime.py runs one reader thread per
+UART, each spending most of its life inside wait_for_data(): a sleep-poll
+loop would wake every thread on a fixed interval for as long as the port is
+idle, for no reason, instead of the kernel waking exactly the thread whose
+fd became readable.
+
+select() reports a fd "readable" both when there is data to read AND when
+the peer has hung up (EOF) -- read() then returns b"" forever instead of
+ever raising, which without the in_waiting check below would make
+domain/_framing.py's read loop spin at 100% CPU indefinitely rather than
+time out. Checking in_waiting after select() distinguishes the two cases and
+raises OSError for a hangup, so it surfaces the same way any other transport
+failure does to callers (dreambox_pi/service/runtime.py's reader loops
+already catch OSError and report it as a lost connection).
 """
 
 from __future__ import annotations
 
-import time
+import select
 from typing import List
 
 import serial
 import serial.tools.list_ports
-
-_POLL_INTERVAL = 0.005  # seconds; how often wait_for_data re-checks in_waiting
 
 
 class SerialTransport:
@@ -43,14 +58,12 @@ class SerialTransport:
         return self._serial.write(data)
 
     def wait_for_data(self, timeout: float) -> bool:
-        if self._serial.in_waiting > 0:
-            return True
-        deadline = time.monotonic() + timeout
-        while time.monotonic() < deadline:
-            time.sleep(_POLL_INTERVAL)
-            if self._serial.in_waiting > 0:
-                return True
-        return False
+        readable, _, _ = select.select([self._serial.fileno()], [], [], timeout)
+        if not readable:
+            return False
+        if self._serial.in_waiting == 0:
+            raise OSError("serial transport closed (fd readable but no data pending -- peer hung up)")
+        return True
 
     def close(self) -> None:
         self._serial.close()

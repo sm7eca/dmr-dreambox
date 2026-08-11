@@ -8,8 +8,10 @@ actual pyserial/OS I/O path without needing physical hardware.
 import os
 import pty
 import sys
+import threading
 import time
 import pathlib
+from unittest.mock import patch
 
 import pytest
 
@@ -58,6 +60,49 @@ def test_wait_for_data_times_out_when_nothing_arrives(pty_pair):
     start = time.monotonic()
     assert transport.wait_for_data(0.2) is False
     assert time.monotonic() - start >= 0.2
+
+
+def test_wait_for_data_blocks_in_the_kernel_instead_of_sleep_polling(pty_pair):
+    """ADR 04: wait_for_data() must block via select(), not wake on a fixed
+    interval to re-check in_waiting -- so it must never call time.sleep()."""
+    _master_fd, transport = pty_pair
+    with patch("time.sleep") as mock_sleep:
+        assert transport.wait_for_data(0.2) is False
+    mock_sleep.assert_not_called()
+
+
+def test_wait_for_data_wakes_promptly_when_data_arrives_mid_wait(pty_pair):
+    """A real select()-based wait wakes as soon as the fd is readable, not on
+    the next poll tick -- write from another thread partway through a long
+    wait and expect the call to return well before its timeout."""
+    master_fd, transport = pty_pair
+
+    def write_soon():
+        time.sleep(0.1)
+        os.write(master_fd, b"x")
+
+    threading.Thread(target=write_soon).start()
+    start = time.monotonic()
+    assert transport.wait_for_data(5.0) is True
+    elapsed = time.monotonic() - start
+    assert 0.1 <= elapsed < 1.0
+
+
+def test_wait_for_data_raises_on_peer_hangup_instead_of_spinning():
+    """select() reports the fd readable both when data is pending AND when
+    the peer has hung up (EOF); read() then returns b"" forever. Without the
+    in_waiting check, domain/_framing.read_until() would busy-loop forever
+    instead of ever timing out or erroring -- see the module docstring."""
+    master_fd, slave_fd = pty.openpty()
+    transport = SerialTransport(port=os.ttyname(slave_fd), baudrate=57600)
+    os.close(master_fd)  # the peer disappears
+
+    start = time.monotonic()
+    with pytest.raises(OSError):
+        transport.wait_for_data(5.0)
+    assert time.monotonic() - start < 1.0  # must not wait out the full timeout
+
+    transport.close()
 
 
 def test_partial_delivery_across_multiple_writes(pty_pair):

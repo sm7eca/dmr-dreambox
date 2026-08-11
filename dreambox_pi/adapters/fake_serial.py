@@ -15,8 +15,16 @@ from collections import deque
 from typing import Optional
 
 
-class TransportDisconnected(Exception):
-    """Raised by write() when the transport is in a disconnected state."""
+class TransportDisconnected(OSError):
+    """Raised by write() when the transport is in a disconnected state.
+
+    Subclasses OSError (not plain Exception) to mirror the real adapter:
+    pyserial's own failures (serial.SerialException) are OSError subclasses
+    too, and dreambox_pi/service/runtime.py's effect execution only catches
+    OSError/ValueError around transport writes -- a plain Exception here
+    would go uncaught and crash the dispatch loop instead of being handled
+    like any other transport failure, which real disconnect-during-write
+    tests should be able to rely on."""
 
 
 class FakeClock:
@@ -63,6 +71,12 @@ class FakeSerialTransport:
 
     def reconnect(self) -> None:
         self._connected = True
+
+    def close(self) -> None:
+        """No-op: interface parity with adapters.serial_transport.SerialTransport
+        (dreambox_pi/service/runtime.py's Runtime.stop() calls close()
+        unconditionally on whatever transport it was given)."""
+        self._connected = False
 
     @property
     def connected(self) -> bool:

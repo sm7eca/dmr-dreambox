@@ -192,3 +192,12 @@ From `A30Main_State_Handling.ino` and `A05Init.ino`:
   [session-capture-status.md](session-capture-status.md)) are required to
   confirm all of the above against actual hardware before the protocol
   harness (milestone 1) is considered validated.
+- `dreambox_pi/service/runtime.py` (milestone 3) assumes the DMR module
+  replies to solicited commands in the same order they were sent, and uses
+  that to match an incoming frame to the command it answers (a FIFO of
+  "replies still expected" — see the module's docstring and
+  [raspberry-pi-port-plan.md](raspberry-pi-port-plan.md#3-add-linux-adapters)).
+  This is a new sequencing policy for the port, not something the ESP32
+  firmware had to decide (`DMRreceiveReply` blocks between sending a command
+  and reading its one reply, so at most one is ever outstanding). Not
+  bench-validated.
