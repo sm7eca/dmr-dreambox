@@ -5,7 +5,7 @@ daemon:
   port: "50051"
 directories:
   data: ./Arduino/data
-  downloads: /home/bastian/.arduino15/staging
+  downloads: ./Arduino/staging
   user: ./Arduino/user
 library:
   enable_unsafe_install: false
